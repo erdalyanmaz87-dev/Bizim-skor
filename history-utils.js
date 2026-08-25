@@ -15,5 +15,10 @@
     let previousPoints=null,previousRank=0;
     return sorted.map((row,index)=>{const rank=index>0&&row.points===previousPoints?previousRank:index+1;previousPoints=row.points;previousRank=rank;return{...row,rank}});
   }
-  return{scorePrediction,buildWeeklyRanking};
+  function visiblePredictionScore(prediction,result,isCurrentPlayer){
+    if(!prediction)return'';
+    const completed=!!(result&&result.home_score!=null&&result.away_score!=null);
+    return isCurrentPlayer||completed?`${prediction.home_score}-${prediction.away_score}`:'*-*';
+  }
+  return{scorePrediction,buildWeeklyRanking,visiblePredictionScore};
 });
