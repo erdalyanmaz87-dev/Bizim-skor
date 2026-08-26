@@ -9,8 +9,8 @@
   "theme_color": "#071633",
   "icons": [
     {
-      "src": "bizim-skor-icon-v1.png",
-      "sizes": "1254x1254",
+      "src": "bizim-skor-icon-v2.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
