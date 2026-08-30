@@ -156,7 +156,7 @@
       const predictionText=prediction?`${prediction.home_score}-${prediction.away_score}`:'Tahmin bulunamadı';
       return `<div class="history-match"><div class="history-real">${esc(row.home_team)} ${result?`<b>${result.home_score}-${result.away_score}</b>`:'-'} ${esc(row.away_team)}</div><div class="history-pred">Tahminin: <b>${predictionText}</b><span class="history-mark">${mark}</span></div></div>`;
     }).join('');
-    content.innerHTML=`<div class="history-summary"><div class="history-stat"><span>Haftalık Puan</span><b>${summary.week_points||0}</b></div><div class="history-stat"><span>${finished?'Hafta Sırası':'Geçici Sıra'}</span><b>${rank}</b></div><div class="history-stat"><span>Katılan</span><b>${summary.participant_count||0}</b></div><div class="history-stat"><span>Sonuçlanan</span><b>${completed}/${total}</b></div></div><p class="small">${finished?`Şampiyonlar Ligi ${historyWeek}. haftayı ${rank} sırada tamamladın.`:`Şampiyonlar Ligi • ${historyWeek}. Hafta — sıralama maçlar sonuçlandıkça güncellenir.`}</p>${matches}`;
+    content.innerHTML=`<div class="history-summary"><div class="history-stat"><span>Haftalık Puan</span><b>${summary.week_points||0}</b></div><div class="history-stat"><span>${finished?'Hafta Sırası':'Geçici Sıra'}</span><b>${rank}</b></div><div class="history-stat"><span>Katılan</span><b>${summary.participant_count||0}</b></div></div><p class="small">${completed}/${total} maç sonuçlandı. ${finished?`Şampiyonlar Ligi ${historyWeek}. haftayı ${rank} sırada tamamladın.`:`Sıralama maçlar sonuçlandıkça güncellenir.`}</p>${matches}`;
   }
 
   async function savePrediction(){
