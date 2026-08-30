@@ -30,8 +30,15 @@
     const safe=escapeHtml||String;
     const heading=`<h2>⚽ ${safe(day.label)}</h2>`;
     if(!day.matches.length)return heading+'<p class="small">Bugün oynanacak maç bulunmuyor.</p>';
-    return heading+day.matches.map(match=>`<div class="daily-match"><b>${safe(match.time)}</b><span>${safe(match.home_team)} – ${safe(match.away_team)}</span></div>`).join('');
+    return heading+day.matches.map(match=>match.live&&typeof globalThis.BizimSkorLiveScore!=='undefined'
+      ?globalThis.BizimSkorLiveScore.renderLiveMatchMarkup(match,match.live)
+      :`<div class="daily-match"><b>${safe(match.time)}</b><span>${safe(match.home_team)} – ${safe(match.away_team)}</span></div>`).join('');
   }
 
-  return{selectDailyMatches,renderDailyMatchesMarkup};
+  function mergeDailyMatchesWithLiveState(fixtures,rows){
+    const live=new Map((rows||[]).map(row=>[`${row.competition}:${row.fixture_id}`,row]));
+    return(fixtures||[]).map(fixture=>({...fixture,live:live.get(`${fixture.competition}:${fixture.id}`)||null}));
+  }
+
+  return{selectDailyMatches,renderDailyMatchesMarkup,mergeDailyMatchesWithLiveState};
 });
