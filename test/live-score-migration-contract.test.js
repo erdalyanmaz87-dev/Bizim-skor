@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const file=path.join(__dirname,'..','supabase','migrations','20260830_live_score_automation.sql');
 const hardeningFile=path.join(__dirname,'..','supabase','migrations','20260830203000_harden_live_score_discovery.sql');
+const scheduleFixFile=path.join(__dirname,'..','supabase','migrations','20260830210000_fix_daily_match_schedule_rpc.sql');
 
 test('canlı skor tabloları RLS ile korunur ve tarayıcıya açılmaz',()=>{
   const sql=fs.readFileSync(file,'utf8');
@@ -44,4 +45,20 @@ test('fikstür keşif yardımcısı tarayıcı rollerine kapalıdır',()=>{
   const sql=fs.readFileSync(hardeningFile,'utf8');
   assert.match(sql,/revoke all on function public\.record_live_score_discovery\(text,bigint,text,bigint\)\s+from public,\s*anon,\s*authenticated/i);
   assert.match(sql,/grant execute on function public\.record_live_score_discovery\(text,bigint,text,bigint\)\s+to service_role/i);
+});
+
+test('günlük maç RPCsi canlı önbellek olmasa da fikstürü döndürür',()=>{
+  const sql=fs.readFileSync(scheduleFixFile,'utf8');
+  assert.match(sql,/left join public\.live_score_cache/i);
+  assert.match(sql,/home_team/i);
+  assert.match(sql,/away_team/i);
+  assert.match(sql,/kickoff/i);
+  assert.match(sql,/grant execute on function public\.get_today_live_match_cards\(timestamptz\) to anon,authenticated/i);
+});
+
+test('manuel kesin sonuç eski canlı önbellekten önce gelir',()=>{
+  const sql=fs.readFileSync(scheduleFixFile,'utf8');
+  assert.match(sql,/coalesce\(case when f\.result_status='finished' then 'FT' end,c\.status\)/i);
+  assert.match(sql,/coalesce\(f\.result_home_score,c\.home_score\)/i);
+  assert.match(sql,/coalesce\(f\.result_away_score,c\.away_score\)/i);
 });
