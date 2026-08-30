@@ -132,9 +132,11 @@ async function loadHistory(preferredWeek){
  if(!me){select.innerHTML='';content.innerHTML='<p class="ok">Tahmin geçmişini görmek için önce hesabına giriş yap.</p>';return}
  const mineQ=await sb.from('predictions').select('*').eq('player_name',me).order('week',{ascending:false});
  if(mineQ.error){content.innerHTML='<p class="small">Geçmiş yüklenemedi: '+esc(mineQ.error.message)+'</p>';return}
- historyMine=mineQ.data||[];const weeks=[...new Set(historyMine.map(p=>p.week))].sort((a,b)=>b-a);
- if(!weeks.length){select.innerHTML='';content.innerHTML='<p class="small">Henüz kayıtlı tahminin bulunmuyor.</p>';return}
- const chosen=weeks.includes(+preferredWeek)?+preferredWeek:weeks[0];select.innerHTML=weeks.map(w=>`<option value="${w}" ${w===chosen?'selected':''}>${w}. Hafta</option>`).join('');select.onchange=()=>renderHistoryWeek(+select.value);await renderHistoryWeek(chosen)
+ historyMine=mineQ.data||[];const weeks=[...new Set(historyMine.map(p=>p.week))].sort((a,b)=>b-a),championsValue='champions:1';
+ const chosen=String(preferredWeek||'')===championsValue?championsValue:(weeks[0]??championsValue);
+ select.innerHTML=weeks.map(w=>`<option value="${w}" ${String(w)===String(chosen)?'selected':''}>${w}. Hafta</option>`).join('')+`<option value="${championsValue}" ${chosen===championsValue?'selected':''}>⭐ Şampiyonlar Ligi • 1. Hafta</option>`;
+ select.onchange=()=>select.value===championsValue?window.BizimSkorChampionsUI.loadHistory(1):renderHistoryWeek(+select.value);
+ if(chosen===championsValue)await window.BizimSkorChampionsUI.loadHistory(1);else await renderHistoryWeek(chosen)
 }
 async function renderHistoryWeek(selectedWeek){
  const me=localStorage.getItem('bizimSkorName'),content=document.getElementById('historyContent');content.innerHTML='<p class="small">Hafta yükleniyor…</p>';
