@@ -12,15 +12,14 @@ const previousDailyLiveScores=new Map();
 async function loadDailyMatches(){
   const box=document.getElementById('dailyMatches');
   try{
-    const [sl,cl,live]=await Promise.all([
-      sb.from('fixtures').select('*').order('kickoff'),
-      sb.from('champions_league_fixtures').select('*').order('kickoff'),
-      sb.rpc('get_today_live_match_cards',{p_now:new Date().toISOString()})
-    ]);
-    if(sl.error)throw sl.error;if(cl.error)throw cl.error;if(live.error)throw live.error;
-    const all=[...(sl.data||[]).map(x=>({...x,competition:'super_lig'})),...(cl.data||[]).map(x=>({...x,competition:'champions_league'}))];
-    const merged=BizimSkorDailyMatches.mergeDailyMatchesWithLiveState(all,live.data||[]);
-    const day=BizimSkorDailyMatches.selectDailyMatches(merged);
+    const schedule=await sb.rpc('get_today_live_match_cards',{p_now:new Date().toISOString()});
+    if(schedule.error)throw schedule.error;
+    const matches=(schedule.data||[]).map(row=>({
+      ...row,
+      id:row.fixture_id,
+      live:row.status?row:null
+    }));
+    const day=BizimSkorDailyMatches.selectDailyMatches(matches);
     box.innerHTML=BizimSkorDailyMatches.renderDailyMatchesMarkup(day,esc);
     day.matches.filter(x=>x.live).forEach(match=>{
       const key=`${match.competition}:${match.id}`,old=previousDailyLiveScores.get(key);
