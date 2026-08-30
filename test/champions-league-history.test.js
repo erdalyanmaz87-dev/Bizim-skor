@@ -22,10 +22,12 @@ test('Şampiyonlar Ligi geçmişi güvenli oturumla yüklenir',()=>{
   assert.match(ui,/bizimSkorFriendToken/);
 });
 
-test('geçmiş özeti puan sıra katılan ve sonuçlanan maçları gösterir',()=>{
-  for(const label of ['Haftalık Puan','Geçici Sıra','Katılan','Sonuçlanan']){
+test('geçmiş özeti Süper Lig gibi üç kutu ve alt sonuç açıklaması gösterir',()=>{
+  for(const label of ['Haftalık Puan','Geçici Sıra','Katılan']){
     assert.match(ui,new RegExp(label));
   }
+  assert.doesNotMatch(ui,/<span>Sonuçlanan<\/span>/);
+  assert.match(ui,/\$\{completed\}\/\$\{total\} maç sonuçlandı\./);
   assert.match(ui,/predicted_home/);
   assert.match(ui,/real_home/);
 });
