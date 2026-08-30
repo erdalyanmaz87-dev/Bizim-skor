@@ -1,11 +1,12 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 
-let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'';
+let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'',mergeDailyMatchesWithLiveState=()=>[];
 try{
   const api=require('../daily-matches-utils');
   selectDailyMatches=api.selectDailyMatches||selectDailyMatches;
   renderDailyMatchesMarkup=api.renderDailyMatchesMarkup||renderDailyMatchesMarkup;
+  mergeDailyMatchesWithLiveState=api.mergeDailyMatchesWithLiveState||mergeDailyMatchesWithLiveState;
 }catch{}
 
 const fixtures=[
@@ -46,4 +47,19 @@ test('günlük maç kartı saat ve takımları okunaklı gösterir',()=>{
 test('maç kalmadığında kart boş durum mesajı gösterir',()=>{
   const html=renderDailyMatchesMarkup({label:'Bugünün Maçları',matches:[]},x=>x);
   assert.match(html,/Bugün oynanacak maç bulunmuyor/);
+});
+
+test('canlı skoru yalnız müsabaka türü ve fikstür kimliği birlikte eşleşince bağlar',()=>{
+  const rows=[
+    {competition:'super_lig',fixture_id:23,status:'2H',home_score:1,away_score:1},
+    {competition:'champions_league',fixture_id:23,status:'1H',home_score:2,away_score:0}
+  ];
+  const merged=mergeDailyMatchesWithLiveState([
+    {id:23,competition:'super_lig'},
+    {id:23,competition:'champions_league'},
+    {id:24,competition:'super_lig'}
+  ],rows);
+  assert.equal(merged[0].live.home_score,1);
+  assert.equal(merged[1].live.home_score,2);
+  assert.equal(merged[2].live,null);
 });

@@ -12,6 +12,15 @@ test('günlük maç kartı Tahmin Yap ekranının ilk kartıdır',()=>{
 
 test('fikstür yüklenince günlük maç kartı oluşturulur',()=>{
   assert.match(html,/daily-matches-utils\.js/);
-  assert.match(html,/BizimSkorDailyMatches\.selectDailyMatches\(q\.data\|\|\[\]\)/);
+  assert.match(html,/BizimSkorDailyMatches\.mergeDailyMatchesWithLiveState/);
+  assert.match(html,/BizimSkorDailyMatches\.selectDailyMatches\(merged\)/);
   assert.match(html,/BizimSkorDailyMatches\.renderDailyMatchesMarkup/);
+});
+
+test('günlük kart güvenli canlı skor RPCsi ve sessiz gol vurgusunu kullanır',()=>{
+  assert.match(html,/live-score-ui\.js/);
+  assert.match(html,/get_today_live_match_cards/);
+  assert.match(html,/live-exact-ticker/);
+  assert.match(html,/goal-flash/);
+  assert.doesNotMatch(html,/<audio|new Audio\(|\.play\(/i);
 });
