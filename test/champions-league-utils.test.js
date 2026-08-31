@@ -39,14 +39,14 @@ test('rakip tahmini sonuçtan önce gizlidir',()=>{
   assert.equal(CL.visibleScore({home_score:2,away_score:1},null,true),'2-1');
 });
 
-test('sezon sıralaması puan tam skor doğru sonuçla eşitliği bozar',()=>{
+test('sezon sıralaması yalnız puana göre yoğun sıra verir',()=>{
   const rows=CL.rankSeason([
     {name:'Ali',points:5,exact:1,correct:2},
     {name:'Veli',points:5,exact:0,correct:5},
     {name:'Ayşe',points:5,exact:1,correct:2},
     {name:'Zeki',points:4,exact:3,correct:6}
   ]);
-  assert.deepEqual(rows.map(x=>[x.name,x.rank]),[['Ali',1],['Ayşe',1],['Veli',3],['Zeki',4]]);
+  assert.deepEqual(rows.map(x=>[x.name,x.rank]),[['Ali',1],['Ayşe',1],['Veli',1],['Zeki',2]]);
 });
 
 test('fikstürü Türkiye tarihine göre gruplar',()=>{
