@@ -26,6 +26,13 @@ test('tam bilenler bandını güvenli metinle oluşturur',()=>{
   assert.equal(Live.formatExactPredictors(['Erdal','YEK']),'🎯 Şu an tam bilenler: Erdal • YEK');
 });
 
+test('tam bilenler sabit alanda ilk beş isim ve kalan kişi sayısını gösterir',()=>{
+  assert.equal(
+    Live.formatExactPredictors(['Erdal','YEK','İpek','Mert','Emre','Fahri','Tayfun']),
+    '🎯 Şu an tam bilenler: Erdal • YEK • İpek • Mert • Emre • +2 kişi'
+  );
+});
+
 test('canlı maç kartında skor dakika ve bilenleri gösterir',()=>{
   const html=Live.renderLiveMatchMarkup(
     {id:23,home_team:'Eyüpspor',away_team:'Alanyaspor'},
