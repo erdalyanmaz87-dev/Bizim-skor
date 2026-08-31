@@ -13,9 +13,6 @@ function equalSecret(left:string|null,right:string){
 
 Deno.serve(async(req:Request)=>{
   if(req.method!=='POST')return json(405,{error:'method_not_allowed'});
-  const cronSecret=Deno.env.get('LIVE_SCORE_CRON_SECRET')||'';
-  if(!equalSecret(req.headers.get('x-cron-secret'),cronSecret))return json(401,{error:'unauthorized'});
-
   const apiKey=Deno.env.get('API_FOOTBALL_KEY')||'';
   const url=Deno.env.get('SUPABASE_URL')||'';
   const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'';
@@ -23,6 +20,15 @@ Deno.serve(async(req:Request)=>{
 
   const sb=createClient(url,serviceKey,{auth:{persistSession:false}});
   try{
+    const suppliedSecret=req.headers.get('x-cron-secret');
+    const legacySecret=Deno.env.get('LIVE_SCORE_CRON_SECRET')||'';
+    let authorized=equalSecret(suppliedSecret,legacySecret);
+    if(!authorized&&suppliedSecret){
+      const authResult=await sb.rpc('authorize_live_score_cron',{p_secret:suppliedSecret});
+      authorized=authResult.error==null&&authResult.data===true;
+    }
+    if(!authorized)return json(401,{error:'unauthorized'});
+
     const gateResult=await sb.rpc('get_live_score_poll_gate');
     if(gateResult.error)throw gateResult.error;
     const gate=gateResult.data?.[0]||{};
