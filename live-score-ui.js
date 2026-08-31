@@ -23,7 +23,10 @@
   }
   function formatExactPredictors(names){
     const clean=Array.isArray(names)?names.filter(Boolean).map(String):[];
-    return clean.length?`🎯 Şu an tam bilenler: ${clean.join(' • ')}`:'Şu an tam skoru bilen yok.';
+    if(!clean.length)return 'Şu an tam skoru bilen yok.';
+    const visible=clean.slice(0,5);
+    const remaining=clean.length-visible.length;
+    return `🎯 Şu an tam bilenler: ${visible.join(' • ')}${remaining?` • +${remaining} kişi`:''}`;
   }
   function renderLiveMatchMarkup(fixture,liveState,now=new Date()){
     if(!liveState)return '';
