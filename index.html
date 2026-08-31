@@ -32,7 +32,9 @@ async function loadDailyMatches(){
   }
 }
 window.addEventListener('load',loadDailyMatches);
-window.addEventListener('load',()=>setInterval(()=>{if(document.visibilityState==='visible')loadDailyMatches()},60000));
+window.addEventListener('load',()=>setInterval(()=>{if(document.visibilityState==='visible')loadDailyMatches()},30000));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadDailyMatches()});
+window.addEventListener('focus',()=>{if(document.visibilityState==='visible')loadDailyMatches()});
 </script>
 <script src="launch-context.js"></script><script>
 let launchRecorded=false;
