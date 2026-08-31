@@ -45,9 +45,10 @@
 
   function rankSeason(rows){
     const sorted=[...rows].sort((a,b)=>b.points-a.points||b.exact-a.exact||b.correct-a.correct||a.name.localeCompare(b.name,'tr'));
-    let previousPoints=null,rank=0;
-    return sorted.map(row=>{
-      if(row.points!==previousPoints){rank++;previousPoints=row.points}
+    let previousKey='',rank=0;
+    return sorted.map((row,index)=>{
+      const key=`${row.points}|${row.exact}|${row.correct}`;
+      if(key!==previousKey){rank=index+1;previousKey=key}
       return{...row,rank};
     });
   }

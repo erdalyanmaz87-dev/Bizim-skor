@@ -28,12 +28,13 @@
       b.correct - a.correct ||
       a.name.localeCompare(b.name, 'tr')
     );
-    let previousPoints = null;
+    let previousKey = null;
     let rank = 0;
-    return sorted.map(row => {
-      if (row.points !== previousPoints) {
-        rank += 1;
-        previousPoints = row.points;
+    return sorted.map((row, index) => {
+      const key = `${row.points}|${row.exact}|${row.correct}`;
+      if (key !== previousKey) {
+        rank = index + 1;
+        previousKey = key;
       }
       return { ...row, rank };
     });
