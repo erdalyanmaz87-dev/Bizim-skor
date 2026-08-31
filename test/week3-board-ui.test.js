@@ -7,7 +7,7 @@ const html=fs.readFileSync('index.html','utf8');
 test('haftalık sıralama ekranı 3. haftayı gösterir',()=>{
   assert.match(html,/liveTab\.textContent='3\. Hafta Sıralaması'/);
   assert.match(html,/textContent='🏆 3\. Hafta Sıralaması'/);
-  assert.match(html,/textContent='👥 3\. Hafta Katılımcı Tahminleri'/);
+  assert.match(html,/cards\[1\]\.remove\(\)/);
   assert.match(html,/if\(b\.dataset\.tab==='live'\)await loadWeek3Board\(\)/);
 });
 
@@ -21,7 +21,10 @@ test('3. hafta verileri ve maç bilenleri ayrı alanda yüklenir',()=>{
 test('tam skor isimleri ve doğru sonuç sayısı kullanıcı diliyle gösterilir',()=>{
   assert.match(html,/Doğru skor tahmini yapanlar:/);
   assert.match(html,/Doğru sonucu bilen:/);
-  assert.match(html,/BizimSkorTwoWeek\.summarizeFixturePrediction/);
+  assert.match(html,/activePredictionNames=new Set/);
+  assert.match(html,/BizimSkorTwoWeek\.summarizeFixturePrediction\(r,predictionsByFixture\[f\.id\]\|\|\[\],activePredictionNames\)/);
+  assert.match(html,/summary\.correctResultCount/);
+  assert.doesNotMatch(html,/summary\.correctOutcomeCount/);
   assert.doesNotMatch(html,/1-X-2/);
 });
 
