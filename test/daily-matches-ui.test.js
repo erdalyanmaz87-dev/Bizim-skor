@@ -31,3 +31,10 @@ test('günlük kart korumalı fikstür tablolarını tarayıcıdan doğrudan oku
   assert.doesNotMatch(dailyLoader,/sb\.from\(['"]champions_league_fixtures['"]\)/);
   assert.match(dailyLoader,/sb\.rpc\(['"]get_today_live_match_cards['"]/);
 });
+
+
+test('canlı maç kartı açık ekranda ve uygulamaya dönünce kendiliğinden yenilenir',()=>{
+  assert.match(html,/setInterval\([\s\S]*loadDailyMatches\(\)[\s\S]*30000\)/);
+  assert.match(html,/document\.addEventListener\(['"]visibilitychange['"][\s\S]*loadDailyMatches\(\)/);
+  assert.match(html,/window\.addEventListener\(['"]focus['"][\s\S]*loadDailyMatches\(\)/);
+});
