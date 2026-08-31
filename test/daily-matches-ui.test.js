@@ -4,11 +4,11 @@ const fs=require('node:fs');
 const html=fs.readFileSync('index.html','utf8');
 const dailyLoader=html.slice(html.indexOf('async function loadDailyMatches()'),html.indexOf("window.addEventListener('load',loadDailyMatches)"));
 
-test('günlük maç kartı Tahmin Yap ekranının ilk kartıdır',()=>{
-  const predictionStart=html.indexOf('<section id="pred">');
+test('günlük maç kartı Ana Sayfa ekranının ilk kartıdır',()=>{
+  const predictionStart=html.indexOf('<section id="home">');
   const dailyCard=html.indexOf('id="dailyMatches"');
-  const weekCard=html.indexOf('id="week"');
-  assert.ok(predictionStart>=0&&dailyCard>predictionStart&&dailyCard<weekCard);
+  const accountCard=html.indexOf('id="knownPlayer"');
+  assert.ok(predictionStart>=0&&dailyCard>predictionStart&&dailyCard<accountCard);
 });
 
 test('fikstür yüklenince günlük maç kartı oluşturulur',()=>{
