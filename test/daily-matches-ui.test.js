@@ -32,7 +32,6 @@ test('günlük kart korumalı fikstür tablolarını tarayıcıdan doğrudan oku
   assert.match(dailyLoader,/sb\.rpc\(['"]get_today_live_match_cards['"]/);
 });
 
-
 test('canlı maç kartı açık ekranda ve uygulamaya dönünce kendiliğinden yenilenir',()=>{
   assert.match(html,/setInterval\([\s\S]*loadDailyMatches\(\)[\s\S]*30000\)/);
   assert.match(html,/document\.addEventListener\(['"]visibilitychange['"][\s\S]*loadDailyMatches\(\)/);

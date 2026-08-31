@@ -12,8 +12,8 @@
   }
   function buildWeeklyRanking(rows){
     const sorted=rows.slice().sort((a,b)=>b.points-a.points||b.exact-a.exact||b.correct-a.correct||a.name.localeCompare(b.name,'tr'));
-    let previousPoints=null,previousRank=0;
-    return sorted.map((row,index)=>{const rank=index>0&&row.points===previousPoints?previousRank:index+1;previousPoints=row.points;previousRank=rank;return{...row,rank}});
+    let previousPoints=null,rank=0;
+    return sorted.map(row=>{if(row.points!==previousPoints){rank++;previousPoints=row.points}return{...row,rank}});
   }
   function visiblePredictionScore(prediction,result,isCurrentPlayer){
     if(!prediction)return'';
