@@ -49,6 +49,20 @@ test('sezon sıralaması yalnız puana göre yoğun sıra verir',()=>{
   assert.deepEqual(rows.map(x=>[x.name,x.rank]),[['Ali',1],['Ayşe',1],['Veli',1],['Zeki',2]]);
 });
 
+test('şampiyonlar ligi ilk üçten sonra tekil sıra verir',()=>{
+  const ranked=CL.rankSeason([
+    {name:'A',points:11,exact:2,correct:5,createdAt:'2026-08-01'},
+    {name:'B',points:11,exact:1,correct:7,createdAt:'2026-08-02'},
+    {name:'C',points:10,exact:2,correct:4,createdAt:'2026-08-03'},
+    {name:'D',points:9,exact:1,correct:6,createdAt:'2026-08-04'},
+    {name:'F',points:8,exact:0,correct:8,createdAt:'2026-08-06'},
+    {name:'E',points:8,exact:0,correct:8,createdAt:'2026-08-05'}
+  ]);
+  assert.deepEqual(ranked.map(row=>[row.name,row.rank]),[
+    ['A',1],['B',1],['C',2],['D',3],['E',4],['F',5]
+  ]);
+});
+
 test('fikstürü Türkiye tarihine göre gruplar',()=>{
   const groups=CL.groupFixturesByTurkeyDate([
     {id:1,kickoff:'2026-09-08T16:45:00Z'},

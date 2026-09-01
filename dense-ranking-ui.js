@@ -1,7 +1,7 @@
 (function(){
   window.addEventListener('DOMContentLoaded',()=>{
     function denseRows(rows){
-      return BizimSkorHistory.buildWeeklyRanking((rows||[]).map(row=>({...row,points:row.pts})));
+      return BizimSkorHistory.buildWeeklyRanking((rows||[]).map(row=>({...row,points:row.pts,createdAt:window.playerCreatedAt?.get(normalizePlayerName(row.name))})));
     }
 
     renderScoreTable=function(targetId,ps,rs){

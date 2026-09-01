@@ -22,20 +22,26 @@
   }
 
   function rankFriendLeague(rows) {
+    const created = value => {
+      const time = new Date(value || 0).getTime();
+      return Number.isFinite(time) && value ? time : Number.MAX_SAFE_INTEGER;
+    };
     const sorted = [...rows].sort((a, b) =>
       b.points - a.points ||
       b.exact - a.exact ||
       b.correct - a.correct ||
+      created(a.createdAt) - created(b.createdAt) ||
       a.name.localeCompare(b.name, 'tr')
     );
-    let previousPoints = null;
-    let rank = 0;
+    const podiumPoints = [];
+    let afterPodium = 0;
     return sorted.map(row => {
-      if (row.points !== previousPoints) {
-        rank += 1;
-        previousPoints = row.points;
+      let podiumIndex = podiumPoints.indexOf(row.points);
+      if (podiumIndex < 0 && podiumPoints.length < 3) {
+        podiumPoints.push(row.points);
+        podiumIndex = podiumPoints.length - 1;
       }
-      return { ...row, rank };
+      return { ...row, rank: podiumIndex >= 0 ? podiumIndex + 1 : 4 + afterPodium++ };
     });
   }
 

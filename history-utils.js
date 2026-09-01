@@ -11,9 +11,14 @@
     return{points:exact?4:correct?1:0,symbol:exact?'🎯':correct?'⚽':'',exact:exact?1:0,correct:correct?1:0};
   }
   function buildWeeklyRanking(rows){
-    const sorted=rows.slice().sort((a,b)=>b.points-a.points||b.exact-a.exact||b.correct-a.correct||a.name.localeCompare(b.name,'tr'));
-    let previousPoints=null,rank=0;
-    return sorted.map(row=>{if(row.points!==previousPoints){rank++;previousPoints=row.points}return{...row,rank}});
+    const created=value=>{const time=new Date(value||0).getTime();return Number.isFinite(time)&&value?time:Number.MAX_SAFE_INTEGER};
+    const sorted=rows.slice().sort((a,b)=>b.points-a.points||b.exact-a.exact||b.correct-a.correct||created(a.createdAt)-created(b.createdAt)||a.name.localeCompare(b.name,'tr'));
+    const podiumPoints=[];let afterPodium=0;
+    return sorted.map(row=>{
+      let podiumIndex=podiumPoints.indexOf(row.points);
+      if(podiumIndex<0&&podiumPoints.length<3){podiumPoints.push(row.points);podiumIndex=podiumPoints.length-1}
+      return{...row,rank:podiumIndex>=0?podiumIndex+1:4+afterPodium++};
+    });
   }
   function visiblePredictionScore(prediction,result,isCurrentPlayer){
     if(!prediction)return'';
