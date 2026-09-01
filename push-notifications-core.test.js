@@ -9,4 +9,7 @@ assert.equal(push.nextAttemptCount(2),3);
 assert.equal(push.nextAttemptCount(3),3);
 assert.ok(push.urlBase64ToUint8Array('AQID') instanceof Uint8Array);
 assert.deepEqual(Array.from(push.urlBase64ToUint8Array('AQID')),[1,2,3]);
+assert.equal(push.applicationServerKeyMatches(new Uint8Array([1,2,3]),new Uint8Array([1,2,3])),true);
+assert.equal(push.applicationServerKeyMatches(new Uint8Array([1,2,3]),new Uint8Array([1,2,4])),false);
+assert.equal(push.applicationServerKeyMatches(null,new Uint8Array([1,2,3])),false);
 console.log('push notification core tests passed');
