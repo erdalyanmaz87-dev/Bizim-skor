@@ -11,7 +11,7 @@ Deno.serve(async(req:Request)=>{
     if(!endpoint||!p256dh||!auth)throw new Error('subscription fields required');
     const parsed=new URL(endpoint);
     if(parsed.protocol!=='https:')throw new Error('invalid endpoint');
-    const row={endpoint,p256dh,auth,player_name:b.player_name?String(b.player_name).slice(0,100):null,user_agent:b.user_agent?String(b.user_agent).slice(0,500):null,updated_at:new Date().toISOString()};
+    const row={endpoint,p256dh,auth,player_name:b.player_name?String(b.player_name).slice(0,100):null,updated_at:new Date().toISOString()};
     const {error}=await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});
     if(error)throw error;
     return new Response(JSON.stringify({ok:true}),{headers:{...cors,'content-type':'application/json'}});
