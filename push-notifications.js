@@ -1,63 +1,18 @@
 (function(){
-  const ATTEMPT_KEY='bizimSkorPushPromptAttemptsV1';
-  const ENABLED_KEY='bizimSkorPushEnabledV1';
-  const SUPABASE_FUNCTIONS='https://paevhzaixlozrrggnzni.supabase.co/functions/v1';
+  const ATTEMPT_KEY='bizimSkorPushPromptAttemptsV1',ENABLED_KEY='bizimSkorPushEnabledV1',SUPABASE_FUNCTIONS='https://paevhzaixlozrrggnzni.supabase.co/functions/v1';
   const isStandalone=()=>navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
   const supported=()=>('Notification' in window)&&('serviceWorker' in navigator)&&('PushManager' in window);
-  function attempts(){return Number(localStorage.getItem(ATTEMPT_KEY)||0)}
-  function setAttempts(value){localStorage.setItem(ATTEMPT_KEY,String(value))}
-  function enabled(){return localStorage.getItem(ENABLED_KEY)==='1'}
-  function setEnabled(value){if(value)localStorage.setItem(ENABLED_KEY,'1');else localStorage.removeItem(ENABLED_KEY)}
-  async function getPublicKey(){
-    const res=await fetch(`${SUPABASE_FUNCTIONS}/push-config`,{cache:'no-store'});
-    if(!res.ok)throw new Error('Bildirim anahtarı alınamadı');
-    const json=await res.json();
-    if(!json.publicKey)throw new Error('Bildirim anahtarı eksik');
-    return json.publicKey;
-  }
+  function attempts(){return Number(localStorage.getItem(ATTEMPT_KEY)||0)}function setAttempts(v){localStorage.setItem(ATTEMPT_KEY,String(v))}function enabled(){return localStorage.getItem(ENABLED_KEY)==='1'}function setEnabled(v){if(v)localStorage.setItem(ENABLED_KEY,'1');else localStorage.removeItem(ENABLED_KEY)}
+  async function getPublicKey(){const r=await fetch(`${SUPABASE_FUNCTIONS}/push-config`,{cache:'no-store'});if(!r.ok)throw new Error('Bildirim anahtarı alınamadı');const j=await r.json();if(!j.publicKey)throw new Error('Bildirim anahtarı eksik');return j.publicKey}
   async function registerSubscription(){
-    const registration=await navigator.serviceWorker.register('/push-sw.js',{scope:'/'});
-    await navigator.serviceWorker.ready;
+    const registration=await navigator.serviceWorker.register('/push-sw.js',{scope:'/'});await navigator.serviceWorker.ready;await registration.update().catch(()=>{});
     let subscription=await registration.pushManager.getSubscription();
-    if(!subscription){
-      const publicKey=await getPublicKey();
-      subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:BizimSkorPushCore.urlBase64ToUint8Array(publicKey)});
-    }
-    const json=subscription.toJSON();
-    const res=await fetch(`${SUPABASE_FUNCTIONS}/push-subscribe`,{
-      method:'POST',headers:{'content-type':'application/json'},
-      body:JSON.stringify({player_name:localStorage.getItem('bizimSkorName')||null,endpoint:json.endpoint,p256dh:json.keys?.p256dh,auth:json.keys?.auth,user_agent:navigator.userAgent})
-    });
-    if(!res.ok)throw new Error('Bildirim kaydı tamamlanamadı');
-    setEnabled(true);
-    return subscription;
+    if(!subscription){const publicKey=await getPublicKey();subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:BizimSkorPushCore.urlBase64ToUint8Array(publicKey)})}
+    const json=subscription.toJSON(),res=await fetch(`${SUPABASE_FUNCTIONS}/push-subscribe`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({player_name:localStorage.getItem('bizimSkorName')||null,endpoint:json.endpoint,p256dh:json.keys?.p256dh,auth:json.keys?.auth})});
+    if(!res.ok)throw new Error('Bildirim kaydı tamamlanamadı');setEnabled(true);return subscription;
   }
-  async function enablePush(){
-    if(!supported())throw new Error('Bu cihaz web bildirimlerini desteklemiyor.');
-    if(/iPhone|iPad|iPod/i.test(navigator.userAgent)&&!isStandalone())throw new Error('iPhone’da bildirim için Bizim Skor’u önce Ana Ekrana Ekle ve oradan aç.');
-    let permission=Notification.permission;
-    if(permission==='default')permission=await Notification.requestPermission();
-    if(permission!=='granted')throw new Error(permission==='denied'?'Bildirim izni kapalı. Telefon ayarlarından Bizim Skor bildirimlerini açabilirsin.':'Bildirim izni verilmedi.');
-    return registerSubscription();
-  }
-  function modal(){
-    if(document.getElementById('bizimSkorPushPrompt'))return;
-    const wrap=document.createElement('div');wrap.id='bizimSkorPushPrompt';wrap.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.68);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
-    wrap.innerHTML='<div style="max-width:390px;width:100%;background:#fff;border-radius:20px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25);text-align:center"><div style="font-size:38px">🔔</div><h2 style="margin:8px 0">Bildirimleri açmak ister misin?</h2><p style="color:#475569;line-height:1.5">Maç başlangıcı, gol ve Bizim Skor duyurularını telefonuna gönderebiliriz.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px"><button id="bizimSkorPushNo" style="background:#e2e8f0;color:#0f172a">Hayır</button><button id="bizimSkorPushYes" class="p">Evet</button></div><div id="bizimSkorPushError" style="font-size:12px;color:#b91c1c;margin-top:10px"></div></div>';
-    document.body.appendChild(wrap);
-    document.getElementById('bizimSkorPushNo').onclick=()=>{setAttempts(BizimSkorPushCore.nextAttemptCount(attempts()));wrap.remove()};
-    document.getElementById('bizimSkorPushYes').onclick=async()=>{
-      const button=document.getElementById('bizimSkorPushYes'),error=document.getElementById('bizimSkorPushError');button.disabled=true;error.textContent='';
-      try{await enablePush();setAttempts(3);wrap.remove()}catch(e){if(Notification.permission!=='granted')setAttempts(BizimSkorPushCore.nextAttemptCount(attempts()));error.textContent=e.message||String(e);button.disabled=false}
-    };
-  }
-  async function init(){
-    if(!supported())return;
-    if(Notification.permission==='granted'){try{await registerSubscription();setAttempts(3)}catch(e){console.warn('push refresh',e)}return}
-    if(Notification.permission==='denied'){setAttempts(3);return}
-    if(!localStorage.getItem('bizimSkorName'))return;
-    if(BizimSkorPushCore.shouldPrompt({permission:Notification.permission,attempts:attempts(),enabled:enabled()}))setTimeout(modal,900);
-  }
-  window.BizimSkorPush={enable:enablePush,init};
-  window.addEventListener('load',()=>setTimeout(init,1400));
+  async function enablePush(){if(!supported())throw new Error('Bu cihaz web bildirimlerini desteklemiyor.');if(/iPhone|iPad|iPod/i.test(navigator.userAgent)&&!isStandalone())throw new Error('iPhone’da bildirim için Bizim Skor’u önce Ana Ekrana Ekle ve oradan aç.');let permission=Notification.permission;if(permission==='default')permission=await Notification.requestPermission();if(permission!=='granted')throw new Error(permission==='denied'?'Bildirim izni kapalı. Telefon ayarlarından Bizim Skor bildirimlerini açabilirsin.':'Bildirim izni verilmedi.');return registerSubscription()}
+  function modal(){if(document.getElementById('bizimSkorPushPrompt'))return;const wrap=document.createElement('div');wrap.id='bizimSkorPushPrompt';wrap.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.68);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';wrap.innerHTML='<div style="max-width:390px;width:100%;background:#fff;border-radius:20px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25);text-align:center"><div style="font-size:38px">🔔</div><h2 style="margin:8px 0">Bildirimleri açmak ister misin?</h2><p style="color:#475569;line-height:1.5">Maç başlangıcı, gol ve Bizim Skor duyurularını telefonuna gönderebiliriz.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px"><button id="bizimSkorPushNo" style="background:#e2e8f0;color:#0f172a">Hayır</button><button id="bizimSkorPushYes" class="p">Evet</button></div><div id="bizimSkorPushError" style="font-size:12px;color:#b91c1c;margin-top:10px"></div></div>';document.body.appendChild(wrap);document.getElementById('bizimSkorPushNo').onclick=()=>{setAttempts(BizimSkorPushCore.nextAttemptCount(attempts()));wrap.remove()};document.getElementById('bizimSkorPushYes').onclick=async()=>{const button=document.getElementById('bizimSkorPushYes'),error=document.getElementById('bizimSkorPushError');button.disabled=true;error.textContent='';try{await enablePush();setAttempts(3);wrap.remove()}catch(e){if(Notification.permission!=='granted')setAttempts(BizimSkorPushCore.nextAttemptCount(attempts()));error.textContent=e.message||String(e);button.disabled=false}}}
+  async function init(){if(!supported())return;if(Notification.permission==='granted'){try{await registerSubscription();setAttempts(3)}catch(e){console.warn('push refresh',e)}return}if(Notification.permission==='denied'){setAttempts(3);return}if(!localStorage.getItem('bizimSkorName'))return;if(BizimSkorPushCore.shouldPrompt({permission:Notification.permission,attempts:attempts(),enabled:enabled()}))setTimeout(modal,900)}
+  window.BizimSkorPush={enable:enablePush,init};window.addEventListener('load',()=>setTimeout(init,1400));
 })();
