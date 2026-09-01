@@ -9,11 +9,9 @@ Deno.serve(async(req:Request)=>{
     const b=await req.json();
     const endpoint=String(b.endpoint||'').trim(),p256dh=String(b.p256dh||'').trim(),auth=String(b.auth||'').trim();
     if(!endpoint||!p256dh||!auth)throw new Error('subscription fields required');
-    const parsed=new URL(endpoint);
-    if(parsed.protocol!=='https:')throw new Error('invalid endpoint');
-    const row={endpoint,p256dh,auth,player_name:b.player_name?String(b.player_name).slice(0,100):null,updated_at:new Date().toISOString()};
-    const {error}=await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});
-    if(error)throw error;
+    const parsed=new URL(endpoint);if(parsed.protocol!=='https:')throw new Error('invalid endpoint');
+    const row={endpoint,p256dh,auth,player_name:b.player_name?String(b.player_name).slice(0,100):null};
+    const {error}=await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});if(error)throw error;
     return new Response(JSON.stringify({ok:true}),{headers:{...cors,'content-type':'application/json'}});
   }catch(e){return new Response(JSON.stringify({ok:false,error:String(e?.message||e)}),{status:400,headers:{...cors,'content-type':'application/json'}})}
 });
