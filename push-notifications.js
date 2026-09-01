@@ -8,7 +8,7 @@
     const registration=await navigator.serviceWorker.register('/push-sw.js',{scope:'/'});await navigator.serviceWorker.ready;await registration.update().catch(()=>{});
     let subscription=await registration.pushManager.getSubscription();
     if(!subscription){const publicKey=await getPublicKey();subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:BizimSkorPushCore.urlBase64ToUint8Array(publicKey)})}
-    const json=subscription.toJSON(),res=await fetch(`${SUPABASE_FUNCTIONS}/push-subscribe`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({player_name:localStorage.getItem('bizimSkorName')||null,endpoint:json.endpoint,p256dh:json.keys?.p256dh,auth:json.keys?.auth})});
+    const json=subscription.toJSON(),res=await fetch(`${SUPABASE_FUNCTIONS}/push-subscribe`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({p_token:localStorage.getItem('bizimSkorFriendToken')||'',endpoint:json.endpoint,p256dh:json.keys?.p256dh,auth:json.keys?.auth})});
     if(!res.ok)throw new Error('Bildirim kaydı tamamlanamadı');setEnabled(true);return subscription;
   }
   async function enablePush(){if(!supported())throw new Error('Bu cihaz web bildirimlerini desteklemiyor.');if(/iPhone|iPad|iPod/i.test(navigator.userAgent)&&!isStandalone())throw new Error('iPhone’da bildirim için Bizim Skor’u önce Ana Ekrana Ekle ve oradan aç.');let permission=Notification.permission;if(permission==='default')permission=await Notification.requestPermission();if(permission!=='granted')throw new Error(permission==='denied'?'Bildirim izni kapalı. Telefon ayarlarından Bizim Skor bildirimlerini açabilirsin.':'Bildirim izni verilmedi.');return registerSubscription()}
