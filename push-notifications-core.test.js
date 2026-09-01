@@ -1,0 +1,12 @@
+const assert=require('assert');
+const push=require('./push-notifications-core.js');
+assert.equal(push.shouldPrompt({permission:'default',attempts:0,enabled:false}),true);
+assert.equal(push.shouldPrompt({permission:'default',attempts:2,enabled:false}),true);
+assert.equal(push.shouldPrompt({permission:'default',attempts:3,enabled:false}),false);
+assert.equal(push.shouldPrompt({permission:'granted',attempts:0,enabled:false}),false);
+assert.equal(push.nextAttemptCount(0),1);
+assert.equal(push.nextAttemptCount(2),3);
+assert.equal(push.nextAttemptCount(3),3);
+assert.ok(push.urlBase64ToUint8Array('AQID') instanceof Uint8Array);
+assert.deepEqual(Array.from(push.urlBase64ToUint8Array('AQID')),[1,2,3]);
+console.log('push notification core tests passed');
