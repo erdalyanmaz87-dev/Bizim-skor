@@ -11,5 +11,9 @@
       platform
     };
   }
+  if(typeof document!=='undefined'){
+    const load=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
+    load('push-notifications-core.js').then(()=>load('push-notifications.js')).catch(error=>console.warn('push bootstrap',error));
+  }
   return{detectLaunchContext};
 });
