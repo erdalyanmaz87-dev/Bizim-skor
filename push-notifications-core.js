@@ -17,5 +17,12 @@
     for(let i=0;i<raw.length;i++)output[i]=raw.charCodeAt(i);
     return output;
   }
-  return{shouldPrompt,nextAttemptCount,urlBase64ToUint8Array};
+  function applicationServerKeyMatches(actual,expected){
+    if(!actual||!expected)return false;
+    const left=new Uint8Array(actual),right=new Uint8Array(expected);
+    if(left.length!==right.length)return false;
+    for(let i=0;i<left.length;i++)if(left[i]!==right[i])return false;
+    return true;
+  }
+  return{shouldPrompt,nextAttemptCount,urlBase64ToUint8Array,applicationServerKeyMatches};
 });
