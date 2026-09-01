@@ -26,14 +26,7 @@
     const json=subscription.toJSON();
     const res=await fetch(`${SUPABASE_FUNCTIONS}/push-subscribe`,{
       method:'POST',headers:{'content-type':'application/json'},
-      body:JSON.stringify({
-        player_name:localStorage.getItem('bizimSkorName')||null,
-        device_id:localStorage.getItem('bizimSkorDeviceId')||null,
-        endpoint:json.endpoint,
-        p256dh:json.keys?.p256dh,
-        auth:json.keys?.auth,
-        user_agent:navigator.userAgent
-      })
+      body:JSON.stringify({player_name:localStorage.getItem('bizimSkorName')||null,endpoint:json.endpoint,p256dh:json.keys?.p256dh,auth:json.keys?.auth,user_agent:navigator.userAgent})
     });
     if(!res.ok)throw new Error('Bildirim kaydı tamamlanamadı');
     setEnabled(true);
@@ -55,15 +48,12 @@
     document.getElementById('bizimSkorPushNo').onclick=()=>{setAttempts(BizimSkorPushCore.nextAttemptCount(attempts()));wrap.remove()};
     document.getElementById('bizimSkorPushYes').onclick=async()=>{
       const button=document.getElementById('bizimSkorPushYes'),error=document.getElementById('bizimSkorPushError');button.disabled=true;error.textContent='';
-      try{await enablePush();setAttempts(3);wrap.remove()}catch(e){setAttempts(BizimSkorPushCore.nextAttemptCount(attempts()));error.textContent=e.message||String(e);button.disabled=false}
+      try{await enablePush();setAttempts(3);wrap.remove()}catch(e){if(Notification.permission!=='granted')setAttempts(BizimSkorPushCore.nextAttemptCount(attempts()));error.textContent=e.message||String(e);button.disabled=false}
     };
   }
   async function init(){
     if(!supported())return;
-    if(Notification.permission==='granted'){
-      try{await registerSubscription();setAttempts(3)}catch(e){console.warn('push refresh',e)}
-      return;
-    }
+    if(Notification.permission==='granted'){try{await registerSubscription();setAttempts(3)}catch(e){console.warn('push refresh',e)}return}
     if(Notification.permission==='denied'){setAttempts(3);return}
     if(!localStorage.getItem('bizimSkorName'))return;
     if(BizimSkorPushCore.shouldPrompt({permission:Notification.permission,attempts:attempts(),enabled:enabled()}))setTimeout(modal,900);
