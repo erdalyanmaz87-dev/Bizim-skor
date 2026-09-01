@@ -7,8 +7,7 @@ self.addEventListener('push',event=>{
     icon:'bizim-skor-icon-v2.png',
     badge:'bizim-skor-icon-v2.png',
     data:{url:data.url||self.registration.scope},
-    tag:data.tag||'bizim-skor',
-    renotify:true
+    tag:data.tag||`bizim-skor-${Date.now()}`
   };
   event.waitUntil(self.registration.showNotification(title,options));
 });
