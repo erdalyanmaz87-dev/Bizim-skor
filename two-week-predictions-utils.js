@@ -6,10 +6,11 @@
   const outcome=(home,away)=>+home>+away?'home':+home<+away?'away':'draw';
   const complete=result=>result&&result.home_score!=null&&result.away_score!=null;
 
-  function selectVisibleWeeks(fixtures,limit=2){
+  function selectVisibleWeeks(fixtures,limit=2,nowMs=Date.now()){
     return [...new Set((fixtures||[]).map(fixture=>+fixture.week))]
       .sort((a,b)=>a-b)
-      .slice(-limit);
+      .filter(week=>!isWeekLocked(fixtures,week,nowMs))
+      .slice(0,limit);
   }
 
   function firstKickoff(fixtures,week){
