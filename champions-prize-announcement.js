@@ -43,3 +43,4 @@
   window.BizimSkorPrizeAnnouncement={maybeShow,close};
   window.addEventListener('load',()=>setTimeout(()=>maybeShow(localStorage.getItem('bizimSkorFriendToken')).catch(error=>console.warn('prize announcement',error)),700));
 })();
+(function(){const script=document.createElement('script');script.src='football-center-bootstrap.js';script.defer=true;document.head.appendChild(script)})();
