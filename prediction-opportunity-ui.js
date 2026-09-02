@@ -12,13 +12,17 @@
         const index=api.findOpportunityIndex(fixtures,selectedPredictionWeek);
         const row=rows[index];
         if(index<0||!row)return;
-        const hasInline=!!row.querySelector('.prediction-opportunity-inline');
         const next=row.nextElementSibling;
         const hasDetail=!!(next&&next.classList.contains('prediction-opportunity-detail'));
-        if(!api.shouldDecorate(hasInline,hasDetail))return;
-        const away=row.querySelector('.t:last-child');
-        if(away&&!hasInline){
-          away.insertAdjacentHTML('beforeend',' <span class="prediction-opportunity-inline" style="display:inline-block;margin-left:6px;padding:2px 6px;border-radius:999px;background:#f97316;color:#fff;font-size:10px;font-weight:900;vertical-align:1px">X2</span>');
+        const hasHighlight=row.classList.contains('prediction-opportunity-match');
+        if(!api.shouldDecorate(hasHighlight,hasDetail))return;
+        if(!hasHighlight){
+          row.classList.add('prediction-opportunity-match');
+          row.style.background='linear-gradient(180deg,#fff7ed,#ffedd5)';
+          row.style.border='2px solid #fb923c';
+          row.style.borderRadius='12px';
+          row.style.padding='10px 8px';
+          row.style.boxShadow='0 4px 12px rgba(249,115,22,.14)';
         }
         if(!hasDetail){
           row.insertAdjacentHTML('afterend','<div class="prediction-opportunity-detail" style="margin:-2px 0 8px;padding:6px 8px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;text-align:center;font-size:11px;font-weight:800">🔥 Fırsat Maçı • Doğru sonuç 2 puan • Tam skor 8 puan</div>');
@@ -34,9 +38,9 @@
   function findOpportunityIndex(fixtures,week){return (fixtures||[]).findIndex(f=>isOpportunity(f,week))}
   function opportunityLayout(fixture){
     return isOpportunity(fixture,5)
-      ?{badge:'X2',detail:'🔥 Fırsat Maçı • Doğru sonuç 2 puan • Tam skor 8 puan'}
-      :{badge:'',detail:''};
+      ?{badge:'',highlight:true,detail:'🔥 Fırsat Maçı • Doğru sonuç 2 puan • Tam skor 8 puan'}
+      :{badge:'',highlight:false,detail:''};
   }
-  function shouldDecorate(hasInline,hasDetail){return !(hasInline&&hasDetail)}
+  function shouldDecorate(hasHighlight,hasDetail){return !(hasHighlight&&hasDetail)}
   return{isOpportunity,findOpportunityIndex,opportunityLayout,shouldDecorate};
 });
