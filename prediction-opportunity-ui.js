@@ -8,10 +8,16 @@
         if(typeof selectedPredictionWeek==='undefined'||+selectedPredictionWeek!==5)return;
         const box=document.getElementById('fx');
         if(!box||typeof fixtures==='undefined')return;
+        box.querySelectorAll('.prediction-opportunity-inline,.prediction-opportunity-detail').forEach(el=>el.remove());
         const rows=[...box.querySelectorAll('.m')];
         const index=api.findOpportunityIndex(fixtures,selectedPredictionWeek);
-        if(index<0||!rows[index]||rows[index].querySelector('.prediction-opportunity-badge'))return;
-        rows[index].insertAdjacentHTML('afterbegin',`<div class="prediction-opportunity-badge" style="grid-column:1/-1;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#fff7ed;border:1px solid #fb923c;color:#9a3412;text-align:center;font-weight:900;font-size:12px">🔥 FIRSAT MAÇI • X2 PUAN<div style="margin-top:3px;font-weight:700;font-size:11px">Doğru sonuç 2 • Tam skor 8 puan</div></div>`);
+        const row=rows[index];
+        if(index<0||!row)return;
+        const away=row.querySelector('.t:last-child');
+        if(away){
+          away.insertAdjacentHTML('beforeend',' <span class="prediction-opportunity-inline" style="display:inline-block;margin-left:6px;padding:2px 6px;border-radius:999px;background:#f97316;color:#fff;font-size:10px;font-weight:900;vertical-align:1px">X2</span>');
+        }
+        row.insertAdjacentHTML('afterend','<div class="prediction-opportunity-detail" style="margin:-2px 0 8px;padding:6px 8px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;text-align:center;font-size:11px;font-weight:800">🔥 Fırsat Maçı • Doğru sonuç 2 puan • Tam skor 8 puan</div>');
       }catch(error){console.warn('prediction opportunity badge',error)}
     };
     const observer=new MutationObserver(apply);
@@ -21,6 +27,10 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   function isOpportunity(fixture,week){return +week===5&&+fixture?.week===5&&+fixture?.id===44}
   function findOpportunityIndex(fixtures,week){return (fixtures||[]).findIndex(f=>isOpportunity(f,week))}
-  function badgeDetail(fixture){return isOpportunity(fixture,5)?'Doğru sonuç 2 • Tam skor 8 puan':''}
-  return{isOpportunity,findOpportunityIndex,badgeDetail};
+  function opportunityLayout(fixture){
+    return isOpportunity(fixture,5)
+      ?{badge:'X2',detail:'🔥 Fırsat Maçı • Doğru sonuç 2 puan • Tam skor 8 puan'}
+      :{badge:'',detail:''};
+  }
+  return{isOpportunity,findOpportunityIndex,opportunityLayout};
 });
