@@ -1,0 +1,1 @@
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.BizimSkorWeeklyRanking=api})(typeof globalThis!=='undefined'?globalThis:this,function(){function availableWeeks(rows){return[...new Set((rows||[]).map(x=>+x.week).filter(Boolean))].sort((a,b)=>a-b)}return{availableWeeks}});
