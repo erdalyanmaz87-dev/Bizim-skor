@@ -1,0 +1,6 @@
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.BizimSkorFixture=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+ const dayKey=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}),dayLabel=new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',weekday:'long',day:'numeric',month:'long'}),timeFmt=new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hour12:false});
+ function turkeyTime(value){return timeFmt.format(new Date(value))}
+ function groupByTurkeyDay(rows){const groups=[];[...(rows||[])].sort((a,b)=>new Date(a.kickoff)-new Date(b.kickoff)||Number(a.id)-Number(b.id)).forEach(row=>{const date=new Date(row.kickoff),key=dayKey.format(date);let group=groups.find(x=>x.key===key);if(!group){group={key,label:dayLabel.format(date),rows:[]};groups.push(group)}group.rows.push(row)});return groups}
+ return{turkeyTime,groupByTurkeyDay};
+});
