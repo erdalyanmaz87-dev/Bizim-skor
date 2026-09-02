@@ -44,3 +44,4 @@
   window.addEventListener('load',()=>setTimeout(()=>maybeShow(localStorage.getItem('bizimSkorFriendToken')).catch(error=>console.warn('prize announcement',error)),700));
 })();
 (function(){const script=document.createElement('script');script.src='football-center-bootstrap.js';script.defer=true;document.head.appendChild(script)})();
+(function(){const core=document.createElement('script');core.src='opportunity-match-utils.js';core.onload=()=>{const ui=document.createElement('script');ui.src='opportunity-match-ui.js';document.head.appendChild(ui)};document.head.appendChild(core)})();
