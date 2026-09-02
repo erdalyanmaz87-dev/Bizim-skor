@@ -1,8 +1,8 @@
 (function(root,factory){
-  const api=factory();
+  const api=factory(root);
   if(typeof module==='object'&&module.exports)module.exports=api;
   else {root.BizimSkorFootballCenterBootstrap=api;api.start();}
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const competitions=['super_lig','champions_league'];
   const categories=['standings','top_scorers','top_assists','availability'];
   const state={competition:'super_lig',category:'standings',cache:new Map()};
