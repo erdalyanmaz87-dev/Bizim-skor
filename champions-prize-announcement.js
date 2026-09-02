@@ -10,3 +10,4 @@
 (function(){const core=document.createElement('script');core.src='opportunity-match-utils.js';core.onload=()=>{const ui=document.createElement('script');ui.src='opportunity-match-ui.js';document.head.appendChild(ui)};document.head.appendChild(core)})();
 (function(){const core=document.createElement('script');core.src='fixture-utils.js';core.onload=()=>{const data=document.createElement('script');data.src='fixture-data.js';data.onload=()=>{const ui=document.createElement('script');ui.src='fixture-ui.js';document.head.appendChild(ui)};document.head.appendChild(data)};document.head.appendChild(core)})();
 (function(){const script=document.createElement('script');script.src='home-prediction-priority.js';script.defer=true;document.head.appendChild(script)})();
+(function(){const script=document.createElement('script');script.src='prediction-opportunity-ui.js';script.defer=true;document.head.appendChild(script)})();
