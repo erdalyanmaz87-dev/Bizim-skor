@@ -30,6 +30,10 @@
     return (weeks||[]).find(week=>!isWeekLocked(fixtures,week,nowMs))??weeks?.at(-1)??null;
   }
 
+  function predictionOpportunityBadge(fixture){
+    return +fixture?.week===5&&+fixture?.id===44?'🔥 FIRSAT MAÇI • X2 PUAN':'';
+  }
+
   function summarizeFixturePrediction(result,predictions,activeNames){
     if(!complete(result))return{exactNames:[],correctResultCount:0};
     const rows=(predictions||[]).filter(prediction=>
@@ -46,5 +50,5 @@
     };
   }
 
-  return{selectVisibleWeeks,isWeekLocked,defaultPredictionWeek,summarizeFixturePrediction};
+  return{selectVisibleWeeks,isWeekLocked,defaultPredictionWeek,predictionOpportunityBadge,summarizeFixturePrediction};
 });
