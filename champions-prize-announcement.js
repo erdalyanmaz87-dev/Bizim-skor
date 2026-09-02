@@ -1,47 +1,11 @@
 (function(){
   let current=null,token='';
-
-  function mount(){
-    if(document.getElementById('championsPrizeModal'))return;
-    document.head.insertAdjacentHTML('beforeend',`<style>
-      .prize-overlay{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:rgba(2,6,23,.78);backdrop-filter:blur(5px)}
-      .prize-overlay.hide{display:none}.prize-card{width:min(100%,390px);max-height:calc(100vh - 36px);overflow:auto;border:1px solid #60a5fa;border-radius:24px;padding:18px;color:#fff;text-align:center;background:linear-gradient(155deg,#020b2d,#082b78 65%,#0756b8);box-shadow:0 24px 70px rgba(0,0,0,.48)}
-      .prize-card img{display:block;width:min(100%,280px);max-height:260px;object-fit:contain;margin:0 auto 8px;border-radius:18px}.prize-kicker{color:#93c5fd;font-size:12px;font-weight:800;letter-spacing:1.2px}.prize-card h2{margin:7px 0 9px;font-size:25px}.prize-card p{line-height:1.5;margin:8px 0}.prize-rule{padding:10px;border-radius:12px;background:rgba(2,12,45,.46);color:#dbeafe;font-size:13px}.prize-card button{width:100%;min-height:52px;margin-top:10px;background:linear-gradient(135deg,#f7c948,#d99b16);color:#071633;font-size:16px}.prize-status{min-height:18px;color:#fee2e2;font-size:12px}
-    </style>`);
-    document.body.insertAdjacentHTML('beforeend',`<div id="championsPrizeModal" class="prize-overlay hide" role="dialog" aria-modal="true" aria-labelledby="championsPrizeTitle"><div class="prize-card"><div class="prize-kicker">✦ BİZİM SKOR AVRUPA GECESİ ✦</div><img src="champions-prize-ball-v1.webp" alt="Şampiyonlar Ligi futbol topu ödülü"><h2 id="championsPrizeTitle">Şampiyonlar Ligi Büyük Ödülü</h2><p id="championsPrizeBody">Sezon sonu Şampiyonlar Ligi sıralamasını 1. bitiren yarışmacıya bu futbol topu hediye!</p><p class="prize-rule">🎯 Puan eşitliğinde en fazla tam skor bilen öne geçer.</p><button id="championsPrizeOk">Tamam, Tahmine Başla</button><div id="championsPrizeStatus" class="prize-status"></div></div></div>`);
-    document.getElementById('championsPrizeOk').onclick=acknowledge;
-  }
-
+  function mount(){if(document.getElementById('championsPrizeModal'))return;document.head.insertAdjacentHTML('beforeend',`<style>.prize-overlay{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:rgba(2,6,23,.78);backdrop-filter:blur(5px)}.prize-overlay.hide{display:none}.prize-card{width:min(100%,390px);max-height:calc(100vh - 36px);overflow:auto;border:1px solid #60a5fa;border-radius:24px;padding:18px;color:#fff;text-align:center;background:linear-gradient(155deg,#020b2d,#082b78 65%,#0756b8);box-shadow:0 24px 70px rgba(0,0,0,.48)}.prize-card img{display:block;width:min(100%,280px);max-height:260px;object-fit:contain;margin:0 auto 8px;border-radius:18px}.prize-kicker{color:#93c5fd;font-size:12px;font-weight:800;letter-spacing:1.2px}.prize-card h2{margin:7px 0 9px;font-size:25px}.prize-card p{line-height:1.5;margin:8px 0}.prize-rule{padding:10px;border-radius:12px;background:rgba(2,12,45,.46);color:#dbeafe;font-size:13px}.prize-card button{width:100%;min-height:52px;margin-top:10px;background:linear-gradient(135deg,#f7c948,#d99b16);color:#071633;font-size:16px}.prize-status{min-height:18px;color:#fee2e2;font-size:12px}</style>`);document.body.insertAdjacentHTML('beforeend',`<div id="championsPrizeModal" class="prize-overlay hide" role="dialog" aria-modal="true" aria-labelledby="championsPrizeTitle"><div class="prize-card"><div class="prize-kicker">✦ BİZİM SKOR AVRUPA GECESİ ✦</div><img src="champions-prize-ball-v1.webp" alt="Şampiyonlar Ligi futbol topu ödülü"><h2 id="championsPrizeTitle">Şampiyonlar Ligi Büyük Ödülü</h2><p id="championsPrizeBody">Sezon sonu Şampiyonlar Ligi sıralamasını 1. bitiren yarışmacıya bu futbol topu hediye!</p><p class="prize-rule">🎯 Puan eşitliğinde en fazla tam skor bilen öne geçer.</p><button id="championsPrizeOk">Tamam, Tahmine Başla</button><div id="championsPrizeStatus" class="prize-status"></div></div></div>`);document.getElementById('championsPrizeOk').onclick=acknowledge}
   function close(){document.getElementById('championsPrizeModal')?.classList.add('hide')}
-
-  async function maybeShow(sessionToken){
-    token=sessionToken||'';
-    if(!token)return false;
-    mount();
-    const q=await sb.rpc('get_pending_game_announcement',{p_token:token});
-    if(q.error)throw q.error;
-    const row=(q.data||[])[0];
-    if(!row)return false;
-    current=row;
-    document.getElementById('championsPrizeTitle').textContent=row.title;
-    document.getElementById('championsPrizeBody').textContent=row.body;
-    document.querySelector('#championsPrizeModal img').src=row.image_path;
-    document.getElementById('championsPrizeModal').classList.remove('hide');
-    return true;
-  }
-
-  async function acknowledge(){
-    const button=document.getElementById('championsPrizeOk'),status=document.getElementById('championsPrizeStatus');
-    button.disabled=true;status.textContent='Kaydediliyor…';
-    try{
-      const q=await sb.rpc('acknowledge_game_announcement',{p_token:token,p_announcement_key:current.announcement_key});
-      if(q.error)throw q.error;
-      close();
-    }catch(error){status.textContent='Onay kaydedilemedi. Tekrar deneyin.';button.disabled=false}
-  }
-
-  window.BizimSkorPrizeAnnouncement={maybeShow,close};
-  window.addEventListener('load',()=>setTimeout(()=>maybeShow(localStorage.getItem('bizimSkorFriendToken')).catch(error=>console.warn('prize announcement',error)),700));
+  async function maybeShow(sessionToken){token=sessionToken||'';if(!token)return false;mount();const q=await sb.rpc('get_pending_game_announcement',{p_token:token});if(q.error)throw q.error;const row=(q.data||[])[0];if(!row)return false;current=row;document.getElementById('championsPrizeTitle').textContent=row.title;document.getElementById('championsPrizeBody').textContent=row.body;document.querySelector('#championsPrizeModal img').src=row.image_path;document.getElementById('championsPrizeModal').classList.remove('hide');return true}
+  async function acknowledge(){const button=document.getElementById('championsPrizeOk'),status=document.getElementById('championsPrizeStatus');button.disabled=true;status.textContent='Kaydediliyor…';try{const q=await sb.rpc('acknowledge_game_announcement',{p_token:token,p_announcement_key:current.announcement_key});if(q.error)throw q.error;close()}catch(error){status.textContent='Onay kaydedilemedi. Tekrar deneyin.';button.disabled=false}}
+  window.BizimSkorPrizeAnnouncement={maybeShow,close};window.addEventListener('load',()=>setTimeout(()=>maybeShow(localStorage.getItem('bizimSkorFriendToken')).catch(error=>console.warn('prize announcement',error)),700));
 })();
 (function(){const script=document.createElement('script');script.src='football-center-bootstrap.js';script.defer=true;document.head.appendChild(script)})();
 (function(){const core=document.createElement('script');core.src='opportunity-match-utils.js';core.onload=()=>{const ui=document.createElement('script');ui.src='opportunity-match-ui.js';document.head.appendChild(ui)};document.head.appendChild(core)})();
+(function(){const core=document.createElement('script');core.src='fixture-utils.js';core.onload=()=>{const ui=document.createElement('script');ui.src='fixture-ui.js';document.head.appendChild(ui)};document.head.appendChild(core)})();
