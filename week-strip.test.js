@@ -5,4 +5,6 @@ assert.strictEqual(ui.pickInitialWeek([2,3,4,5],5),5);
 assert.strictEqual(ui.pickInitialWeek([2,3,4],5),4);
 assert.ok(ui.renderWeekStrip([2,3,4,5],5).includes('data-week="5"'));
 assert.ok(ui.renderWeekStrip([2,3,4,5],5).includes('is-current'));
+assert.strictEqual(ui.centerScrollLeft(320,700,560,90),380);
+assert.strictEqual(ui.centerScrollLeft(320,700,10,90),0);
 console.log('week-strip ok');
