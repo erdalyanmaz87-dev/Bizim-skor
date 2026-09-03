@@ -1,7 +1,10 @@
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else root.BizimSkorPinReset = api;
+  else {
+    root.BizimSkorPinReset = api;
+    api.mountUiIntegration(document);
+  }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   function normalizeName(value) {
     return String(value || '').trim().replace(/\s+/g, ' ');
@@ -38,5 +41,15 @@
       '</div>';
   }
 
-  return { normalizeName, validateResetInput, resetResultMessage, renderResetFormMarkup };
+  function mountUiIntegration(doc) {
+    if (!doc || doc.querySelector('script[data-bizim-ui-bootstrap="1"]')) return false;
+    const script = doc.createElement('script');
+    script.src = 'ui-integration-loader.js';
+    script.defer = true;
+    script.dataset.bizimUiBootstrap = '1';
+    doc.head.appendChild(script);
+    return true;
+  }
+
+  return { normalizeName, validateResetInput, resetResultMessage, renderResetFormMarkup, mountUiIntegration };
 });
