@@ -4,6 +4,8 @@ const cards=ui.buildCards([{week:4,complete:true},{week:5,complete:false}],{comp
 assert.deepStrictEqual(cards.map(x=>x.label),['Süper Lig 4. Hafta','Süper Lig 5. Hafta','Şampiyonlar Ligi 1. Hafta']);
 assert.strictEqual(cards[0].target.type,'league');
 assert.strictEqual(cards[0].target.week,4);
+assert.strictEqual(cards[1].target.week,5);
+assert.strictEqual(ui.selectionValue(cards[1]),'5');
 assert.strictEqual(cards[2].target.type,'champions');
 assert.strictEqual(cards[2].target.week,1);
 assert.deepStrictEqual(cards.map(x=>x.theme),['super','super','champions']);
