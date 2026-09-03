@@ -10,4 +10,7 @@ assert.deepStrictEqual(ui.buildHistoryGroups([2,3,4],[1,2]),{
  champions:{title:'⭐ Şampiyonlar Ligi',weeks:[1,2]}
 });
 assert.deepStrictEqual(ui.buildHistoryGroups([2,3],[]).champions.weeks,[]);
+assert.deepStrictEqual(ui.championsWeeksThrough(1),[1]);
+assert.deepStrictEqual(ui.championsWeeksThrough(3),[1,2,3]);
+assert.deepStrictEqual(ui.championsWeeksThrough(0),[]);
 console.log('history-week-strip ok');
