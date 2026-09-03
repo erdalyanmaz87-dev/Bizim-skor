@@ -13,4 +13,14 @@ assert.strictEqual(ui.rankText(8,42),'8. / 42');
 assert.strictEqual(ui.shouldShowSezu(3),true);
 assert.strictEqual(ui.shouldShowSezu(4),true);
 assert.strictEqual(ui.shouldShowSezu(99),true);
+
+const nodes={
+ personalWeekRank:{textContent:'8.'},personalSezuRank:{textContent:'9.'},personalGeneralRank:{textContent:'10.'},
+ personalWeekRankLabel:{textContent:'3. Hafta Süper Lig Sıralaması'},
+ bsWeekRank:{textContent:''},bsSezuRank:{textContent:''},bsGeneralRank:{textContent:''},
+ bsWeekRankLabel:{textContent:''}
+};
+global.document={getElementById:id=>nodes[id]||null};
+ui.syncRanks(62);
+assert.strictEqual(nodes.bsWeekRankLabel.textContent,'3. Hafta Süper Lig Sıralaması');
 console.log('home dashboard helpers ok');
