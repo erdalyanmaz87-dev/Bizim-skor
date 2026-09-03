@@ -4,4 +4,17 @@ assert.deepStrictEqual(ui.availableWeeks([{week:5},{week:3},{week:4},{week:5}]),
 assert.strictEqual(ui.pickFixtureWeek([3,4,5],4),4);
 assert.strictEqual(ui.pickFixtureWeek([3,4,5],6),5);
 assert.strictEqual(ui.pickFixtureWeek([3,4,5],null),5);
+assert.strictEqual(typeof ui.weekStripHost,'function');
+const inserted=[];
+const select={style:{},insertAdjacentElement:(where,node)=>inserted.push([where,node])};
+const doc={
+ getElementById:id=>id==='resultsWeekSelect'?select:null,
+ createElement:()=>({id:'',className:'',innerHTML:''})
+};
+const host=ui.weekStripHost(doc);
+assert.strictEqual(host.id,'fixtureWeekStrip');
+assert.strictEqual(select.style.display,'none');
+assert.strictEqual(inserted[0][0],'afterend');
+assert.strictEqual(inserted[0][1],host);
+assert.strictEqual(doc.getElementById('resultsWeekSelect'),select,'legacy select must remain available');
 console.log('fixture-week-strip ok');
