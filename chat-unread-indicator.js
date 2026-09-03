@@ -21,6 +21,7 @@
   function mount(){
     if(typeof document==='undefined')return;
     document.addEventListener('click',event=>{if(event.target?.closest?.('[data-tab="chat"]'))clearUnread()});
+    if(root?.sb?.channel)root.sb.channel('chat-unread-ui').on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},handleInsert).subscribe();
   }
   return Object.freeze({shouldMarkUnread,handleInsert,clearUnread,markUnread,mount});
 });
