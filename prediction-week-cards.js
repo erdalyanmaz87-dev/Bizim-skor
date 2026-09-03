@@ -18,7 +18,8 @@
       setTimeout(()=>{const select=document.getElementById('predictionWeekSelect');if(select){select.value=String(card.target.week);select.dispatchEvent(new Event('change',{bubbles:true}))}},50);
       return;
     }
-    document.querySelector(championsTabSelector())?.click();
+    if(typeof root.BizimSkorChampionsUI?.openPrediction==='function')root.BizimSkorChampionsUI.openPrediction();
+    else document.querySelector(championsTabSelector())?.click();
   }
   async function getCards(){
     const priority=root.BizimSkorHomePriority;
