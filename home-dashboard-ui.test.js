@@ -13,6 +13,7 @@ assert.strictEqual(ui.rankText(8,42),'8. / 42');
 assert.strictEqual(ui.shouldShowSezu(3),true);
 assert.strictEqual(ui.shouldShowSezu(4),true);
 assert.strictEqual(ui.shouldShowSezu(99),true);
+assert.strictEqual(ui.generalRankingLabel(),'Süper Lig Genel Sıralaması');
 
 const nodes={
  personalWeekRank:{textContent:'8.'},personalSezuRank:{textContent:'9.'},personalGeneralRank:{textContent:'10.'},
