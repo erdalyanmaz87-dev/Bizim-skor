@@ -6,6 +6,8 @@ assert.strictEqual(cards[0].target.type,'league');
 assert.strictEqual(cards[0].target.week,4);
 assert.strictEqual(cards[2].target.type,'champions');
 assert.strictEqual(cards[2].target.week,1);
+assert.strictEqual(typeof ui.championsTabSelector,'function');
+assert.strictEqual(ui.championsTabSelector(),'[data-tab="championsPred"]');
 assert.strictEqual(ui.canEditBeforeWeekStart(Date.parse('2026-09-05T16:59:59Z'),Date.parse('2026-09-05T17:00:00Z')),true);
 assert.strictEqual(ui.canEditBeforeWeekStart(Date.parse('2026-09-05T17:00:00Z'),Date.parse('2026-09-05T17:00:00Z')),false);
 console.log('prediction-week-cards ok');
