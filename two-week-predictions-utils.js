@@ -7,10 +7,9 @@
   const complete=result=>result&&result.home_score!=null&&result.away_score!=null;
 
   function selectVisibleWeeks(fixtures,limit=2,nowMs=Date.now()){
-    return [...new Set((fixtures||[]).map(fixture=>+fixture.week))]
-      .sort((a,b)=>a-b)
-      .filter(week=>!isWeekLocked(fixtures,week,nowMs))
-      .slice(0,limit);
+    const weeks=[...new Set((fixtures||[]).map(fixture=>+fixture.week).filter(Number.isFinite))]
+      .sort((a,b)=>a-b);
+    return weeks.slice(-Math.max(0,limit));
   }
 
   function firstKickoff(fixtures,week){
