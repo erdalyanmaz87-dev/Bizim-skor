@@ -5,4 +5,7 @@ assert.strictEqual(ui.pickInitialWeek([2,3,4,5],5),5);
 assert.strictEqual(ui.pickInitialWeek([2,3,4],5),4);
 assert.ok(ui.renderWeekStrip([2,3,4,5],5).includes('data-week="5"'));
 assert.ok(ui.renderWeekStrip([2,3,4,5],5).includes('is-current'));
+assert.ok(ui.styleText().includes('.fixture-controls,#fixtureWeekSlot,.fixture-week-strip{min-width:0;max-width:100%}'));
+assert.ok(ui.styleText().includes('#fixtureWeekSlot,.fixture-week-strip{width:100%;overflow:hidden}'));
+assert.ok(ui.styleText().includes('.bs-week-strip{width:100%;min-width:0;max-width:100%'));
 console.log('week-strip ok');
