@@ -1,0 +1,16 @@
+const assert=require('assert');
+const ui=require('./prediction-week-cards.js');
+const cards=ui.buildCards([{week:4,complete:true},{week:5,complete:false}],{competition:'champions',week:1,complete:true});
+assert.deepStrictEqual(cards.map(x=>x.label),['Süper Lig 4. Hafta','Süper Lig 5. Hafta','Şampiyonlar Ligi 1. Hafta']);
+assert.strictEqual(cards[0].target.type,'league');
+assert.strictEqual(cards[0].target.week,4);
+assert.strictEqual(cards[2].target.type,'champions');
+assert.strictEqual(cards[2].target.week,1);
+assert.deepStrictEqual(cards.map(x=>x.theme),['super','super','champions']);
+assert(ui.render(cards).includes('theme-super'));
+assert(ui.render(cards).includes('theme-champions'));
+assert.strictEqual(typeof ui.championsTabSelector,'function');
+assert.strictEqual(ui.championsTabSelector(),'[data-tab="championsPred"]');
+assert.strictEqual(ui.canEditBeforeWeekStart(Date.parse('2026-09-05T16:59:59Z'),Date.parse('2026-09-05T17:00:00Z')),true);
+assert.strictEqual(ui.canEditBeforeWeekStart(Date.parse('2026-09-05T17:00:00Z'),Date.parse('2026-09-05T17:00:00Z')),false);
+console.log('prediction-week-cards ok');
