@@ -3,8 +3,8 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else{root.BizimSkorHorizontalMenu=api;api.mount();}
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
-  const ORDER=['live','sezu','general','fixture','footballCenter','friendLeagues','history','rules','chat'];
-  const LABELS={live:'Hafta Sıralaması',sezu:'🏆 Sezu Ödül Sıralaması',general:'Genel Sıralama',fixture:'Fikstür',footballCenter:'⚽ Futbol Merkezi',friendLeagues:'👥 Arkadaş Liglerim',history:'Tahmin Geçmişim',rules:'📜 Kurallar',chat:'💬 Sohbet'};
+  const ORDER=['live','sezu','general','resultsWeek','footballCenter','friendLeagues','history','rules','chat'];
+  const LABELS={live:'Hafta Sıralaması',sezu:'🏆 Sezu Ödül Sıralaması',general:'Genel Sıralama',resultsWeek:'Fikstür',footballCenter:'⚽ Futbol Merkezi',friendLeagues:'👥 Arkadaş Liglerim',history:'Tahmin Geçmişim',rules:'📜 Kurallar',chat:'💬 Sohbet'};
   function orderMenuTabs(names){const set=new Set(names||[]);return ORDER.filter(name=>set.has(name))}
   function menuLabel(name){return LABELS[name]||name}
   function isPrimaryTab(name){return name==='home'||name==='pred'}
