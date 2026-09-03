@@ -8,169 +8,23 @@
     tabs.insertAdjacentHTML('beforeend','<button class="tab champions-tab" data-tab="championsPred">⭐ Şampiyonlar Ligi 1. Hafta</button><button class="tab champions-tab" data-tab="championsRanking">🏆 Şampiyonlar Ligi Sıralaması</button>');
     pred.insertAdjacentHTML('afterend','<section id="championsPred" class="hide"><div class="champions-shell"><div class="champions-hero"><span>✦ 2026/27 AVRUPA GECESİ ✦</span><b>Şampiyonlar Ligi • 1. Hafta</b><p class="small">Doğru sonuç +1 • Tam skor ekstra +3 • İlk maçla birlikte tüm tahminler kilitlenir.</p></div><div id="championsState"></div><div id="championsFixtures"></div><button id="championsSave" class="full p">Şampiyonlar Ligi Tahminlerimi Kaydet ⭐</button></div></section><section id="championsRanking" class="hide"><div class="champions-shell"><div class="champions-hero"><span>✦ BİZİM SKOR AVRUPA GECESİ ✦</span><b>Şampiyonlar Ligi Sıralaması</b><p class="small">Şampiyonlar Ligi sezon puanları Süper Lig’den tamamen bağımsızdır.</p></div><div id="championsRankingBoard"></div><h3>Katılımcı Tahminleri</h3><p class="small">Maç sonuçlanana kadar diğer oyuncuların tahminleri *-* görünür.</p><div id="championsParticipants"></div></div></section>');
     const button=tabs.querySelector('[data-tab="championsPred"]'),rankingButton=tabs.querySelector('[data-tab="championsRanking"]');
-    button.onclick=async()=>{
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      document.querySelectorAll('section').forEach(x=>x.classList.add('hide'));
-      button.classList.add('active');
-      document.getElementById('championsPred').classList.remove('hide');
-      await loadPrediction();
-    };
-    rankingButton.onclick=async()=>{
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      document.querySelectorAll('section').forEach(x=>x.classList.add('hide'));
-      rankingButton.classList.add('active');
-      document.getElementById('championsRanking').classList.remove('hide');
-      await loadRanking();
-    };
-    document.querySelectorAll('.tab:not([data-tab="championsPred"]):not([data-tab="championsRanking"])').forEach(item=>item.addEventListener('click',()=>{
-      document.getElementById('championsPred').classList.add('hide');
-      document.getElementById('championsRanking').classList.add('hide');
-    }));
+    button.onclick=async()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section').forEach(x=>x.classList.add('hide'));button.classList.add('active');document.getElementById('championsPred').classList.remove('hide');await loadPrediction();};
+    rankingButton.onclick=async()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section').forEach(x=>x.classList.add('hide'));rankingButton.classList.add('active');document.getElementById('championsRanking').classList.remove('hide');await loadRanking();};
+    document.querySelectorAll('.tab:not([data-tab="championsPred"]):not([data-tab="championsRanking"])').forEach(item=>item.addEventListener('click',()=>{document.getElementById('championsPred').classList.add('hide');document.getElementById('championsRanking').classList.add('hide');}));
     document.getElementById('championsSave').onclick=savePrediction;
-    setInterval(()=>{
-      const ranking=document.getElementById('championsRanking');
-      if(document.visibilityState==='visible'&&ranking&&!ranking.classList.contains('hide'))loadRanking();
-    },60000);
+    setInterval(()=>{const ranking=document.getElementById('championsRanking');if(document.visibilityState==='visible'&&ranking&&!ranking.classList.contains('hide'))loadRanking();},60000);
   }
-
-  function timeText(value){
-    return new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value)).replace(':','.');
-  }
-
+  function currentWeek(){return week}
+  function timeText(value){return new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value)).replace(':','.')}
   function rowFixture(row){return{...row,id:Number(row.fixture_id)}}
-
-  function isSessionError(error){
-    return /oturum|token|süresi dolmuş/i.test(error?.message||'');
-  }
-
-  function showLoginRequired(target,secondary){
-    localStorage.removeItem('bizimSkorFriendToken');
-    target.innerHTML='<div class="champions-error">Önce mevcut oyuncu hesabınla giriş yap.</div>';
-    if(secondary)secondary.innerHTML='';
-  }
-
-  function renderInputs(rows,mine){
-    const map=Object.fromEntries(mine.map(x=>[x.fixture_id,x]));
-    return BizimSkorChampionsLeague.groupFixturesByTurkeyDate(rows).map(group=>
-      `<div class="champions-day">${esc(group.label)}</div>`+group.fixtures.map(f=>{
-        const p=map[f.id];
-        return `<div class="champions-match"><div class="t home"><span class="small">${timeText(f.kickoff)}</span><br>${esc(f.home_team)}</div><input id="clh${f.id}" inputmode="numeric" maxlength="2" value="${p?.home_score??''}"><div>-</div><input id="cla${f.id}" inputmode="numeric" maxlength="2" value="${p?.away_score??''}"><div class="t">${esc(f.away_team)}</div></div>`;
-      }).join('')
-    ).join('');
-  }
-
-  async function loadPrediction(forceEdit=false){
-    const state=document.getElementById('championsState'),box=document.getElementById('championsFixtures'),save=document.getElementById('championsSave');
-    const token=localStorage.getItem('bizimSkorFriendToken');
-    if(!token){state.innerHTML='<div class="champions-error">Önce mevcut oyuncu hesabınla giriş yap.</div>';box.innerHTML='';save.classList.add('hide');return}
-    state.innerHTML='<p class="small">Şampiyonlar Ligi fikstürü yükleniyor…</p>';
-    const q=await sb.rpc('get_champions_league_week',{p_token:token,p_season:season,p_week:week});
-    if(q.error){
-      if(isSessionError(q.error))showLoginRequired(state,box);
-      else {state.innerHTML=`<div class="champions-error">${esc(q.error.message)}</div>`;box.innerHTML='';}
-      save.classList.add('hide');return;
-    }
-    const rows=(q.data||[]).map(rowFixture),mine=rows.filter(x=>x.predicted_home!=null&&x.predicted_away!=null).map(x=>({fixture_id:x.id,home_score:x.predicted_home,away_score:x.predicted_away}));
-    fixtures=rows;const locked=rows.some(x=>x.is_locked);editing=!locked&&(forceEdit||mine.length!==rows.length);
-    if(rows.length&&mine.length===rows.length&&!editing){
-      state.innerHTML=`<div class="champions-summary"><b>✅ Şampiyonlar Ligi 1. hafta tahminlerin kaydedildi</b>${rows.map(f=>{const p=mine.find(x=>x.fixture_id===f.id);return `<div class="savedrow">${esc(f.home_team)} <b>${p.home_score}-${p.away_score}</b> ${esc(f.away_team)}</div>`}).join('')}${locked?'<p class="small">🔒 Tahminler kilitlendi.</p>':'<button id="championsEdit" class="full">Tahminleri Düzenle ✏️</button>'}</div>`;
-      box.innerHTML='';save.classList.add('hide');
-      document.getElementById('championsEdit')?.addEventListener('click',()=>loadPrediction(true));return;
-    }
-    if(locked){state.innerHTML='<div class="champions-summary"><b>🔒 Şampiyonlar Ligi 1. hafta tahmin süresi doldu.</b></div>';box.innerHTML='';save.classList.add('hide');return}
-    state.innerHTML='';box.innerHTML=renderInputs(rows,mine);save.classList.remove('hide');
-    save.textContent=mine.length===rows.length?'Güncellenmiş Tahminleri Kaydet ✅':'Şampiyonlar Ligi Tahminlerimi Kaydet ⭐';
-  }
-
-  function rankingMarkup(rows){
-    if(!rows.length)return'<div class="champions-summary">Henüz puan oluşmadı.</div>';
-    return `<table><tr><th>Sıra</th><th>Oyuncu</th><th>Puan</th><th>🎯</th><th>⚽</th></tr>${rows.map(row=>{
-      const rank=Number(row.league_rank),medal=rank===1?'🥇 ':rank===2?'🥈 ':rank===3?'🥉 ':'';
-      return `<tr><td>${medal}${rank}</td><td>${esc(row.player_name)}</td><td><b>${row.points}</b></td><td>${row.exact_count}</td><td>${row.correct_count}</td></tr>`;
-    }).join('')}</table>`;
-  }
-
-  function participantsMarkup(rows){
-    if(!rows.length)return'<div class="champions-summary">Henüz Şampiyonlar Ligi tahmini kaydedilmedi.</div>';
-    const people={};rows.forEach(row=>(people[row.player_name]??=[]).push(row));
-    return Object.entries(people).map(([name,matches])=>`<div class="champions-summary" style="margin-bottom:10px"><b>${esc(name)}</b>${matches.map(row=>{
-      const prediction=row.predicted_home==null||row.predicted_away==null?'*-*':`${row.predicted_home}-${row.predicted_away}`;
-      const result=row.real_home==null||row.real_away==null?null:{home_score:row.real_home,away_score:row.real_away};
-      const score=prediction==='*-*'?{symbol:''}:BizimSkorChampionsLeague.scorePrediction({home_score:row.predicted_home,away_score:row.predicted_away},result);
-      return `<div class="savedrow">${esc(row.home_team)} <b>${prediction}</b> ${esc(row.away_team)}${result?` <span class="small">(${result.home_score}-${result.away_score}) ${score.symbol}</span>`:''}</div>`;
-    }).join('')}</div>`).join('');
-  }
-
-  async function loadRanking(){
-    const board=document.getElementById('championsRankingBoard'),participants=document.getElementById('championsParticipants');
-    const token=localStorage.getItem('bizimSkorFriendToken');
-    if(!token){board.innerHTML='<div class="champions-error">Önce mevcut oyuncu hesabınla giriş yap.</div>';participants.innerHTML='';return}
-    board.innerHTML='<p class="small">Sıralama yükleniyor…</p>';participants.innerHTML='';
-    const [ranking,predictions]=await Promise.all([
-      sb.rpc('get_champions_league_ranking',{p_token:token,p_season:season}),
-      sb.rpc('get_champions_league_week_predictions',{p_token:token,p_season:season,p_week:week})
-    ]);
-    if(ranking.error||predictions.error){
-      const error=ranking.error||predictions.error;
-      if(isSessionError(error))showLoginRequired(board,participants);
-      else board.innerHTML=`<div class="champions-error">${esc(error.message)}</div>`;
-      return;
-    }
-    board.innerHTML=rankingMarkup(ranking.data||[]);
-    participants.innerHTML=participantsMarkup(predictions.data||[]);
-  }
-
-  async function loadHistory(historyWeek=week){
-    const content=document.getElementById('historyContent');
-    if(!content)return;
-    const token=localStorage.getItem('bizimSkorFriendToken');
-    if(!token){
-      content.innerHTML='<div class="champions-error">Şampiyonlar Ligi geçmişini görmek için hesabına yeniden giriş yap.</div>';
-      return;
-    }
-    content.innerHTML='<p class="small">Şampiyonlar Ligi geçmişi yükleniyor…</p>';
-    const q=await sb.rpc('get_champions_league_history',{
-      p_token:token,p_season:season,p_week:Number(historyWeek)
-    });
-    if(q.error){
-      if(isSessionError(q.error))showLoginRequired(content);
-      else content.innerHTML=`<div class="champions-error">${esc(q.error.message)}</div>`;
-      return;
-    }
-    const rows=q.data||[];
-    if(!rows.length){
-      content.innerHTML='<p class="small">Şampiyonlar Ligi hafta bilgisi bulunamadı.</p>';
-      return;
-    }
-    const summary=rows[0],completed=Number(summary.completed_count||0),total=Number(summary.fixture_count||rows.length);
-    const finished=total>0&&completed===total,rank=completed&&summary.week_rank?`${summary.week_rank}.`:'-';
-    const matches=rows.map(row=>{
-      const prediction=row.predicted_home==null||row.predicted_away==null?null:{
-        home_score:row.predicted_home,away_score:row.predicted_away
-      };
-      const result=row.real_home==null||row.real_away==null?null:{
-        home_score:row.real_home,away_score:row.real_away
-      };
-      const score=BizimSkorChampionsLeague.scorePrediction(prediction,result);
-      const mark=score.symbol?`${score.symbol} +${score.points}`:'';
-      const predictionText=prediction?`${prediction.home_score}-${prediction.away_score}`:'Tahmin bulunamadı';
-      return `<div class="history-match"><div class="history-real">${esc(row.home_team)} ${result?`<b>${result.home_score}-${result.away_score}</b>`:'-'} ${esc(row.away_team)}</div><div class="history-pred">Tahminin: <b>${predictionText}</b><span class="history-mark">${mark}</span></div></div>`;
-    }).join('');
-    content.innerHTML=`<div class="history-summary"><div class="history-stat"><span>Haftalık Puan</span><b>${summary.week_points||0}</b></div><div class="history-stat"><span>${finished?'Hafta Sırası':'Geçici Sıra'}</span><b>${rank}</b></div><div class="history-stat"><span>Katılan</span><b>${summary.participant_count||0}</b></div></div><p class="small">${completed}/${total} maç sonuçlandı. ${finished?`Şampiyonlar Ligi ${historyWeek}. haftayı ${rank} sırada tamamladın.`:`Sıralama maçlar sonuçlandıkça güncellenir.`}</p>${matches}`;
-  }
-
-  async function savePrediction(){
-    const token=localStorage.getItem('bizimSkorFriendToken');
-    if(!token)return alert('Önce mevcut oyuncu hesabınla giriş yap.');
-    try{
-      const rows=fixtures.map(f=>({fixture_id:f.id,home_score:document.getElementById('clh'+f.id)?.value,away_score:document.getElementById('cla'+f.id)?.value}));
-      const checked=BizimSkorChampionsLeague.validateWeeklyScores(fixtures,rows);
-      const q=await sb.rpc('save_champions_league_predictions',{p_token:token,p_season:season,p_week:week,p_predictions:checked});
-      if(q.error)throw q.error;
-      alert('Şampiyonlar Ligi tahminlerin kaydedildi ✅');editing=false;await loadPrediction();
-    }catch(error){alert(error.message)}
-  }
-
-  window.BizimSkorChampionsUI={mount,loadPrediction,loadRanking,loadHistory};
-  mount();
+  function isSessionError(error){return /oturum|token|süresi dolmuş/i.test(error?.message||'')}
+  function showLoginRequired(target,secondary){localStorage.removeItem('bizimSkorFriendToken');target.innerHTML='<div class="champions-error">Önce mevcut oyuncu hesabınla giriş yap.</div>';if(secondary)secondary.innerHTML=''}
+  function renderInputs(rows,mine){const map=Object.fromEntries(mine.map(x=>[x.fixture_id,x]));return BizimSkorChampionsLeague.groupFixturesByTurkeyDate(rows).map(group=>`<div class="champions-day">${esc(group.label)}</div>`+group.fixtures.map(f=>{const p=map[f.id];return `<div class="champions-match"><div class="t home"><span class="small">${timeText(f.kickoff)}</span><br>${esc(f.home_team)}</div><input id="clh${f.id}" inputmode="numeric" maxlength="2" value="${p?.home_score??''}"><div>-</div><input id="cla${f.id}" inputmode="numeric" maxlength="2" value="${p?.away_score??''}"><div class="t">${esc(f.away_team)}</div></div>`;}).join('')).join('')}
+  async function loadPrediction(forceEdit=false){const state=document.getElementById('championsState'),box=document.getElementById('championsFixtures'),save=document.getElementById('championsSave');const token=localStorage.getItem('bizimSkorFriendToken');if(!token){state.innerHTML='<div class="champions-error">Önce mevcut oyuncu hesabınla giriş yap.</div>';box.innerHTML='';save.classList.add('hide');return}state.innerHTML='<p class="small">Şampiyonlar Ligi fikstürü yükleniyor…</p>';const q=await sb.rpc('get_champions_league_week',{p_token:token,p_season:season,p_week:week});if(q.error){if(isSessionError(q.error))showLoginRequired(state,box);else{state.innerHTML=`<div class="champions-error">${esc(q.error.message)}</div>`;box.innerHTML=''}save.classList.add('hide');return}const rows=(q.data||[]).map(rowFixture),mine=rows.filter(x=>x.predicted_home!=null&&x.predicted_away!=null).map(x=>({fixture_id:x.id,home_score:x.predicted_home,away_score:x.predicted_away}));fixtures=rows;const locked=rows.some(x=>x.is_locked);editing=!locked&&(forceEdit||mine.length!==rows.length);if(rows.length&&mine.length===rows.length&&!editing){state.innerHTML=`<div class="champions-summary"><b>✅ Şampiyonlar Ligi 1. hafta tahminlerin kaydedildi</b>${rows.map(f=>{const p=mine.find(x=>x.fixture_id===f.id);return `<div class="savedrow">${esc(f.home_team)} <b>${p.home_score}-${p.away_score}</b> ${esc(f.away_team)}</div>`}).join('')}${locked?'<p class="small">🔒 Tahminler kilitlendi.</p>':'<button id="championsEdit" class="full">Tahminleri Düzenle ✏️</button>'}</div>`;box.innerHTML='';save.classList.add('hide');document.getElementById('championsEdit')?.addEventListener('click',()=>loadPrediction(true));return}if(locked){state.innerHTML='<div class="champions-summary"><b>🔒 Şampiyonlar Ligi 1. hafta tahmin süresi doldu.</b></div>';box.innerHTML='';save.classList.add('hide');return}state.innerHTML='';box.innerHTML=renderInputs(rows,mine);save.classList.remove('hide');save.textContent=mine.length===rows.length?'Güncellenmiş Tahminleri Kaydet ✅':'Şampiyonlar Ligi Tahminlerimi Kaydet ⭐'}
+  function rankingMarkup(rows){if(!rows.length)return'<div class="champions-summary">Henüz puan oluşmadı.</div>';return `<table><tr><th>Sıra</th><th>Oyuncu</th><th>Puan</th><th>🎯</th><th>⚽</th></tr>${rows.map(row=>{const rank=Number(row.league_rank),medal=rank===1?'🥇 ':rank===2?'🥈 ':rank===3?'🥉 ':'';return `<tr><td>${medal}${rank}</td><td>${esc(row.player_name)}</td><td><b>${row.points}</b></td><td>${row.exact_count}</td><td>${row.correct_count}</td></tr>`;}).join('')}</table>`}
+  function participantsMarkup(rows){if(!rows.length)return'<div class="champions-summary">Henüz Şampiyonlar Ligi tahmini kaydedilmedi.</div>';const people={};rows.forEach(row=>(people[row.player_name]??=[]).push(row));return Object.entries(people).map(([name,matches])=>`<div class="champions-summary" style="margin-bottom:10px"><b>${esc(name)}</b>${matches.map(row=>{const prediction=row.predicted_home==null||row.predicted_away==null?'*-*':`${row.predicted_home}-${row.predicted_away}`;const result=row.real_home==null||row.real_away==null?null:{home_score:row.real_home,away_score:row.real_away};const score=prediction==='*-*'?{symbol:''}:BizimSkorChampionsLeague.scorePrediction({home_score:row.predicted_home,away_score:row.predicted_away},result);return `<div class="savedrow">${esc(row.home_team)} <b>${prediction}</b> ${esc(row.away_team)}${result?` <span class="small">(${result.home_score}-${result.away_score}) ${score.symbol}</span>`:''}</div>`;}).join('')}</div>`).join('')}
+  async function loadRanking(){const board=document.getElementById('championsRankingBoard'),participants=document.getElementById('championsParticipants');const token=localStorage.getItem('bizimSkorFriendToken');if(!token){board.innerHTML='<div class="champions-error">Önce mevcut oyuncu hesabınla giriş yap.</div>';participants.innerHTML='';return}board.innerHTML='<p class="small">Sıralama yükleniyor…</p>';participants.innerHTML='';const [ranking,predictions]=await Promise.all([sb.rpc('get_champions_league_ranking',{p_token:token,p_season:season}),sb.rpc('get_champions_league_week_predictions',{p_token:token,p_season:season,p_week:week})]);if(ranking.error||predictions.error){const error=ranking.error||predictions.error;if(isSessionError(error))showLoginRequired(board,participants);else board.innerHTML=`<div class="champions-error">${esc(error.message)}</div>`;return}board.innerHTML=rankingMarkup(ranking.data||[]);participants.innerHTML=participantsMarkup(predictions.data||[])}
+  async function loadHistory(historyWeek=week){const content=document.getElementById('historyContent');if(!content)return;const token=localStorage.getItem('bizimSkorFriendToken');if(!token){content.innerHTML='<div class="champions-error">Şampiyonlar Ligi geçmişini görmek için hesabına yeniden giriş yap.</div>';return}content.innerHTML='<p class="small">Şampiyonlar Ligi geçmişi yükleniyor…</p>';const q=await sb.rpc('get_champions_league_history',{p_token:token,p_season:season,p_week:Number(historyWeek)});if(q.error){if(isSessionError(q.error))showLoginRequired(content);else content.innerHTML=`<div class="champions-error">${esc(q.error.message)}</div>`;return}const rows=q.data||[];if(!rows.length){content.innerHTML='<p class="small">Şampiyonlar Ligi hafta bilgisi bulunamadı.</p>';return}const summary=rows[0],completed=Number(summary.completed_count||0),total=Number(summary.fixture_count||rows.length);const finished=total>0&&completed===total,rank=completed&&summary.week_rank?`${summary.week_rank}.`:'-';const matches=rows.map(row=>{const prediction=row.predicted_home==null||row.predicted_away==null?null:{home_score:row.predicted_home,away_score:row.predicted_away};const result=row.real_home==null||row.real_away==null?null:{home_score:row.real_home,away_score:row.real_away};const score=BizimSkorChampionsLeague.scorePrediction(prediction,result);const mark=score.symbol?`${score.symbol} +${score.points}`:'';const predictionText=prediction?`${prediction.home_score}-${prediction.away_score}`:'Tahmin bulunamadı';return `<div class="history-match"><div class="history-real">${esc(row.home_team)} ${result?`<b>${result.home_score}-${result.away_score}</b>`:'-'} ${esc(row.away_team)}</div><div class="history-pred">Tahminin: <b>${predictionText}</b><span class="history-mark">${mark}</span></div></div>`;}).join('');content.innerHTML=`<div class="history-summary"><div class="history-stat"><span>Haftalık Puan</span><b>${summary.week_points||0}</b></div><div class="history-stat"><span>${finished?'Hafta Sırası':'Geçici Sıra'}</span><b>${rank}</b></div><div class="history-stat"><span>Katılan</span><b>${summary.participant_count||0}</b></div></div><p class="small">${completed}/${total} maç sonuçlandı. ${finished?`Şampiyonlar Ligi ${historyWeek}. haftayı ${rank} sırada tamamladın.`:`Sıralama maçlar sonuçlandıkça güncellenir.`}</p>${matches}`}
+  async function savePrediction(){const token=localStorage.getItem('bizimSkorFriendToken');if(!token)return alert('Önce mevcut oyuncu hesabınla giriş yap.');try{const rows=fixtures.map(f=>({fixture_id:f.id,home_score:document.getElementById('clh'+f.id)?.value,away_score:document.getElementById('cla'+f.id)?.value}));const checked=BizimSkorChampionsLeague.validateWeeklyScores(fixtures,rows);const q=await sb.rpc('save_champions_league_predictions',{p_token:token,p_season:season,p_week:week,p_predictions:checked});if(q.error)throw q.error;alert('Şampiyonlar Ligi tahminlerin kaydedildi ✅');editing=false;await loadPrediction()}catch(error){alert(error.message)}}
+  window.BizimSkorChampionsUI={mount,currentWeek,loadPrediction,loadRanking,loadHistory};mount();
 })();
