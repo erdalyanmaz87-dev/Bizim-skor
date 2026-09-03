@@ -4,13 +4,13 @@
   else{root.BizimSkorPredictionWeekCards=api;api.mount();}
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   function buildCards(leagueStatuses,champions){
-    const league=(leagueStatuses||[]).slice(0,2).map(x=>({label:`Süper Lig ${x.week}. Hafta`,complete:!!x.complete,target:{type:'league',week:+x.week}}));
-    const cl=champions?{label:`Şampiyonlar Ligi ${champions.week}. Hafta`,complete:!!champions.complete,target:{type:'champions',week:+champions.week}}:null;
+    const league=(leagueStatuses||[]).slice(0,2).map(x=>({label:`Süper Lig ${x.week}. Hafta`,complete:!!x.complete,theme:'super',target:{type:'league',week:+x.week}}));
+    const cl=champions?{label:`Şampiyonlar Ligi ${champions.week}. Hafta`,complete:!!champions.complete,theme:'champions',target:{type:'champions',week:+champions.week}}:null;
     return [...league,...(cl?[cl]:[])];
   }
   function championsTabSelector(){return '[data-tab="championsPred"]'}
   function canEditBeforeWeekStart(nowMs,firstKickoffMs){return Number(nowMs)<Number(firstKickoffMs)}
-  function render(cards){return `<div class="bs-week-cards">${cards.map((card,i)=>`<button type="button" class="bs-week-card ${card.complete?'done':'missing'}" data-bs-card="${i}"><strong>${card.label}</strong><span>${card.complete?'🟢 Tahminlerin tamamlandı':'🔴 Tahminini yap'}</span></button>`).join('')}</div>`}
+  function render(cards){return `<div class="bs-week-cards">${cards.map((card,i)=>`<button type="button" class="bs-week-card theme-${card.theme} ${card.complete?'done':'missing'}" data-bs-card="${i}"><strong>${card.label}</strong><span>${card.complete?'✓ Tahminlerin tamamlandı':'Tahminini yap →'}</span></button>`).join('')}</div>`}
   function openCard(card){
     if(!card)return;
     if(card.target.type==='league'){
@@ -38,7 +38,7 @@
   }
   function mount(){
     if(typeof document==='undefined')return;
-    if(!document.getElementById('bsWeekCardStyles'))document.head.insertAdjacentHTML('beforeend','<style id="bsWeekCardStyles">#bsPredictionWeekCards{width:100%;order:1}.bs-week-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:100%;margin:4px 0 8px}.bs-week-card{min-width:0;padding:10px 6px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;color:#0f172a;text-align:center;box-shadow:0 2px 7px rgba(15,23,42,.08)}.bs-week-card strong{display:block;font-size:12px;line-height:1.2}.bs-week-card span{display:block;margin-top:5px;font-size:10px;font-weight:800}.bs-week-card.done{border-color:#86efac;background:#f0fdf4}.bs-week-card.missing{border-color:#fca5a5;background:#fff7f7}@media(max-width:390px){.bs-week-card{padding:9px 4px}.bs-week-card strong{font-size:11px}.bs-week-card span{font-size:9px}}</style>');
+    if(!document.getElementById('bsWeekCardStyles'))document.head.insertAdjacentHTML('beforeend','<style id="bsWeekCardStyles">#bsPredictionWeekCards{width:100%;order:1}.bs-week-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;margin:5px 0 10px}.bs-week-card{min-width:0;min-height:78px;padding:11px 7px;border-radius:14px;text-align:center;box-shadow:0 4px 10px rgba(15,23,42,.12);font-weight:800;cursor:pointer}.bs-week-card strong{display:block;font-size:12px;line-height:1.25}.bs-week-card span{display:block;margin-top:7px;font-size:10px;font-weight:900}.bs-week-card.theme-super{border:1px solid #15803d;background:linear-gradient(160deg,#166534,#22c55e);color:#fff}.bs-week-card.theme-super.done{background:linear-gradient(160deg,#14532d,#16a34a)}.bs-week-card.theme-super.missing{box-shadow:inset 0 0 0 2px rgba(254,226,226,.8),0 4px 10px rgba(15,23,42,.12)}.bs-week-card.theme-champions{border:1px solid #1d4ed8;background:linear-gradient(160deg,#172554,#1d4ed8 62%,#2563eb);color:#fff}.bs-week-card.theme-champions.done{background:linear-gradient(160deg,#172554,#1e40af)}.bs-week-card.theme-champions.missing{box-shadow:inset 0 0 0 2px rgba(219,234,254,.8),0 4px 10px rgba(15,23,42,.12)}@media(max-width:390px){.bs-week-cards{gap:6px}.bs-week-card{padding:9px 4px;min-height:74px}.bs-week-card strong{font-size:11px}.bs-week-card span{font-size:9px}}</style>');
     refresh();setTimeout(refresh,800);setTimeout(refresh,1900);root.addEventListener?.('focus',refresh);
   }
   return Object.freeze({buildCards,championsTabSelector,canEditBeforeWeekStart,render,openCard,mount,refresh});
