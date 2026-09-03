@@ -4,10 +4,10 @@ const fs=require('node:fs');
 
 const html=fs.readFileSync('index.html','utf8');
 
-test('ana sayfadaki haftalık kişisel sıra 3. haftayı kullanır',()=>{
+test('ana sayfadaki haftalık kişisel sıra sonuçlanan son haftayı kullanır',()=>{
+  assert.match(html,/current-ranking-week\.js/);
+  assert.match(html,/latestScoredWeek/);
   assert.match(html,/personalWeekRankLabel/);
-  assert.match(html,/textContent='3\. Hafta sıram'/);
-  assert.match(html,/\.eq\('week',3\)/);
 });
 
 test('4. hafta tamamlanana kadar Sezu sırası gösterilir',()=>{
