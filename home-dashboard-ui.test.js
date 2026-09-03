@@ -11,5 +11,6 @@ assert.strictEqual(ui.rankChange(11,8),'↓3');
 assert.strictEqual(ui.rankChange(8,8),'—');
 assert.strictEqual(ui.rankText(8,42),'8. / 42');
 assert.strictEqual(ui.shouldShowSezu(3),true);
-assert.strictEqual(ui.shouldShowSezu(4),false);
+assert.strictEqual(ui.shouldShowSezu(4),true);
+assert.strictEqual(ui.shouldShowSezu(99),true);
 console.log('home dashboard helpers ok');
