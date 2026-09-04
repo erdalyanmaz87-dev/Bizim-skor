@@ -4,4 +4,9 @@ assert.deepStrictEqual(ui.availableWeeks([{week:2},{week:4},{week:3},{week:4}]),
 assert.strictEqual(ui.currentWeek([2,3,4],4),4);
 assert.strictEqual(ui.currentWeek([2,3,4],5),4);
 assert.strictEqual(ui.currentWeek([2,3,4],null),4);
+assert.strictEqual(typeof ui.latestScoredWeek,'function');
+const fixtures=[{id:21,week:3},{id:31,week:4},{id:41,week:5}];
+assert.strictEqual(ui.latestScoredWeek(fixtures,[{fixture_id:21,home_score:1,away_score:0}]),3);
+assert.strictEqual(ui.latestScoredWeek(fixtures,[{fixture_id:21,home_score:1,away_score:0},{fixture_id:31,home_score:0,away_score:0}]),4);
+assert.strictEqual(ui.latestScoredWeek(fixtures,[]),null);
 console.log('weekly-ranking-strip ok');
