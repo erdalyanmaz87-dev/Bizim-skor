@@ -17,7 +17,7 @@
       .filter(f=>!Number.isNaN(f.date.getTime())&&dayKey(f.date)>=today)
       .sort((a,b)=>a.date-b.date);
     const selectedDay=future[0]?dayKey(future[0].date):today;
-    const label=selectedDay===today?'Bugünün Maçları':selectedDay===tomorrow?'Yarının Maçları':new Intl.DateTimeFormat('tr-TR',{
+    const label=selectedDay===today?'Günün Maçları':selectedDay===tomorrow?'Yarının Maçları':new Intl.DateTimeFormat('tr-TR',{
       timeZone:zone,day:'numeric',month:'long'
     }).format(future[0].date)+' Maçları';
     return{
