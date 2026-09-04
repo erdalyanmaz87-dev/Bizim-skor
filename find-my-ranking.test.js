@@ -42,3 +42,27 @@ test('kendi satırını ortalar ve geçici olarak vurgular',()=>{
   removeHighlight();
   assert.equal(classes.has('bs-my-ranking-row'),false);
 });
+
+test('sıralama araç çubuğunda ana menü solda, kendimi gör sağda yer alır',()=>{
+  let inserted=null,homeClicks=0;
+  const row={cells:[{textContent:'1'},{textContent:'Erdal'}]};
+  const doc={
+    getElementById:()=>null,
+    querySelector:selector=>selector==='.tab[data-tab="home"]'?{click:()=>{homeClicks++}}:null,
+    createElement:tag=>({
+      tag,children:[],className:'',textContent:'',dataset:{},listeners:{},
+      appendChild(child){this.children.push(child)},
+      addEventListener(type,handler){this.listeners[type]=handler}
+    })
+  };
+  const board={
+    id:'generalBoard',ownerDocument:doc,
+    querySelectorAll:selector=>selector==='table tr'?[row]:[],
+    insertAdjacentElement:(_position,element)=>{inserted=element}
+  };
+
+  assert.equal(ui.enhanceBoard(board,'Erdal'),true);
+  assert.deepEqual(inserted.children.map(button=>button.textContent),['🏠 Ana Menü','🎯 Kendimi Gör']);
+  inserted.children[0].listeners.click();
+  assert.equal(homeClicks,1);
+});
