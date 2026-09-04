@@ -18,4 +18,26 @@ assert.ok(styles.includes('.tabs.bs-nav-ready>.tab[data-tab="home"]{display:none
 assert.ok(styles.includes('.ticker{display:none!important}'));
 assert.ok(styles.includes('@media(max-width:430px)'));
 assert.ok(styles.includes('.bs-header-logo{width:min(205px,100%);max-height:88px}'));
+
+let profileButtonClicked=false;
+let accountDetailsRevealed=false;
+let accountDetailsScrolled=false;
+const profileOpenDoc={
+  getElementById(id){
+    if(id==='updatePlayer')return null;
+    if(id==='updateProfile')return {click(){profileButtonClicked=true}};
+    if(id==='knownPlayer')return {
+      classList:{remove(name){accountDetailsRevealed=name==='bs-account-details-hidden'}},
+      scrollIntoView(){accountDetailsScrolled=true}
+    };
+    return null;
+  }
+};
+ui.openUpdate(profileOpenDoc);
+assert.strictEqual(profileButtonClicked,true,'Bilgilerimi Güncelle, profil düzenleme düğmesini çalıştırmalı');
+assert.strictEqual(accountDetailsRevealed,true,'Gizlenen hesap alanı görünür olmalı');
+assert.strictEqual(accountDetailsScrolled,true,'Açılan forma kaydırılmalı');
+
+assert.strictEqual(ui.shouldHideOldDetails(true,true),false,'Profil formu açıkken hesap alanı gizlenmemeli');
+assert.strictEqual(ui.shouldHideOldDetails(true,false),true,'Profil formu kapalıyken eski hesap alanı gizlenmeli');
 console.log('header-ui ok');
