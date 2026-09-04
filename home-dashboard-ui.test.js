@@ -20,6 +20,10 @@ const heading={textContent:'🏆 Genel Sıralama'};
 ui.applyGeneralRankingLabels({querySelector:selector=>selector==='[data-tab="general"]'?menuLabel:selector==='#general h2'?heading:null});
 assert.strictEqual(menuLabel.textContent,'Süper Lig Genel Sıralaması');
 assert.strictEqual(heading.textContent,'🏆 Süper Lig Genel Sıralaması');
+assert.strictEqual(ui.rankingTabForCard('league'),'weeklyRankings');
+assert.strictEqual(ui.rankingTabForCard('sezu'),'sezu');
+assert.strictEqual(ui.rankingTabForCard('general'),'general');
+assert.strictEqual(ui.rankingTabForCard('rate'),null);
 
 const nodes={
  personalWeekRank:{textContent:'8.'},personalSezuRank:{textContent:'9.'},personalGeneralRank:{textContent:'10.'},
