@@ -39,7 +39,7 @@
     if(!board)return false;
     const row=findPlayerRow(board,playerName);
     const doc=board.ownerDocument||root.document,id=toolbarId(board);
-    if(doc.getElementById(id))return true;
+    doc.getElementById(id)?.remove?.();
     const toolbar=doc.createElement('div');
     toolbar.id=id;toolbar.className='bs-find-me-toolbar';
     const homeButton=doc.createElement('button');

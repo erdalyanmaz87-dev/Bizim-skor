@@ -66,3 +66,28 @@ test('sıralama araç çubuğunda ana menü solda, kendimi gör sağda yer alır
   inserted.children[0].listeners.click();
   assert.equal(homeClicks,1);
 });
+
+test('oyuncu satırı sonradan yüklenince kendimi gör düğmesini geri getirir',()=>{
+  let inserted=null,rows=[];
+  const doc={
+    getElementById:()=>inserted,
+    querySelector:()=>null,
+    createElement:tag=>({
+      tag,children:[],className:'',textContent:'',dataset:{},
+      appendChild(child){this.children.push(child)},
+      addEventListener(){},
+      remove(){inserted=null}
+    })
+  };
+  const board={
+    id:'weeklyRankingBoard',ownerDocument:doc,
+    querySelectorAll:selector=>selector==='table tr'?rows:[],
+    insertAdjacentElement:(_position,element)=>{inserted=element}
+  };
+
+  ui.enhanceBoard(board,'Erdal');
+  assert.deepEqual(inserted.children.map(button=>button.textContent),['🏠 Ana Menü']);
+  rows=[{cells:[{textContent:'1'},{textContent:'Erdal'}]}];
+  ui.enhanceBoard(board,'Erdal');
+  assert.deepEqual(inserted.children.map(button=>button.textContent),['🏠 Ana Menü','🎯 Kendimi Gör']);
+});
