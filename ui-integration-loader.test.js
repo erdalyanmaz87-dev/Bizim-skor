@@ -9,6 +9,7 @@ assert.deepStrictEqual(loader.scriptOrder(),[
   'prediction-week-cards.js',
   'home-dashboard-ui.js',
   'weekly-ranking-strip.js',
+  'find-my-ranking.js',
   'fixture-data.js',
   'fixture-ui.js',
   'fixture-week-strip.js',
@@ -16,6 +17,7 @@ assert.deepStrictEqual(loader.scriptOrder(),[
 ]);
 const order=loader.scriptOrder();
 assert(order.indexOf('home-prediction-priority.js')<order.indexOf('prediction-week-cards.js'));
+assert(order.includes('find-my-ranking.js'));
 assert(order.indexOf('prediction-week-cards.js')<order.indexOf('home-dashboard-ui.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('chat-unread-indicator.js'));
 assert(order.indexOf('fixture-ui.js')<order.indexOf('fixture-week-strip.js'));
