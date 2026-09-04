@@ -38,6 +38,15 @@ assert.strictEqual(profileButtonClicked,true,'Bilgilerimi Güncelle, profil düz
 assert.strictEqual(accountDetailsRevealed,true,'Gizlenen hesap alanı görünür olmalı');
 assert.strictEqual(accountDetailsScrolled,true,'Açılan forma kaydırılmalı');
 
+profileButtonClicked=false;
+accountDetailsRevealed=false;
+accountDetailsScrolled=false;
+const updateClickHandler=ui.createUpdateClickHandler(profileOpenDoc);
+updateClickHandler({type:'click'});
+assert.strictEqual(profileButtonClicked,true,'Gerçek tıklama olayı profil formunu açmalı');
+assert.strictEqual(accountDetailsRevealed,true,'Gerçek tıklamada hesap alanı görünür olmalı');
+assert.strictEqual(accountDetailsScrolled,true,'Gerçek tıklamada forma kaydırılmalı');
+
 assert.strictEqual(ui.shouldHideOldDetails(true,true),false,'Profil formu açıkken hesap alanı gizlenmemeli');
 assert.strictEqual(ui.shouldHideOldDetails(true,false),true,'Profil formu kapalıyken eski hesap alanı gizlenmeli');
 console.log('header-ui ok');
