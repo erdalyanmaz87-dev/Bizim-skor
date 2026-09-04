@@ -15,6 +15,7 @@ assert.ok(ui.homeActionMarkup().includes('Ana Sayfa'));
 assert.strictEqual(typeof ui.headerStyleMarkup,'function');
 const styles=ui.headerStyleMarkup();
 assert.ok(styles.includes('.tabs.bs-nav-ready>.tab[data-tab="home"]{display:none!important}'));
+assert.ok(styles.includes('.ticker{display:none!important}'));
 assert.ok(styles.includes('@media(max-width:430px)'));
 assert.ok(styles.includes('.bs-header-logo{width:min(205px,100%);max-height:88px}'));
 console.log('header-ui ok');
