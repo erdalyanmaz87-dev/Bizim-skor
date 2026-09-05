@@ -5,6 +5,7 @@ assert.deepStrictEqual(loader.scriptOrder(),[
   'header-ui.js',
   'home-prediction-priority.js',
   'horizontal-menu.js',
+  'share-game.js',
   'chat-unread-indicator.js',
   'prediction-week-cards.js',
   'home-dashboard-ui.js',
@@ -20,5 +21,6 @@ assert(order.indexOf('home-prediction-priority.js')<order.indexOf('prediction-we
 assert(order.includes('find-my-ranking.js'));
 assert(order.indexOf('prediction-week-cards.js')<order.indexOf('home-dashboard-ui.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('chat-unread-indicator.js'));
+assert(order.indexOf('horizontal-menu.js')<order.indexOf('share-game.js'));
 assert(order.indexOf('fixture-ui.js')<order.indexOf('fixture-week-strip.js'));
 console.log('ui-integration-loader ok');
