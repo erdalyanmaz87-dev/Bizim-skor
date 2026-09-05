@@ -5,20 +5,19 @@ const path=require('node:path');
 
 const edgePath=path.join(__dirname,'../supabase/functions/match-statistics-sync/index.ts');
 
-test('sağlayıcı anahtarı yalnız sunucu ortamından okunur',()=>{
+test('eşitleme yalnız sunucu sırrıyla yetkilendirilir',()=>{
   const source=fs.readFileSync(edgePath,'utf8');
-  assert.match(source,/Deno\.env\.get\('API_FOOTBALL_KEY'\)/);
-  assert.doesNotMatch(source,/NEXT_PUBLIC|VITE_API_FOOTBALL/);
+  assert.match(source,/authorizeRequest/);
+  assert.match(source,/authorize_football_center_cron/);
   assert.match(source,/x-football-center-secret/);
 });
 
-test('haftalık bütçe tek işlemle ağ çağrılarından önce ayrılır',()=>{
+test('istatistik hazırlığı sağlayıcı kontörü kullanmadan oyun sonuçlarından yapılır',()=>{
   const source=fs.readFileSync(edgePath,'utf8');
-  const reserveAt=source.indexOf("reserve_api_football_requests");
-  const seasonFetchAt=source.indexOf("provider('fixtures'");
-  assert.ok(reserveAt>0);
-  assert.ok(seasonFetchAt>reserveAt);
-  assert.match(source,/p_count:requestBudget/);
+  assert.match(source,/from\('results'\)/);
+  assert.match(source,/buildLocalFixtureSnapshot/);
+  assert.doesNotMatch(source,/reserve_api_football_requests/);
+  assert.doesNotMatch(source,/x-apisports-key/);
 });
 
 test('puan durumu yeniden çekilmez ve mevcut Futbol Merkezi önbelleğinden okunur',()=>{
