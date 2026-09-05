@@ -6,7 +6,9 @@ import {
   formSequence,
   normalizeHeadToHead,
   weeklyRequestBudget,
-  buildFixtureSnapshot
+  buildFixtureSnapshot,
+  authorizeRequest,
+  buildLocalFixtureSnapshot
 } from '../supabase/functions/match-statistics-sync/core.mjs';
 
 const completed=(id,date,homeId,home,awayId,away,homeGoals,awayGoals)=>({
@@ -54,6 +56,33 @@ test('dokuz maçlık haftanın sağlayıcı bütçesini on istekle sınırlar',(
   assert.equal(weeklyRequestBudget(9),10);
   assert.equal(weeklyRequestBudget(12),10);
   assert.equal(weeklyRequestBudget(0),0);
+});
+
+test('ortam sırrı yoksa veritabanındaki güvenli doğrulamaya geri döner',async()=>{
+  let checked='';
+  const authorized=await authorizeRequest({
+    suppliedSecret:'doğru-gizli-değer',
+    environmentSecret:'',
+    databaseAuthorize:async secret=>{checked=secret;return true;}
+  });
+  assert.equal(authorized,true);
+  assert.equal(checked,'doğru-gizli-değer');
+});
+
+test('sağlayıcı sezonu kapalıyken oyun sonuçlarından takım formunu ve ikili maçları hazırlar',()=>{
+  const target={id:45,week:5,home_team:'Amed SK',away_team:'Başakşehir',kickoff:'2026-09-13T17:00:00Z'};
+  const history=[
+    {id:1,kickoff:'2026-08-01T17:00:00Z',home_team:'Amedspor',away_team:'Başakşehir',home_score:2,away_score:1},
+    {id:2,kickoff:'2026-08-08T17:00:00Z',home_team:'Kocaelispor',away_team:'Amed SK',home_score:0,away_score:0},
+    {id:3,kickoff:'2026-08-09T17:00:00Z',home_team:'Başakşehir',away_team:'Galatasaray',home_score:1,away_score:3}
+  ];
+  const standings=[{rank:5,team:'Amed SK',points:6},{rank:9,team:'Başakşehir',points:4}];
+  const snapshot=buildLocalFixtureSnapshot({internalFixture:target,completedMatches:history,standings,fetchedAt:'2026-09-05T13:00:00Z'});
+  assert.deepEqual(snapshot.home.form,['D','W']);
+  assert.deepEqual(snapshot.away.form,['L','L']);
+  assert.deepEqual(snapshot.head_to_head.map(row=>row.fixture_id),[1]);
+  assert.equal(snapshot.home.rank,5);
+  assert.equal(snapshot.away.points,4);
 });
 
 test('fikstür önbelleğine puan durumu, form ve ikili maçları birlikte koyar',()=>{
