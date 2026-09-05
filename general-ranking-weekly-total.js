@@ -5,55 +5,15 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   const outcome=(home,away)=>+home>+away?'1':+home<+away?'2':'X';
   const isOpportunity=prediction=>(+prediction.week===4&&+prediction.fixture_id===30)||(+prediction.week===5&&+prediction.fixture_id===44);
-
-  function pointsFor(prediction,result){
-    const exact=+prediction.home_score===+result.home_score&&+prediction.away_score===+result.away_score;
-    const correct=outcome(prediction.home_score,prediction.away_score)===outcome(result.home_score,result.away_score);
-    const multiplier=isOpportunity(prediction)?2:1;
-    return{points:(exact?4:correct?1:0)*multiplier,exact,correct};
-  }
-
-  function calculateRows(predictions,results){
-    const real=Object.fromEntries((results||[]).filter(row=>row.home_score!=null&&row.away_score!=null).map(row=>[+row.fixture_id,row]));
-    const weekly={};
-    (predictions||[]).forEach(prediction=>{
-      const result=real[+prediction.fixture_id];
-      if(!result)return;
-      const key=`${prediction.player_name}\u0000${+prediction.week}`;
-      weekly[key]??={name:prediction.player_name,week:+prediction.week,pts:0,ex:0,cr:0};
-      const scored=pointsFor(prediction,result);
-      weekly[key].pts+=scored.points;
-      weekly[key].ex+=scored.exact?1:0;
-      weekly[key].cr+=scored.correct?1:0;
-    });
-    const general={};
-    Object.values(weekly).forEach(row=>{
-      general[row.name]??={name:row.name,pts:0,ex:0,cr:0};
-      general[row.name].pts+=row.pts;
-      general[row.name].ex+=row.ex;
-      general[row.name].cr+=row.cr;
-    });
-    const rows=Object.values(general).sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name,'tr'));
-    let lastPoints=null,denseRank=0;
-    rows.forEach(row=>{if(row.pts!==lastPoints){denseRank+=1;lastPoints=row.pts}row.rank=denseRank});
-    return rows;
-  }
-
-  async function load({client,loadPlayers,isActive,doc,escape}){
-    let predictionQuery=await client.from('predictions').select('*');
-    if(predictionQuery.error)throw predictionQuery.error;
-    let predictions=predictionQuery.data||[];
-    try{
-      await loadPlayers?.();
-      if(isActive)predictions=predictions.filter(row=>isActive(row.player_name));
-    }catch(error){console.warn('active player filter skipped',error)}
-    const resultQuery=await client.from('results').select('*');
-    if(resultQuery.error)throw resultQuery.error;
-    const rows=calculateRows(predictions,resultQuery.data||[]);
+  function pointsFor(prediction,result){const exact=+prediction.home_score===+result.home_score&&+prediction.away_score===+result.away_score,correct=outcome(prediction.home_score,prediction.away_score)===outcome(result.home_score,result.away_score),multiplier=isOpportunity(prediction)?2:1;return{points:(exact?4:correct?1:0)*multiplier,exact,correct}}
+  function calculateRows(predictions,results){const real=Object.fromEntries((results||[]).filter(r=>r.home_score!=null&&r.away_score!=null).map(r=>[+r.fixture_id,r])),general={};(predictions||[]).forEach(p=>{const r=real[+p.fixture_id];if(!r)return;general[p.player_name]??={name:p.player_name,pts:0,ex:0,cr:0};const s=pointsFor(p,r),g=general[p.player_name];g.pts+=s.points;g.ex+=s.exact?1:0;g.cr+=s.correct?1:0});const rows=Object.values(general).sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name,'tr'));let lp=null,rank=0;rows.forEach(r=>{if(r.pts!==lp){rank++;lp=r.pts}r.rank=rank});return rows}
+  async function load({client,doc,escape}){
+    const query=await client.rpc('get_super_league_general_ranking');
+    if(query.error)throw query.error;
+    const rows=(query.data||[]).map(row=>({name:row.player_name,pts:+row.total_points,ex:+row.exact_scores,cr:+row.correct_results,rank:+row.league_rank}));
     const clean=escape||String;
     doc.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map(row=>`<tr><td>${row.rank===1?'🥇 1':row.rank===2?'🥈 2':row.rank===3?'🥉 3':row.rank}</td><td>${clean(row.name)}</td><td><b>${row.pts}</b></td><td>${row.ex}</td></tr>`).join('')}</table>`;
     return rows;
   }
-
   return{pointsFor,calculateRows,load};
 });
