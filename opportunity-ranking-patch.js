@@ -19,6 +19,13 @@
     });
     return Object.entries(grouped).map(([name,x])=>({name,...x})).sort((a,b)=>b.pts-a.pts||b.ex-a.ex||b.cr-a.cr||a.name.localeCompare(b.name,'tr'));
   }
+  async function refreshAfterResult({document:doc,loadLive,loadGeneral,refreshPersonalRanks,refreshHomeDashboard}){
+    await loadLive?.();
+    const general=doc?.getElementById?.('general');
+    if(general&&!general.classList?.contains?.('hide'))await loadGeneral?.();
+    await refreshPersonalRanks?.();
+    await refreshHomeDashboard?.();
+  }
   function mount(){
     if(typeof window==='undefined'||!scoring)return;
     window.scoreRows=function(ps,rs){return calculateRows(ps,rs,typeof allFixtures!=='undefined'?allFixtures:fixtures)};
@@ -31,5 +38,5 @@
       document.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map((r,i)=>`<tr><td>${i===0?'🥇 1':i===1?'🥈 2':i===2?'🥉 3':i+1}</td><td>${esc(r.name)}</td><td><b>${r.pts}</b></td><td>${r.ex}</td></tr>`).join('')}</table>`;
     };
   }
-  return{calculateRows,mount};
+  return{calculateRows,refreshAfterResult,mount};
 });
