@@ -13,21 +13,24 @@ assert.strictEqual(
   'https://wa.me/?text='+encodeURIComponent(text)
 );
 
-let insertedPosition='';
-let insertedElement=null;
+let wrapperPosition='';
+let wrapperElement=null;
 let insertedStyle='';
-const tabs={insertAdjacentElement(position,element){insertedPosition=position;insertedElement=element}};
+const connection={insertAdjacentElement(position,element){wrapperPosition=position;wrapperElement=element}};
+const oldTabs={insertAdjacentElement(position,element){wrapperPosition=position;wrapperElement=element}};
 const documentStub={
-  getElementById(){return null},
-  querySelector(selector){return selector==='.tabs'?tabs:null},
-  createElement(tag){return{tagName:tag.toUpperCase(),className:'',textContent:'',set id(value){this._id=value},get id(){return this._id},set href(value){this._href=value},get href(){return this._href}}},
+  getElementById(id){return id==='conn'?connection:null},
+  querySelector(selector){return selector==='.tabs'?oldTabs:null},
+  createElement(tag){return{tagName:tag.toUpperCase(),className:'',textContent:'',children:[],appendChild(child){this.children.push(child)},set id(value){this._id=value},get id(){return this._id},set href(value){this._href=value},get href(){return this._href}}},
   head:{insertAdjacentHTML(position,html){insertedStyle=html}}
 };
 
 assert.strictEqual(share.mount(documentStub,{location:{origin:gameUrl,pathname:'/'}}),true);
-assert.strictEqual(insertedPosition,'afterend');
-assert.strictEqual(insertedElement.id,'bsShareGame');
-assert.strictEqual(insertedElement.textContent,'🟢 Oyunu Arkadaşına Öner');
-assert.strictEqual(insertedElement.href,share.whatsappUrl(gameUrl+'/'));
+assert.strictEqual(wrapperPosition,'beforebegin');
+assert.strictEqual(wrapperElement.id,'bsConnectionShareRow');
+assert.strictEqual(wrapperElement.children[0],connection);
+assert.strictEqual(wrapperElement.children[1].id,'bsShareGame');
+assert.strictEqual(wrapperElement.children[1].textContent,'🟢 Oyunu Arkadaşına Öner');
+assert.strictEqual(wrapperElement.children[1].href,share.whatsappUrl(gameUrl+'/'));
 assert.ok(insertedStyle.includes('bsShareGameStyles'));
 console.log('share game ok');
