@@ -11,8 +11,12 @@
         :'Henüz puan oluşmadı.';
     };
 
-    personalRankValue=function(rows,name){
+    personalRankValue=function(rows,name,tiedByPoints=true){
       const wanted=normalizePlayerName(name);
+      if(tiedByPoints===false){
+        const index=(rows||[]).findIndex(row=>normalizePlayerName(row.name)===wanted);
+        return index>=0?`${index+1}.`:'—';
+      }
       const mine=denseRows(rows).find(row=>normalizePlayerName(row.name)===wanted);
       return mine?`${mine.rank}.`:'—';
     };
