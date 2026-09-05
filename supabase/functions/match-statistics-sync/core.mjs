@@ -1,9 +1,17 @@
 const FINAL_STATUSES=new Set(['FT','AET','PEN']);
 
+function equalSecret(left,right){if(!left||!right||left.length!==right.length)return false;let diff=0;for(let i=0;i<left.length;i++)diff|=left.charCodeAt(i)^right.charCodeAt(i);return diff===0}
+
+export async function authorizeRequest({suppliedSecret,environmentSecret,databaseAuthorize}){
+  if(!suppliedSecret)return false;
+  if(equalSecret(suppliedSecret,environmentSecret))return true;
+  return typeof databaseAuthorize==='function'&&await databaseAuthorize(suppliedSecret)===true;
+}
+
 function safeText(value,max=120){return String(value??'').trim().slice(0,max)}
 function safeScore(value){const number=Number(value);return Number.isInteger(number)&&number>=0&&number<=30?number:null}
 function fold(value){return safeText(value).toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/[^a-z0-9]/g,'')}
-function aliases(value){const name=fold(value);const values=new Set([name]);if(name.includes('basaksehir'))values.add('istanbulbasaksehir');if(name.includes('erzurum'))values.add('erzurumbb');if(name==='caykurrizespor')values.add('crizespor');return values}
+function aliases(value){const name=fold(value);const values=new Set([name]);if(name.includes('basaksehir'))values.add('istanbulbasaksehir');if(name.includes('erzurum'))values.add('erzurumbb');if(name==='caykurrizespor'||name==='crizespor')values.add('rizespor');if(name==='amedspor'||name==='amedsk')values.add('amed');return values}
 function sameTeam(left,right){const a=aliases(left),b=aliases(right);for(const value of a)if(b.has(value))return true;return false}
 
 export function matchProviderFixture(internalFixture,providerFixtures){
@@ -42,6 +50,30 @@ export function normalizeHeadToHead(providerFixtures){
 }
 
 export function weeklyRequestBudget(fixtureCount){const count=Math.max(0,Math.floor(Number(fixtureCount)||0));return count?Math.min(10,1+count):0}
+
+function localRecentMatches(teamName,completedMatches,beforeDate){
+  const cutoff=new Date(beforeDate).getTime();
+  return (Array.isArray(completedMatches)?completedMatches:[])
+    .filter(row=>Number.isFinite(new Date(row?.kickoff).getTime())&&new Date(row.kickoff).getTime()<cutoff)
+    .filter(row=>sameTeam(teamName,row?.home_team)||sameTeam(teamName,row?.away_team))
+    .filter(row=>safeScore(row?.home_score)!==null&&safeScore(row?.away_score)!==null)
+    .sort((a,b)=>new Date(b.kickoff).getTime()-new Date(a.kickoff).getTime())
+    .slice(0,5)
+    .map(row=>{const homeScore=safeScore(row.home_score),awayScore=safeScore(row.away_score),isHome=sameTeam(teamName,row.home_team),own=isHome?homeScore:awayScore,opponent=isHome?awayScore:homeScore;return{fixture_id:Number(row.id),date:safeText(row.kickoff,40),home_team:safeText(row.home_team),away_team:safeText(row.away_team),home_score:homeScore,away_score:awayScore,outcome:own>opponent?'W':own<opponent?'L':'D'}});
+}
+
+export function buildLocalFixtureSnapshot({internalFixture,completedMatches,standings,fetchedAt}){
+  const homeRecent=localRecentMatches(internalFixture.home_team,completedMatches,internalFixture.kickoff),awayRecent=localRecentMatches(internalFixture.away_team,completedMatches,internalFixture.kickoff);
+  const standingFor=name=>(Array.isArray(standings)?standings:[]).find(row=>sameTeam(name,row?.team))||{};
+  const side=(name,recent)=>{const standing=standingFor(name);return{name:safeText(name),rank:Number.isInteger(Number(standing.rank))?Number(standing.rank):null,points:Number.isInteger(Number(standing.points))?Number(standing.points):null,form:formSequence(recent),recent_matches:recent}};
+  const headToHead=(Array.isArray(completedMatches)?completedMatches:[])
+    .filter(row=>new Date(row?.kickoff).getTime()<new Date(internalFixture.kickoff).getTime())
+    .filter(row=>(sameTeam(internalFixture.home_team,row?.home_team)&&sameTeam(internalFixture.away_team,row?.away_team))||(sameTeam(internalFixture.home_team,row?.away_team)&&sameTeam(internalFixture.away_team,row?.home_team)))
+    .filter(row=>safeScore(row?.home_score)!==null&&safeScore(row?.away_score)!==null)
+    .sort((a,b)=>new Date(b.kickoff).getTime()-new Date(a.kickoff).getTime()).slice(0,5)
+    .map(row=>({fixture_id:Number(row.id),date:safeText(row.kickoff,40),home_team:safeText(row.home_team),away_team:safeText(row.away_team),home_score:safeScore(row.home_score),away_score:safeScore(row.away_score),score:`${safeScore(row.home_score)}-${safeScore(row.away_score)}`}));
+  return{fixture_id:Number(internalFixture.id),week:Number(internalFixture.week),kickoff:safeText(internalFixture.kickoff,40),home:side(internalFixture.home_team,homeRecent),away:side(internalFixture.away_team,awayRecent),head_to_head:headToHead,fetched_at:safeText(fetchedAt,40)};
+}
 
 export function buildFixtureSnapshot({internalFixture,providerFixture,seasonFixtures,headToHead,standings,fetchedAt}){
   const homeId=Number(providerFixture?.teams?.home?.id),awayId=Number(providerFixture?.teams?.away?.id);
