@@ -1,6 +1,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
+const vm=require('node:vm');
 
 const html=fs.readFileSync('index.html','utf8');
 
@@ -20,4 +21,27 @@ test('4. hafta tamamlanınca kişisel kart Şampiyonlar Ligi sırasına dönüş
   assert.match(html,/specialLabel\.textContent='Şampiyonlar Ligi sıram'/);
   assert.match(html,/get_champions_league_ranking/);
   assert.match(html,/league_rank/);
+});
+
+test('genel sıra kartı puan eşitliklerinden bağımsız olarak tablodaki satır konumunu gösterir',()=>{
+  let onReady;
+  const context={
+    window:{
+      addEventListener:(event,callback)=>{if(event==='DOMContentLoaded')onReady=callback},
+      playerCreatedAt:new Map()
+    },
+    BizimSkorHistory:{
+      buildWeeklyRanking:rows=>rows.map((row,index)=>({...row,rank:index<2?1:index}))
+    },
+    normalizePlayerName:name=>String(name).toLocaleLowerCase('tr-TR')
+  };
+  vm.runInNewContext(fs.readFileSync('dense-ranking-ui.js','utf8'),context);
+  onReady();
+
+  const rows=[
+    {name:'Birinci',pts:12},
+    {name:'Eşit',pts:12},
+    {name:'Erdal',pts:10}
+  ];
+  assert.equal(context.personalRankValue(rows,'Erdal',false),'3.');
 });
