@@ -16,12 +16,13 @@ assert.strictEqual(
 let wrapperPosition='';
 let wrapperElement=null;
 let insertedStyle='';
+let clickHandler=null;
 const connection={insertAdjacentElement(position,element){wrapperPosition=position;wrapperElement=element}};
 const oldTabs={insertAdjacentElement(position,element){wrapperPosition=position;wrapperElement=element}};
 const documentStub={
   getElementById(id){return id==='conn'?connection:null},
   querySelector(selector){return selector==='.tabs'?oldTabs:null},
-  createElement(tag){return{tagName:tag.toUpperCase(),className:'',textContent:'',children:[],appendChild(child){this.children.push(child)},set id(value){this._id=value},get id(){return this._id},set href(value){this._href=value},get href(){return this._href}}},
+  createElement(tag){return{tagName:tag.toUpperCase(),className:'',textContent:'',children:[],appendChild(child){this.children.push(child)},addEventListener(type,handler){if(type==='click')clickHandler=handler},set id(value){this._id=value},get id(){return this._id},set href(value){this._href=value},get href(){return this._href}}},
   head:{insertAdjacentHTML(position,html){insertedStyle=html}}
 };
 
@@ -33,4 +34,20 @@ assert.strictEqual(wrapperElement.children[1].id,'bsShareGame');
 assert.strictEqual(wrapperElement.children[1].textContent,'🟢 Oyunu Arkadaşına Öner');
 assert.strictEqual(wrapperElement.children[1].href,share.whatsappUrl(gameUrl+'/'));
 assert.ok(insertedStyle.includes('bsShareGameStyles'));
+
+let rpcCall=null;
+const host={
+  location:{origin:gameUrl,pathname:'/'},
+  localStorage:{getItem(key){return key==='bizimSkorFriendToken'?'valid-session-token':null}},
+  sb:{rpc(name,args){rpcCall={name,args};return Promise.resolve({error:null})}}
+};
+clickHandler=null;
+assert.strictEqual(share.mount({...documentStub,getElementById(id){return id==='conn'?connection:null}},host),true);
+assert.equal(typeof clickHandler,'function');
+clickHandler();
+assert.deepStrictEqual(rpcCall,{name:'record_game_share_click',args:{p_token:'valid-session-token',p_channel:'whatsapp'}});
+
+rpcCall=null;
+assert.strictEqual(share.recordShareClick({localStorage:{getItem(){return''}},sb:host.sb}),false);
+assert.strictEqual(rpcCall,null);
 console.log('share game ok');
