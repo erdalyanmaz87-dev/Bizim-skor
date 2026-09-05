@@ -17,7 +17,7 @@
       const correct=outcome(p.home_score,p.away_score)===outcome(r.home_score,r.away_score);
       if(exact)grouped[name].ex++;if(correct)grouped[name].cr++;
     });
-    return Object.entries(grouped).map(([name,x])=>({name,...x})).sort((a,b)=>b.pts-a.pts||b.ex-a.ex||b.cr-a.cr||a.name.localeCompare(b.name,'tr'));
+    return Object.entries(grouped).map(([name,x])=>({name,...x})).sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name,'tr'));
   }
   async function refreshAfterResult({document:doc,loadLive,loadGeneral,refreshPersonalRanks,refreshHomeDashboard}){
     await loadLive?.();
@@ -30,12 +30,8 @@
     if(typeof window==='undefined'||!scoring)return;
     window.scoreRows=function(ps,rs){return calculateRows(ps,rs,typeof allFixtures!=='undefined'?allFixtures:fixtures)};
     window.loadGeneral=async function(){
-      let psq=await sb.from('predictions').select('*');if(psq.error)throw psq.error;let ps=psq.data||[];
-      try{await loadActivePlayers();ps=ps.filter(p=>isPlayerActive(p.player_name))}catch(e){console.warn('active player filter skipped',e)}
-      const rsq=await sb.from('results').select('*');if(rsq.error)throw rsq.error;
-      const fq=await sb.from('fixtures').select('id,week');if(fq.error)throw fq.error;
-      const rows=calculateRows(ps,rsq.data||[],fq.data||[]);
-      document.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map((r,i)=>`<tr><td>${i===0?'🥇 1':i===1?'🥈 2':i===2?'🥉 3':i+1}</td><td>${esc(r.name)}</td><td><b>${r.pts}</b></td><td>${r.ex}</td></tr>`).join('')}</table>`;
+      if(!window.BizimSkorGeneralWeeklyTotal?.load)throw new Error('Genel sıralama motoru yüklenemedi');
+      return window.BizimSkorGeneralWeeklyTotal.load({client:sb,loadPlayers:loadActivePlayers,isActive:isPlayerActive,doc:document,escape:esc});
     };
   }
   return{calculateRows,refreshAfterResult,mount};
