@@ -18,6 +18,15 @@
     return origin&&origin!=='null'?`${origin}${pathname||'/'}`:fallbackUrl;
   }
 
+  function recordShareClick(host=root){
+    const token=host?.localStorage?.getItem?.('bizimSkorFriendToken')||'';
+    if(!token||typeof host?.sb?.rpc!=='function')return false;
+    Promise.resolve(host.sb.rpc('record_game_share_click',{p_token:token,p_channel:'whatsapp'}))
+      .then(result=>{if(result?.error)host?.console?.warn?.('share tracking',result.error)})
+      .catch(error=>host?.console?.warn?.('share tracking',error));
+    return true;
+  }
+
   function styleMarkup(){
     return '<style id="bsShareGameStyles">.bs-connection-share-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:8px;align-items:stretch;margin-bottom:12px}.bs-connection-share-row #conn{display:flex;align-items:center;min-width:0;min-height:48px;box-sizing:border-box;margin:0;padding:10px 12px;font-size:14px}.bs-share-game{display:flex;align-items:center;justify-content:center;min-width:0;min-height:48px;box-sizing:border-box;margin:0;padding:10px 12px;border:1px solid #16a34a;border-radius:14px;background:linear-gradient(135deg,#22c55e,#15803d);box-shadow:0 5px 14px rgba(21,128,61,.2);color:#fff;font-size:14px;line-height:1.2;font-weight:900;text-align:center;text-decoration:none}.bs-share-game:active{transform:scale(.99)}.bs-share-game:focus-visible{outline:3px solid #86efac;outline-offset:2px}</style>';
   }
@@ -36,6 +45,7 @@
     link.rel='noopener noreferrer';
     link.textContent='🟢 Oyunu Arkadaşına Öner';
     link.setAttribute?.('aria-label','Oyunu WhatsApp ile arkadaşına öner');
+    link.addEventListener?.('click',()=>recordShareClick(host));
     connection.insertAdjacentElement('beforebegin',row);
     row.appendChild(connection);
     row.appendChild(link);
@@ -49,5 +59,5 @@
     else mount();
   }
 
-  return Object.freeze({shareText,whatsappUrl,currentGameUrl,styleMarkup,mount,start});
+  return Object.freeze({shareText,whatsappUrl,currentGameUrl,recordShareClick,styleMarkup,mount,start});
 });
