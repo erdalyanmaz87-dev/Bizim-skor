@@ -33,7 +33,10 @@
       general[row.name].ex+=row.ex;
       general[row.name].cr+=row.cr;
     });
-    return Object.values(general).sort((a,b)=>b.pts-a.pts||b.ex-a.ex||b.cr-a.cr||a.name.localeCompare(b.name,'tr'));
+    const rows=Object.values(general).sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name,'tr'));
+    let lastPoints=null,denseRank=0;
+    rows.forEach(row=>{if(row.pts!==lastPoints){denseRank+=1;lastPoints=row.pts}row.rank=denseRank});
+    return rows;
   }
 
   async function load({client,loadPlayers,isActive,doc,escape}){
@@ -48,7 +51,7 @@
     if(resultQuery.error)throw resultQuery.error;
     const rows=calculateRows(predictions,resultQuery.data||[]);
     const clean=escape||String;
-    doc.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map((row,index)=>`<tr><td>${index===0?'🥇 1':index===1?'🥈 2':index===2?'🥉 3':index+1}</td><td>${clean(row.name)}</td><td><b>${row.pts}</b></td><td>${row.ex}</td></tr>`).join('')}</table>`;
+    doc.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map(row=>`<tr><td>${row.rank===1?'🥇 1':row.rank===2?'🥈 2':row.rank===3?'🥉 3':row.rank}</td><td>${clean(row.name)}</td><td><b>${row.pts}</b></td><td>${row.ex}</td></tr>`).join('')}</table>`;
     return rows;
   }
 
