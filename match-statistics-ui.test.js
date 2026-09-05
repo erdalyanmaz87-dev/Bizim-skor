@@ -21,10 +21,20 @@ test('istatistik ekranı veriyi kaçışlı, dikey ve Türkçe başlıklarla gö
   assert.match(html,/Son güncelleme:/);
 });
 
-test('form işaretleri galibiyet beraberlik mağlubiyet sırasını korur',()=>{
-  assert.match(ui.renderForm(['W','D','L']),/form-win[^>]*>G/);
-  assert.match(ui.renderForm(['W','D','L']),/form-draw[^>]*>B/);
-  assert.match(ui.renderForm(['W','D','L']),/form-loss[^>]*>M/);
+test('form işaretlerini eskiden yeniye dizer ve yön oku gösterir',()=>{
+  const html=ui.renderForm(['W','D','L']);
+  assert.ok(html.indexOf('form-loss')<html.indexOf('form-draw'));
+  assert.ok(html.indexOf('form-draw')<html.indexOf('form-win'));
+  assert.match(html,/match-stats-form-arrow/);
+  assert.match(html,/→/);
+});
+
+test('son maçları eskiden yeniye doğru yukarıdan aşağıya dizer',()=>{
+  const html=ui.renderMatches([
+    {date:'2026-09-01T17:00:00Z',home_team:'Yeni',away_team:'Maç',home_score:2,away_score:0},
+    {date:'2026-08-01T17:00:00Z',home_team:'Eski',away_team:'Maç',home_score:1,away_score:1}
+  ]);
+  assert.ok(html.indexOf('Eski')<html.indexOf('Yeni'));
 });
 
 test('taslak skorlar ve sayfa konumu istatistikten dönüşte aynen korunur',()=>{
