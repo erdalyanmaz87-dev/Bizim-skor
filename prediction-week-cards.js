@@ -7,22 +7,23 @@ function buildCards(leagueStatuses,champions){
 function championsTabSelector(){return '[data-tab="championsPred"]'}
 function selectionValue(card){return card?.target?.type==='league'?String(card.target.week):''}
 function canEditBeforeWeekStart(nowMs,firstKickoffMs){return Number(nowMs)<Number(firstKickoffMs)}
-function countdownText(deadline,now=Date.now()){
+function countdownText(deadline,now=Date.now(),complete=false){
   const remaining=new Date(deadline).getTime()-new Date(now).getTime();
-  if(!Number.isFinite(remaining)||remaining<=0)return '🔒 Tahmin süresi doldu';
+  if(!Number.isFinite(remaining)||remaining<=0)return complete?'⚽ Maçlar başladı':'🔒 Tahmin süresi doldu';
+  const prefix=complete?'⏳ Maçların başlamasına':'⏳ Tahmine son';
   const hour=60*60*1000,day=24*hour;
-  if(remaining>=day){const days=Math.floor(remaining/day),hours=Math.floor((remaining%day)/hour);return `⏳ Tahmine son ${days} gün${hours?` ${hours} saat`:''}`}
-  if(remaining>=hour)return `⏳ Tahmine son ${Math.ceil(remaining/hour)} saat`;
-  return `⏳ Tahmine son ${Math.max(1,Math.ceil(remaining/60000))} dakika`;
+  if(remaining>=day){const days=Math.floor(remaining/day),hours=Math.floor((remaining%day)/hour);return `${prefix} ${days} gün${hours?` ${hours} saat`:''}`}
+  if(remaining>=hour)return `${prefix} ${Math.ceil(remaining/hour)} saat`;
+  return `${prefix} ${Math.max(1,Math.ceil(remaining/60000))} dakika`;
 }
 function render(cards,now=Date.now()){
   return `<div class="bs-week-cards">${cards.map((card,i)=>{
     const action=card.complete?'✓ Tahminlerin tamamlandı':'Tahminini yap →';
-    const countdown=!card.complete&&card.deadline?`<small class="bs-week-countdown" data-countdown-deadline="${String(card.deadline)}">${countdownText(card.deadline,now)}</small>`:'';
+    const countdown=card.deadline?`<small class="bs-week-countdown" data-countdown-deadline="${String(card.deadline)}" data-countdown-complete="${card.complete}">${countdownText(card.deadline,now,card.complete)}</small>`:'';
     return `<button type="button" class="bs-week-card theme-${card.theme} ${card.complete?'done':'missing'}" data-bs-card="${i}"><strong>${card.label}</strong><span>${action}</span>${countdown}</button>`;
   }).join('')}</div>`;
 }
-function updateCountdowns(host,now=Date.now()){host?.querySelectorAll?.('[data-countdown-deadline]').forEach(el=>{el.textContent=countdownText(el.dataset.countdownDeadline,now)})}
+function updateCountdowns(host,now=Date.now()){host?.querySelectorAll?.('[data-countdown-deadline]').forEach(el=>{el.textContent=countdownText(el.dataset.countdownDeadline,now,el.dataset.countdownComplete==='true')})}
 function openCard(card){if(!card)return;if(card.target.type==='league'){const select=document.getElementById('predictionWeekSelect');if(select){select.value=selectionValue(card);select.dispatchEvent(new Event('change',{bubbles:true}))}document.querySelector('[data-tab="pred"]')?.click();setTimeout(()=>{const current=document.getElementById('predictionWeekSelect');if(current&&current.value!==selectionValue(card)){current.value=selectionValue(card);current.dispatchEvent(new Event('change',{bubbles:true}))}},120);return}if(typeof root.BizimSkorChampionsUI?.openPrediction==='function')root.BizimSkorChampionsUI.openPrediction();else document.querySelector(championsTabSelector())?.click()}
 async function getCards(){const priority=root.BizimSkorHomePriority;if(!priority)return[];let league=[],champions=null;try{if(typeof priority.getStatuses==='function')league=await priority.getStatuses()}catch(_){}try{if(typeof priority.getChampionsStatus==='function')champions=await priority.getChampionsStatus()}catch(_){}return buildCards(league,champions)}
 async function refresh(){const pred=document.querySelector('.tabs .tab[data-tab="pred"]');if(!pred)return;let host=document.getElementById('bsPredictionWeekCards');if(!host){host=document.createElement('div');host.id='bsPredictionWeekCards';pred.insertAdjacentElement('afterend',host)}const cards=await getCards();if(!cards.length)return;host.innerHTML=render(cards);host.querySelectorAll('[data-bs-card]').forEach(btn=>btn.addEventListener('click',()=>openCard(cards[+btn.dataset.bsCard])))}
