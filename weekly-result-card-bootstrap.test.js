@@ -1,5 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const {latestCompletedWeek,findPlayerRow}=require('./weekly-result-card-bootstrap');
 
 test('latestCompletedWeek returns latest week with every fixture finished',()=>{
@@ -10,4 +11,11 @@ test('latestCompletedWeek returns latest week with every fixture finished',()=>{
 
 test('findPlayerRow matches Turkish names case-insensitively',()=>{
  assert.deepEqual(findPlayerRow([{name:'İpek',pts:8,rank:2}],'ipek'),{name:'İpek',pts:8,rank:2});
+});
+
+test('weekly result bootstrap mounts a compact trigger and hidden modal instead of an always-visible card',()=>{
+ const source=fs.readFileSync(require.resolve('./weekly-result-card-bootstrap'),'utf8');
+ assert.match(source,/bsWeeklyResultTrigger/);
+ assert.match(source,/bsWeeklyResultModal/);
+ assert.doesNotMatch(source,/shell\.innerHTML=`\$\{host\.BizimSkorWeeklyResultCard\.renderWeeklyResultCard\(model\)\}/);
 });
