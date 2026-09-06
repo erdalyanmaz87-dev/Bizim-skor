@@ -27,3 +27,11 @@
   }
   return{scorePrediction,buildWeeklyRanking,visiblePredictionScore};
 });
+
+if(typeof document!=='undefined'&&!document.querySelector('script[data-bizim-integration-loader]')){
+  const loader=document.createElement('script');
+  loader.src='ui-integration-loader.js';
+  loader.defer=true;
+  loader.dataset.bizimIntegrationLoader='1';
+  document.head.appendChild(loader);
+}
