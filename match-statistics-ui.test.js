@@ -58,3 +58,23 @@ test('buton yalnız Supabase önbellek RPC çağrısını kullanır',async()=>{
 test('veri hazırlanmamışsa anlaşılır hata verir',async()=>{
   await assert.rejects(()=>ui.loadSnapshot({rpc(){return Promise.resolve({data:null,error:null})}},44),/henüz hazırlanmadı/i);
 });
+
+test('oyuna sonradan işlenen sonuçları eski istatistik kaydının önüne ekler',()=>{
+  const live=ui.mergeLiveSnapshot({
+    fixture_id:37,week:5,kickoff:'2026-09-11T17:00:00Z',home_team:'Beşiktaş',away_team:'Erzurumspor FK',fetched_at:'2026-09-05T13:01:46Z',
+    home:{name:'Beşiktaş',rank:3,points:6,form:['W'],recent_matches:[{fixture_id:27,date:'2026-08-31T18:30:00Z',home_team:'Beşiktaş',away_team:'Çorum FK',home_score:6,away_score:2,outcome:'W'}]},
+    away:{name:'Erzurumspor FK',rank:17,points:1,form:['D'],recent_matches:[]},head_to_head:[],
+    _standings:[{team:'Beşiktaş',rank:2,points:9},{team:'Erzurumspor FK',rank:14,points:4}],
+    _game_results:[
+      {fixture_id:30,date:'2026-09-05T17:00:00Z',home_team:'Fenerbahçe',away_team:'Beşiktaş',home_score:1,away_score:2,updated_at:'2026-09-05T18:56:38Z'},
+      {fixture_id:27,date:'2026-08-31T18:30:00Z',home_team:'Beşiktaş',away_team:'Çorum FK',home_score:6,away_score:2,updated_at:'2026-08-31T20:24:14Z'}
+    ]
+  });
+  assert.deepEqual(live.home.recent_matches.map(x=>x.fixture_id),[30,27]);
+  assert.deepEqual(live.home.form,['W','W']);
+  assert.equal(live.home.rank,2);
+  assert.equal(live.home.points,9);
+  assert.equal(live.fetched_at,'2026-09-05T18:56:38Z');
+  assert.equal('_game_results' in live,false);
+  assert.equal('_standings' in live,false);
+});
