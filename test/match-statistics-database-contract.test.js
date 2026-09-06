@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 
 const migrationPath=path.join(__dirname,'../supabase/migrations/20260905173000_match_statistics_snapshots.sql');
+const liveResultsMigrationPath=path.join(__dirname,'../supabase/migrations/20260906001659_live_match_statistics_results.sql');
 
 test('maç istatistikleri önbelleği salt okunur RLS ile korunur',()=>{
   const sql=fs.readFileSync(migrationPath,'utf8');
@@ -32,5 +33,18 @@ test('otomatik hazırlık yalnız maçsız günde ve eksik gelecek hafta için �
 test('oyun istemcisi yalnız tek fikstürün hazırlanmış verisini okuyabilir',()=>{
   const sql=fs.readFileSync(migrationPath,'utf8');
   assert.match(sql,/create or replace function public\.get_match_statistics\(p_fixture_id bigint\)/i);
+  assert.match(sql,/grant execute on function public\.get_match_statistics\(bigint\) to anon,authenticated/i);
+});
+
+test('istatistik RPCsi güncel oyun sonuçlarını aynı yanıtta taşır',()=>{
+  const sql=fs.readFileSync(liveResultsMigrationPath,'utf8');
+  assert.match(sql,/create or replace function public\.get_match_statistics\(p_fixture_id bigint\)/i);
+  assert.match(sql,/join public\.results r on r\.fixture_id=f\.id/i);
+  assert.match(sql,/'_game_results'/i);
+  assert.match(sql,/'_standings'/i);
+  assert.match(sql,/with team_games as/i);
+  assert.match(sql,/rank\(\) over\(order by points desc,goal_diff desc,goals_for desc,team\)/i);
+  assert.doesNotMatch(sql,/football_center_snapshots/i);
+  assert.match(sql,/security invoker/i);
   assert.match(sql,/grant execute on function public\.get_match_statistics\(bigint\) to anon,authenticated/i);
 });
