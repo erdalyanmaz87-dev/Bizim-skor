@@ -1,0 +1,1 @@
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.BizimSkorInviteChampion=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){function selectMonthlyInviteChampion(rows){return Array.isArray(rows)&&rows.length?rows[0]:null}return {selectMonthlyInviteChampion};});
