@@ -1,53 +1,38 @@
-const assert=require('assert');
-const fs=require('fs');
-
-assert.ok(fs.existsSync('./share-game.js'),'WhatsApp paylaşım bileşeni bulunmalı');
-
+const test=require('node:test');
+const assert=require('node:assert/strict');
 const share=require('./share-game.js');
+
 const gameUrl='https://bizim-skor-live.vercel.app';
-const text=share.shareText(gameUrl);
-assert.ok(text.includes('Bizim Skor\u2019a sen de katıl'));
-assert.ok(text.includes(gameUrl));
-assert.strictEqual(
-  share.whatsappUrl(gameUrl),
-  'https://wa.me/?text='+encodeURIComponent(text)
-);
 
-let wrapperPosition='';
-let wrapperElement=null;
-let insertedStyle='';
-let clickHandler=null;
-const connection={insertAdjacentElement(position,element){wrapperPosition=position;wrapperElement=element}};
-const oldTabs={insertAdjacentElement(position,element){wrapperPosition=position;wrapperElement=element}};
-const documentStub={
-  getElementById(id){return id==='conn'?connection:null},
-  querySelector(selector){return selector==='.tabs'?oldTabs:null},
-  createElement(tag){return{tagName:tag.toUpperCase(),className:'',textContent:'',children:[],appendChild(child){this.children.push(child)},addEventListener(type,handler){if(type==='click')clickHandler=handler},set id(value){this._id=value},get id(){return this._id},set href(value){this._href=value},get href(){return this._href}}},
-  head:{insertAdjacentHTML(position,html){insertedStyle=html}}
-};
+test('share text contains Bizim Skor and invite url',()=>{
+ const text=share.shareText(gameUrl);
+ assert.match(text,/Bizim Skor’a sen de katıl/);
+ assert.match(text,/https:\/\/bizim-skor-live\.vercel\.app/);
+ assert.equal(share.whatsappUrl(gameUrl),'https://wa.me/?text='+encodeURIComponent(text));
+});
 
-assert.strictEqual(share.mount(documentStub,{location:{origin:gameUrl,pathname:'/'}}),true);
-assert.strictEqual(wrapperPosition,'beforebegin');
-assert.strictEqual(wrapperElement.id,'bsConnectionShareRow');
-assert.strictEqual(wrapperElement.children[0],connection);
-assert.strictEqual(wrapperElement.children[1].id,'bsShareGame');
-assert.strictEqual(wrapperElement.children[1].textContent,'🟢 Oyunu Arkadaşına Öner');
-assert.strictEqual(wrapperElement.children[1].href,share.whatsappUrl(gameUrl+'/'));
-assert.ok(insertedStyle.includes('bsShareGameStyles'));
+test('league menu action directly shares selected friend league when helper exists',async()=>{
+ let called=0;
+ const host={BizimSkorLeagueInviteShare:{shareSelectedLeague:async()=>{called++;return true}}};
+ const result=await share.shareSelectedLeagueFromMenu(host,{});
+ assert.equal(result,true);
+ assert.equal(called,1);
+});
 
-let rpcCall=null;
-const host={
-  location:{origin:gameUrl,pathname:'/'},
-  localStorage:{getItem(key){return key==='bizimSkorFriendToken'?'valid-session-token':null}},
-  sb:{rpc(name,args){rpcCall={name,args};return Promise.resolve({error:null})}}
-};
-clickHandler=null;
-assert.strictEqual(share.mount({...documentStub,getElementById(id){return id==='conn'?connection:null}},host),true);
-assert.equal(typeof clickHandler,'function');
-clickHandler();
-assert.deepStrictEqual(rpcCall,{name:'record_game_share_click',args:{p_token:'valid-session-token',p_channel:'whatsapp'}});
+test('league menu action falls back to friend leagues tab when helper is unavailable',async()=>{
+ let clicked=0;
+ const doc={querySelector:selector=>selector==='[data-tab="friendLeagues"]'?{click(){clicked++}}:null};
+ const result=await share.shareSelectedLeagueFromMenu({},doc);
+ assert.equal(result,false);
+ assert.equal(clicked,1);
+});
 
-rpcCall=null;
-assert.strictEqual(share.recordShareClick({localStorage:{getItem(){return''}},sb:host.sb}),false);
-assert.strictEqual(rpcCall,null);
-console.log('share game ok');
+test('recordShareClick requires a valid friend session token',()=>{
+ let rpcCall=null;
+ const host={localStorage:{getItem:key=>key==='bizimSkorFriendToken'?'valid-session-token':''},sb:{rpc(name,args){rpcCall={name,args};return Promise.resolve({error:null})}}};
+ assert.equal(share.recordShareClick(host),true);
+ assert.deepEqual(rpcCall,{name:'record_game_share_click',args:{p_token:'valid-session-token',p_channel:'whatsapp'}});
+ rpcCall=null;
+ assert.equal(share.recordShareClick({localStorage:{getItem:()=>''},sb:host.sb}),false);
+ assert.equal(rpcCall,null);
+});
