@@ -21,8 +21,15 @@ assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-06T06:45:00Z
 assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-08T10:30:00Z'),'⏳ Tahmine son 7 saat');
 assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-08T16:03:30Z'),'⏳ Tahmine son 42 dakika');
 assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-08T16:45:00Z'),'🔒 Tahmin süresi doldu');
+assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-06T06:45:00Z',true),'⏳ Maçların başlamasına 2 gün 10 saat');
+assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-08T16:03:30Z',true),'⏳ Maçların başlamasına 42 dakika');
+assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-08T16:45:00Z',true),'⚽ Maçlar başladı');
 const missingMarkup=ui.render(cards,'2026-09-06T06:45:00Z');
 assert(missingMarkup.includes('data-countdown-deadline="2026-09-11T17:00:00Z"'));
 assert(missingMarkup.includes('⏳ Tahmine son'));
+assert(missingMarkup.includes('data-countdown-complete="true"'));
+assert(missingMarkup.includes('⚽ Maçlar başladı'));
+const completeMarkup=ui.render([{label:'Süper Lig 5. Hafta',complete:true,deadline:'2026-09-08T16:45:00Z',theme:'super',target:{type:'league',week:5}}],'2026-09-06T06:45:00Z');
+assert(completeMarkup.includes('⏳ Maçların başlamasına 2 gün 10 saat'));
 assert(!missingMarkup.includes('undefined'));
 console.log('prediction-week-cards ok');
