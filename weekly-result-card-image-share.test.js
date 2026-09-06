@@ -8,22 +8,23 @@ const model={
   inviteUrl:'https://bizim-skor-live.vercel.app/?invite=Erdal'
 };
 
-test('buildCardSvg creates a shareable premium weekly-result visual',()=>{
+test('buildCardSvg creates a compact premium social card without printing the long URL',()=>{
   const svg=Share.buildCardSvg(model);
   assert.match(svg,/1080/);
   assert.match(svg,/1350/);
   assert.match(svg,/Erdal/);
   assert.match(svg,/3\. HAFTA/);
-  assert.match(svg,/TOPLAM PUAN/);
-  assert.match(svg,/>3</);
+  assert.match(svg,/HAFTALIK SONUÇ/);
+  assert.match(svg,/PUAN/);
   assert.match(svg,/TAM SKOR/);
   assert.match(svg,/DOĞRU SONUÇ/);
   assert.match(svg,/#9/);
   assert.match(svg,/#17/);
-  assert.match(svg,/bizim-skor-live\.vercel\.app/);
+  assert.match(svg,/ARKADAŞLARINI DAVET ET/);
+  assert.doesNotMatch(svg,/bizim-skor-live\.vercel\.app\/\?invite=Erdal/);
 });
 
-test('buildNativeSharePayload includes PNG file and clickable invite link text',()=>{
+test('buildNativeSharePayload keeps the personal invite link clickable outside the image',()=>{
   const file={name:'bizim-skor-3-hafta-erdal.png',type:'image/png'};
   const payload=Share.buildNativeSharePayload(model,file);
   assert.deepEqual(payload.files,[file]);
