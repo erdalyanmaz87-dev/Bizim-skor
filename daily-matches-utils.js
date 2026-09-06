@@ -1,44 +1,12 @@
-(function(root,factory){
-  const api=factory();
-  if(typeof module==='object'&&module.exports)module.exports=api;
-  else root.BizimSkorDailyMatches=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
-  const zone='Europe/Istanbul';
-  const dayKey=date=>new Intl.DateTimeFormat('en-CA',{
-    timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'
-  }).format(date);
-  const timeText=date=>new Intl.DateTimeFormat('tr-TR',{
-    timeZone:zone,hour:'2-digit',minute:'2-digit',hour12:false
-  }).format(date).replace(':','.');
-
-  function selectDailyMatches(fixtures,now=new Date()){
-    const today=dayKey(now),tomorrow=dayKey(new Date(now.getTime()+86400000));
-    const future=(fixtures||[]).map(f=>({...f,date:new Date(f.kickoff)}))
-      .filter(f=>!Number.isNaN(f.date.getTime())&&dayKey(f.date)>=today)
-      .sort((a,b)=>a.date-b.date);
-    const selectedDay=future[0]?dayKey(future[0].date):today;
-    const label=selectedDay===today?'Günün Maçları':selectedDay===tomorrow?'Yarının Maçları':new Intl.DateTimeFormat('tr-TR',{
-      timeZone:zone,day:'numeric',month:'long'
-    }).format(future[0].date)+' Maçları';
-    return{
-      label,
-      matches:future.filter(f=>dayKey(f.date)===selectedDay).map(f=>({...f,time:timeText(f.date)}))
-    };
-  }
-
-  function renderDailyMatchesMarkup(day,escapeHtml){
-    const safe=escapeHtml||String;
-    const heading=`<h2>⚽ ${safe(day.label)}</h2>`;
-    if(!day.matches.length)return heading+'<p class="small">Bugün oynanacak maç bulunmuyor.</p>';
-    return heading+day.matches.map(match=>match.live&&typeof globalThis.BizimSkorLiveScore!=='undefined'
-      ?globalThis.BizimSkorLiveScore.renderLiveMatchMarkup(match,match.live)
-      :`<div class="daily-match"><b>${safe(match.time)}</b><span>${safe(match.home_team)} – ${safe(match.away_team)}</span></div>`).join('');
-  }
-
-  function mergeDailyMatchesWithLiveState(fixtures,rows){
-    const live=new Map((rows||[]).map(row=>[`${row.competition}:${row.fixture_id}`,row]));
-    return(fixtures||[]).map(fixture=>({...fixture,live:live.get(`${fixture.competition}:${fixture.id}`)||null}));
-  }
-
-  return{selectDailyMatches,renderDailyMatchesMarkup,mergeDailyMatchesWithLiveState};
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.BizimSkorDailyMatches=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+const zone='Europe/Istanbul';
+const dayKey=date=>new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+const timeText=date=>new Intl.DateTimeFormat('tr-TR',{timeZone:zone,hour:'2-digit',minute:'2-digit',hour12:false}).format(date).replace(':','.');
+function selectDailyMatches(fixtures,now=new Date()){const today=dayKey(now),tomorrow=dayKey(new Date(now.getTime()+86400000));const future=(fixtures||[]).map(f=>({...f,date:new Date(f.kickoff)})).filter(f=>!Number.isNaN(f.date.getTime())&&dayKey(f.date)>=today).sort((a,b)=>a.date-b.date);const selectedDay=future[0]?dayKey(future[0].date):today;const label=selectedDay===today?'Günün Maçları':selectedDay===tomorrow?'Yarının Maçları':new Intl.DateTimeFormat('tr-TR',{timeZone:zone,day:'numeric',month:'long'}).format(future[0].date)+' Maçları';return{label,matches:future.filter(f=>dayKey(f.date)===selectedDay).map(f=>({...f,time:timeText(f.date)}))};}
+function outcome(h,a){return h===a?'D':h>a?'H':'A'}
+function predictionStatus(pred,score,isOpportunity=false){if(!pred||!score)return null;const ph=+pred.home,pa=+pred.away,sh=+score.home,sa=+score.away;if([ph,pa,sh,sa].some(Number.isNaN))return null;if(ph===sh&&pa===sa){const points=isOpportunity?8:4;return{kind:'exact',points,label:`🎯 Skor doğru • ${points} puan`}}if(outcome(ph,pa)===outcome(sh,sa)){const points=isOpportunity?2:1;return{kind:'result',points,label:`✅ Sonuç doğru • ${points} puan`}}return{kind:'wrong',points:0,label:'Tahmin şu an tutmuyor'};}
+function renderMyPrediction(pred,score,isOpportunity=false){if(!pred)return'';const base=`👤 Sizin tahmininiz: <b>${+pred.home} - ${+pred.away}</b>`;const status=predictionStatus(pred,score,isOpportunity);return base+(status?` <span class="my-pred-status ${status.kind}">${status.label}</span>`:'');}
+function renderDailyMatchesMarkup(day,escapeHtml){const safe=escapeHtml||String;const heading=`<h2>⚽ ${safe(day.label)}</h2>`;if(!day.matches.length)return heading+'<p class="small">Bugün oynanacak maç bulunmuyor.</p>';return heading+day.matches.map(match=>{const pred=match.my_prediction;const score=match.live?{home:match.live.home_score,away:match.live.away_score}:null;const mine=pred?`<div class="my-daily-prediction">${renderMyPrediction(pred,score,!!match.is_opportunity)}</div>`:'';if(match.live&&typeof globalThis.BizimSkorLiveScore!=='undefined')return globalThis.BizimSkorLiveScore.renderLiveMatchMarkup(match,match.live)+mine;return `<div class="daily-match"><b>${safe(match.time)}</b><span>${safe(match.home_team)} – ${safe(match.away_team)}</span></div>${mine}`;}).join('');}
+function mergeDailyMatchesWithLiveState(fixtures,rows){const live=new Map((rows||[]).map(row=>[`${row.competition}:${row.fixture_id}`,row]));return(fixtures||[]).map(fixture=>({...fixture,live:live.get(`${fixture.competition}:${fixture.id}`)||null}));}
+return{selectDailyMatches,predictionStatus,renderMyPrediction,renderDailyMatchesMarkup,mergeDailyMatchesWithLiveState};
 });
