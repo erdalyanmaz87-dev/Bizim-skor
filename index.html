@@ -181,7 +181,7 @@ async function refreshPersonalRanks(){
   const week4Ids=allWeekFixtures.filter(f=>+f.week===4).map(f=>f.id),completedWeek4Ids=new Set(allResults.filter(r=>r.home_score!=null&&r.away_score!=null).map(r=>r.fixture_id)),week4Complete=week4Ids.length>0&&week4Ids.every(id=>completedWeek4Ids.has(id));
   if(week4Complete){specialLabel.textContent='Şampiyonlar Ligi sıram';const token=await ensureFriendSession(),ranking=await sb.rpc('get_champions_league_ranking',{p_token:token,p_season:'2026/27'});if(ranking.error)throw ranking.error;const mine=(ranking.data||[]).find(r=>normalizePlayerName(r.player_name)===normalizePlayerName(name));specialEl.textContent=mine?mine.league_rank+'.':'—'}
   else{specialLabel.textContent='Sezu sıram';const sps=await sb.from('predictions').select('*').in('week',[3,4]);if(sps.error)throw sps.error;const srows=(sps.data||[]).filter(p=>isPlayerActive(p.player_name)),sids=[...new Set(srows.map(p=>p.fixture_id))],srs=allResults.filter(r=>sids.includes(r.fixture_id));specialEl.textContent=srs.some(r=>r.home_score!=null&&r.away_score!=null)?personalRankValue(scoreRows(srows,srs),name,true):'—'}
-  const aps=await sb.from('predictions').select('*');if(aps.error)throw aps.error;generalEl.textContent=personalRankValue(scoreRows((aps.data||[]).filter(p=>isPlayerActive(p.player_name)),allResults),name,false);
+  generalEl.textContent=await BizimSkorGeneralWeeklyTotal.loadPersonalRank({client:sb,playerName:name});
  }catch(e){console.warn('personal ranks',e);weekEl.textContent=specialEl.textContent=generalEl.textContent='—'}
 }
 function setAuthPlayer(n){localStorage.setItem('bizimSkorName',n);showName(n);return n}
