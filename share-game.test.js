@@ -27,6 +27,18 @@ test('league menu action falls back to friend leagues tab when helper is unavail
  assert.equal(clicked,1);
 });
 
+test('leagueChoices exposes clear league names instead of an ambiguous current league',()=>{
+ const doc={getElementById:id=>id==='friendLeagueSelect'?{options:[
+  {value:'',textContent:'Lig seçin'},
+  {value:'lig-1',textContent:'Mahalle Ligi'},
+  {value:'lig-2',textContent:'Ofis Ligi'}
+ ]}:null};
+ assert.deepEqual(share.leagueChoices(doc),[
+  {id:'lig-1',name:'Mahalle Ligi'},
+  {id:'lig-2',name:'Ofis Ligi'}
+ ]);
+});
+
 test('recordShareClick requires a valid friend session token',()=>{
  let rpcCall=null;
  const host={localStorage:{getItem:key=>key==='bizimSkorFriendToken'?'valid-session-token':''},sb:{rpc(name,args){rpcCall={name,args};return Promise.resolve({error:null})}}};
