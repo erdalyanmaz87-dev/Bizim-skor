@@ -14,8 +14,18 @@ assert.match(ui.renderCompetitionSwitch('champions_league'),/>Şampiyonlar Ligi<
 assert.deepStrictEqual(ui.championsWeeklyArgs('token-1',2),{p_token:'token-1',p_season:'2026/27',p_week:2});
 assert.deepStrictEqual(ui.championsWeeklyArgs('token-1','bad'),{p_token:'token-1',p_season:'2026/27',p_week:1});
 const markup=ui.championsWeeklyRankingMarkup([{league_rank:1,player_name:'Ayşegül',points:8,exact_count:1,correct_count:2,participant_count:45,completed_count:1,fixture_count:18}],2);
-assert.match(markup,/Şampiyonlar Ligi 2\. Hafta Sıralaması/);
+assert.doesNotMatch(markup,/Oyuncu adına dokununca/);
+assert.doesNotMatch(markup,/0\/18 maç sonuçlandı/);
 assert.match(markup,/data-profile-kind="champions"/);
 assert.match(markup,/data-profile-week="2"/);
 assert.match(markup,/Ayşegül/);
+const summaries=ui.championsMatchSummariesMarkup([
+ {fixture_id:1,home_team:'Real Madrid',away_team:'Inter',player_name:'Erdal',predicted_home:2,predicted_away:1,real_home:2,real_away:1},
+ {fixture_id:1,home_team:'Real Madrid',away_team:'Inter',player_name:'Fahri',predicted_home:1,predicted_away:0,real_home:2,real_away:1}
+]);
+assert.match(summaries,/Maç Maç Bilenler/);
+assert.match(summaries,/Real Madrid 2 - 1 Inter/);
+assert.match(summaries,/Doğru skor tahmini yapanlar:<\/b> Erdal/);
+assert.match(summaries,/Doğru sonucu bilen:<\/b> 2 kişi/);
+assert.match(ui.championsMatchSummariesMarkup([]),/Maçlar tamamlandıkça/);
 console.log('weekly-ranking-strip ok');
