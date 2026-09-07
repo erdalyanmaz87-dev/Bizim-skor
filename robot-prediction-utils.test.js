@@ -1,0 +1,14 @@
+const assert=require('assert');
+const Robot=require('./robot-prediction-utils.js');
+assert.strictEqual(Robot.robotLimit(9),6);
+assert.strictEqual(Robot.robotLimit(18),12);
+assert.strictEqual(Robot.robotLimit(15),10);
+assert.strictEqual(Robot.remainingRobotAllowance(9,0),6);
+assert.strictEqual(Robot.remainingRobotAllowance(9,4),2);
+assert.strictEqual(Robot.remainingRobotAllowance(9,6),0);
+const rows=[{fixtureId:1,home:'',away:''},{fixtureId:2,home:'1',away:'0'},{fixtureId:3,home:'',away:''},{fixtureId:4,home:'',away:''}];
+const picked=Robot.pickRandomEmpty(rows,2,()=>0);
+assert.strictEqual(picked.length,2);
+assert(picked.every(x=>x.fixtureId!==2));
+assert.strictEqual(Robot.pickRandomEmpty(rows,0,()=>0).length,0);
+console.log('robot prediction limits ok');
