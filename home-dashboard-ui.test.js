@@ -10,10 +10,11 @@ assert.strictEqual(ui.rankChange(8,11),'↑3');
 assert.strictEqual(ui.rankChange(11,8),'↓3');
 assert.strictEqual(ui.rankChange(8,8),'—');
 assert.strictEqual(ui.rankText(8,42),'8. / 42');
-assert.strictEqual(ui.shouldShowSezu(3),true);
-assert.strictEqual(ui.shouldShowSezu(4),true);
-assert.strictEqual(ui.shouldShowSezu(99),true);
+assert.strictEqual(ui.shouldShowSezu(3),false);
+assert.strictEqual(ui.shouldShowSezu(4),false);
+assert.strictEqual(ui.shouldShowSezu(99),false);
 assert.strictEqual(ui.generalRankingLabel(),'Süper Lig Genel Sıralaması');
+assert.strictEqual(ui.championsRankingLabel(),'Şampiyonlar Ligi Genel Sıralaması');
 assert.strictEqual(typeof ui.applyGeneralRankingLabels,'function');
 const menuLabel={textContent:'Genel Sıralama'};
 const heading={textContent:'🏆 Genel Sıralama'};
@@ -21,18 +22,19 @@ ui.applyGeneralRankingLabels({querySelector:selector=>selector==='[data-tab="gen
 assert.strictEqual(menuLabel.textContent,'Süper Lig Genel Sıralaması');
 assert.strictEqual(heading.textContent,'🏆 Süper Lig Genel Sıralaması');
 assert.strictEqual(ui.rankingTabForCard('league'),'weeklyRankings');
+assert.strictEqual(ui.rankingTabForCard('champions'),'championsRanking');
 assert.strictEqual(ui.rankingTabForCard('sezu'),'sezu');
 assert.strictEqual(ui.rankingTabForCard('general'),'general');
 assert.strictEqual(ui.rankingTabForCard('rate'),null);
 
 const nodes={
- personalWeekRank:{textContent:'8.'},personalSezuRank:{textContent:'2.'},personalGeneralRank:{textContent:'10.'},
+ personalWeekRank:{textContent:'8.'},personalGeneralRank:{textContent:'10.'},
  personalWeekRankLabel:{textContent:'4. Hafta Süper Lig Sıralaması'},
- bsWeekRank:{textContent:''},bsSezuRank:{textContent:''},bsGeneralRank:{textContent:''},
+ bsWeekRank:{textContent:''},bsChampionsRank:{textContent:''},bsGeneralRank:{textContent:''},
  bsWeekRankLabel:{textContent:''}
 };
 global.document={getElementById:id=>nodes[id]||null};
-ui.syncRanks(73,28);
+ui.syncRanks(73,{rank:4,total:45});
 assert.strictEqual(nodes.bsWeekRankLabel.textContent,'4. Hafta Süper Lig Sıralaması');
-assert.strictEqual(nodes.bsSezuRank.textContent,'28. / 73');
+assert.strictEqual(nodes.bsChampionsRank.textContent,'4. / 45');
 console.log('home dashboard helpers ok');
