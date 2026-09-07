@@ -27,6 +27,18 @@ test('sıralama hücresini erişilebilir oyuncu düğmesine çevirir',()=>{
   assert.match(html,/>İpek &amp; Ada<\/button>/);
 });
 
+test('haftalık sıralamadaki oyuncu bağlantısı seçili haftayı taşır',()=>{
+  const profile=require('./player-profile.js');
+  const html=profile.playerButton('İpek',2);
+  assert.match(html,/data-profile-week="2"/);
+});
+
+test('profil sorgusu haftalık bağlamda haftayı gönderir, genel bağlamda göndermez',()=>{
+  const profile=require('./player-profile.js');
+  assert.deepEqual(profile.profileRpcArgs('token','İpek',2),{p_token:'token',p_player_name:'İpek',p_week:2});
+  assert.deepEqual(profile.profileRpcArgs('token','İpek'),{p_token:'token',p_player_name:'İpek'});
+});
+
 test('şampiyonlar ligi dönemi özel kart etiketini değiştirir',()=>{
   const profile=require('./player-profile.js');
   const model=profile.buildModel([{player_name:'İpek',week:5,week_rank:1,week_points:4,general_rank:7,sezu_rank:2,champions_rank:3,special_kind:'champions'}]);

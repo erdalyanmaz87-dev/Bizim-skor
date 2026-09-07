@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 
 const path='supabase/migrations/20260907130000_player_profile.sql';
+const weekContextPath='supabase/migrations/20260907143000_player_profile_week_context.sql';
 
 test('oyuncu profili yalnız doğrulanmış oturumla açılır',()=>{
   assert.equal(fs.existsSync(path),true,'player profile migration eksik');
@@ -20,6 +21,16 @@ test('rakip tahmini maç başlamadan SQL katmanında gizlenir',()=>{
   assert.match(sql,/case\s+when\s+v_player=v_target\s+or\s+f\.kickoff<=now\(\)\s+then\s+p\.home_score::smallint\s+else\s+null::smallint\s+end/is);
   assert.match(sql,/case\s+when\s+v_player=v_target\s+or\s+f\.kickoff<=now\(\)\s+then\s+p\.away_score::smallint\s+else\s+null::smallint\s+end/is);
   assert.doesNotMatch(sql,/or\s+r\.fixture_id\s+is\s+not\s+null\s+then\s+p\.home_score/i);
+});
+
+test('oyuncu profili istenen geçmiş haftayı güvenli biçimde seçebilir',()=>{
+  assert.equal(fs.existsSync(weekContextPath),true,'week context migration eksik');
+  const sql=fs.readFileSync(weekContextPath,'utf8');
+  assert.match(sql,/get_player_public_profile\(p_token text,p_player_name text,p_week integer\)/i);
+  assert.match(sql,/if p_week is not null/i);
+  assert.match(sql,/where f\.week=p_week/i);
+  assert.match(sql,/p_week as selected_week/i);
+  assert.match(sql,/public\.friend_session_player\(p_token\)/i);
 });
 
 test('profil güncel hafta ve üç genel durum sırasını döndürür',()=>{
