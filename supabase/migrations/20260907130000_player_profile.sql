@@ -120,9 +120,9 @@ begin
     s.overall_rank,s.award_rank,s.europe_rank,
     case when v_week_four_complete then 'champions' else 'sezu' end,
     f.id,f.home_team,f.away_team,f.kickoff,
-    case when v_player=v_target or f.kickoff<=now() then p.home_score else null end,
-    case when v_player=v_target or f.kickoff<=now() then p.away_score else null end,
-    r.home_score,r.away_score,
+    case when v_player=v_target or f.kickoff<=now() then p.home_score::smallint else null::smallint end,
+    case when v_player=v_target or f.kickoff<=now() then p.away_score::smallint else null::smallint end,
+    r.home_score::smallint,r.away_score::smallint,
     case
       when r.fixture_id is null or p.fixture_id is null then 0
       when p.home_score=r.home_score and p.away_score=r.away_score
