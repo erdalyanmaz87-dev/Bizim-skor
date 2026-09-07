@@ -26,12 +26,13 @@ assert.strictEqual(ui.rankingTabForCard('general'),'general');
 assert.strictEqual(ui.rankingTabForCard('rate'),null);
 
 const nodes={
- personalWeekRank:{textContent:'8.'},personalSezuRank:{textContent:'9.'},personalGeneralRank:{textContent:'10.'},
- personalWeekRankLabel:{textContent:'3. Hafta Süper Lig Sıralaması'},
+ personalWeekRank:{textContent:'8.'},personalSezuRank:{textContent:'2.'},personalGeneralRank:{textContent:'10.'},
+ personalWeekRankLabel:{textContent:'4. Hafta Süper Lig Sıralaması'},
  bsWeekRank:{textContent:''},bsSezuRank:{textContent:''},bsGeneralRank:{textContent:''},
  bsWeekRankLabel:{textContent:''}
 };
 global.document={getElementById:id=>nodes[id]||null};
-ui.syncRanks(62);
-assert.strictEqual(nodes.bsWeekRankLabel.textContent,'3. Hafta Süper Lig Sıralaması');
+ui.syncRanks(73,28);
+assert.strictEqual(nodes.bsWeekRankLabel.textContent,'4. Hafta Süper Lig Sıralaması');
+assert.strictEqual(nodes.bsSezuRank.textContent,'28. / 73');
 console.log('home dashboard helpers ok');
