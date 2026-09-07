@@ -1,4 +1,4 @@
-drop function if exists public.admin_update_live_score(text,bigint,smallint,smallint,boolean);
+drop function if exists public.admin_update_live_score(text,bigint,smallint,smallint,smallint,boolean);
 
 create or replace function public.admin_update_live_score(
   p_token text,
