@@ -44,6 +44,21 @@ test('Şampiyonlar Ligi sıralaması Süper Lig tablolarını kullanmaz',()=>{
   assert.match(ui,/Tahmin bulunamadı/);
 });
 
+test('Şampiyonlar Ligi haftalık sıralama mevcut haftalık sıralama sekmesine eklenir',()=>{
+  assert.match(ui,/function mountWeeklyRankingPanel\(\)/);
+  assert.match(ui,/id="weeklyRankingCompetitionSwitch"/);
+  assert.match(ui,/data-weekly-competition="champions_league"/);
+  assert.match(ui,/id="championsWeeklyRankingPanel"/);
+  assert.match(ui,/id="championsWeeklyRankingBoard"/);
+  assert.match(ui,/get_champions_league_weekly_ranking/);
+});
+
+test('Şampiyonlar Ligi haftalık sıralama oyuncu profilini lig bağlamıyla açar',()=>{
+  assert.match(ui,/data-profile-kind="champions"/);
+  assert.match(ui,/data-profile-week="\$\{week\}"/);
+  assert.match(ui,/championsWeeklyRankingMarkup/);
+});
+
 test('açık sıralama sonucu güvenli RPC üzerinden yeniler',()=>{
   assert.match(ui,/setInterval\([\s\S]*loadRanking\(\)/);
   assert.match(ui,/document\.visibilityState==='visible'/);
