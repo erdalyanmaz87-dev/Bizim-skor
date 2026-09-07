@@ -11,9 +11,11 @@ assert.strictEqual(ui.latestScoredWeek(fixtures,[{fixture_id:21,home_score:1,awa
 assert.strictEqual(ui.latestScoredWeek(fixtures,[]),null);
 assert.match(ui.renderCompetitionSwitch('champions_league'),/data-weekly-competition="champions_league"/);
 assert.match(ui.renderCompetitionSwitch('champions_league'),/>Şampiyonlar Ligi</);
-const markup=ui.championsWeeklyRankingMarkup([{league_rank:1,player_name:'Ayşegül',points:8,exact_count:1,correct_count:2,participant_count:45,completed_count:1,fixture_count:18}],1);
-assert.match(markup,/Şampiyonlar Ligi 1\. Hafta Sıralaması/);
+assert.deepStrictEqual(ui.championsWeeklyArgs('token-1',2),{p_token:'token-1',p_season:'2026/27',p_week:2});
+assert.deepStrictEqual(ui.championsWeeklyArgs('token-1','bad'),{p_token:'token-1',p_season:'2026/27',p_week:1});
+const markup=ui.championsWeeklyRankingMarkup([{league_rank:1,player_name:'Ayşegül',points:8,exact_count:1,correct_count:2,participant_count:45,completed_count:1,fixture_count:18}],2);
+assert.match(markup,/Şampiyonlar Ligi 2\. Hafta Sıralaması/);
 assert.match(markup,/data-profile-kind="champions"/);
-assert.match(markup,/data-profile-week="1"/);
+assert.match(markup,/data-profile-week="2"/);
 assert.match(markup,/Ayşegül/);
 console.log('weekly-ranking-strip ok');
