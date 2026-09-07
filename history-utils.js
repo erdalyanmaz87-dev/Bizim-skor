@@ -23,7 +23,7 @@
   function visiblePredictionScore(prediction,result,isCurrentPlayer){
     if(!prediction)return'';
     const completed=!!(result&&result.home_score!=null&&result.away_score!=null);
-    return isCurrentPlayer||completed?`${prediction.home_score}-${prediction.away_score}`:'*-*';
+    return isCurrentPlayer||completed?`${prediction.home_score}-${prediction.away_score}${prediction.robot_applied?' 🤖':''}`:'*-*';
   }
   return{scorePrediction,buildWeeklyRanking,visiblePredictionScore};
 });
