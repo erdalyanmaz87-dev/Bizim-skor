@@ -56,11 +56,19 @@ test('profil sorgusu haftalık bağlamda haftayı gönderir, genel bağlamda gö
   assert.deepEqual(profile.profileRpcArgs('token','İpek'),{p_token:'token',p_player_name:'İpek'});
 });
 
-test('şampiyonlar ligi oyuncu profili ayrı RPC ile güncel haftayı ister',()=>{
+test('şampiyonlar ligi oyuncu profili ayrı v2 RPC ile güncel haftayı ister',()=>{
   const profile=require('./player-profile.js');
   assert.deepEqual(profile.profileRequest('token','İpek',1,'champions'),{
-    rpc:'get_champions_league_player_profile',
+    rpc:'get_champions_league_player_profile_v2',
     args:{p_token:'token',p_player_name:'İpek',p_season:'2026/27',p_week:1}
+  });
+});
+
+test('süper lig oyuncu profili v2 RPC ile robot bilgisini taşıyabilir',()=>{
+  const profile=require('./player-profile.js');
+  assert.deepEqual(profile.profileRequest('token','İpek',6,'super'),{
+    rpc:'get_player_public_profile_v2',
+    args:{p_token:'token',p_player_name:'İpek',p_week:6}
   });
 });
 
