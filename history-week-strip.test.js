@@ -13,4 +13,7 @@ assert.deepStrictEqual(ui.buildHistoryGroups([2,3],[]).champions.weeks,[]);
 assert.deepStrictEqual(ui.championsWeeksThrough(1),[1]);
 assert.deepStrictEqual(ui.championsWeeksThrough(3),[1,2,3]);
 assert.deepStrictEqual(ui.championsWeeksThrough(0),[]);
+assert.match(ui.historyLeagueStripStyle(),/overflow-x:auto/);
+assert.match(ui.historyLeagueStripStyle(),/flex-wrap:nowrap/);
+assert.match(ui.historyLeagueStripStyle(),/flex:0 0 auto/);
 console.log('history-week-strip ok');
