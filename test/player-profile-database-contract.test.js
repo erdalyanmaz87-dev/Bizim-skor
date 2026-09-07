@@ -17,8 +17,8 @@ test('oyuncu profili yalnız doğrulanmış oturumla açılır',()=>{
 test('rakip tahmini maç başlamadan SQL katmanında gizlenir',()=>{
   assert.equal(fs.existsSync(path),true,'player profile migration eksik');
   const sql=fs.readFileSync(path,'utf8');
-  assert.match(sql,/case\s+when\s+v_player=v_target\s+or\s+f\.kickoff<=now\(\)\s+then\s+p\.home_score\s+else\s+null\s+end/is);
-  assert.match(sql,/case\s+when\s+v_player=v_target\s+or\s+f\.kickoff<=now\(\)\s+then\s+p\.away_score\s+else\s+null\s+end/is);
+  assert.match(sql,/case\s+when\s+v_player=v_target\s+or\s+f\.kickoff<=now\(\)\s+then\s+p\.home_score::smallint\s+else\s+null::smallint\s+end/is);
+  assert.match(sql,/case\s+when\s+v_player=v_target\s+or\s+f\.kickoff<=now\(\)\s+then\s+p\.away_score::smallint\s+else\s+null::smallint\s+end/is);
   assert.doesNotMatch(sql,/or\s+r\.fixture_id\s+is\s+not\s+null\s+then\s+p\.home_score/i);
 });
 
@@ -38,4 +38,11 @@ test('Sezu sıra hesabı mevcut ilk üç ve devam sırası kuralını kullanır'
   const sql=fs.readFileSync(path,'utf8');
   assert.match(sql,/sezu_point_ranked/is);
   assert.match(sql,/case when spr\.point_rank<=3 then spr\.point_rank else 3\+/is);
+});
+
+test('integer skor sütunları RPC smallint sözleşmesine açıkça çevrilir',()=>{
+  const sql=fs.readFileSync(path,'utf8');
+  assert.match(sql,/then p\.home_score::smallint else null::smallint end/is);
+  assert.match(sql,/then p\.away_score::smallint else null::smallint end/is);
+  assert.match(sql,/r\.home_score::smallint,r\.away_score::smallint/is);
 });
