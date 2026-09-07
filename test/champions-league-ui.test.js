@@ -6,8 +6,8 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 let ui='';
 try{ui=fs.readFileSync(path.join(__dirname,'../champions-league-ui.js'),'utf8')}catch{}
 
-test('Şampiyonlar Ligi tahmin bölümü ayrı sekmedir',()=>{
-  assert.match(ui,/data-tab="championsPred"/);
+test('Şampiyonlar Ligi tahmin bölümü tahmin menüsünden açılır',()=>{
+  assert.match(ui,/function openPrediction\(\)/);
   assert.match(ui,/id="championsPred"/);
   assert.match(html,/champions-league-ui\.js/);
   assert.match(html,/champions-league-utils\.js/);
@@ -37,8 +37,11 @@ test('Şampiyonlar Ligi sıralaması bağımsız sekmedir',()=>{
 });
 
 test('Şampiyonlar Ligi sıralaması Süper Lig tablolarını kullanmaz',()=>{
-  assert.doesNotMatch(ui,/\.from\(['"](?:fixtures|predictions|results)['"]\)/);
-  assert.match(ui,/predicted_home==null\|\|row\.predicted_away==null\?'\*-\*'/);
+  const rankingSource=ui.match(/async function loadRanking\(\)[\s\S]*?(?=\n\s*async function loadHistory)/)?.[0]||'';
+  assert.doesNotMatch(rankingSource,/\.from\(['"](?:fixtures|predictions|results)['"]\)/);
+  assert.match(rankingSource,/get_champions_league_ranking/);
+  assert.match(ui,/const prediction=row\.predicted_home==null\|\|row\.predicted_away==null\?null/);
+  assert.match(ui,/Tahmin bulunamadı/);
 });
 
 test('açık sıralama sonucu güvenli RPC üzerinden yeniler',()=>{

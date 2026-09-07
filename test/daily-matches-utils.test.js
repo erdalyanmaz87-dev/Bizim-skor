@@ -17,7 +17,7 @@ const fixtures=[
 
 test('bugün oynanacak fikstürleri Türkiye saatine göre seçer',()=>{
   const result=selectDailyMatches(fixtures,new Date('2026-08-29T10:00:00Z'));
-  assert.equal(result.label,'Bugünün Maçları');
+  assert.equal(result.label,'Günün Maçları');
   assert.deepEqual(result.matches.map(x=>({id:x.id,time:x.time})),[
     {id:1,time:'19.00'},
     {id:2,time:'21.30'}
@@ -32,7 +32,7 @@ test('bugün maç yoksa en yakın maç gününü gösterir',()=>{
 
 test('gelecekte maç kalmadıysa boş durum döner',()=>{
   const result=selectDailyMatches(fixtures,new Date('2026-09-01T10:00:00Z'));
-  assert.equal(result.label,'Bugünün Maçları');
+  assert.equal(result.label,'Günün Maçları');
   assert.deepEqual(result.matches,[]);
 });
 
