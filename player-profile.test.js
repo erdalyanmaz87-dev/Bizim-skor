@@ -14,6 +14,15 @@ test('profil modülü herkese açık geçmiş modelini üretir',()=>{
   assert.equal(model.matches[1].prediction,'*-*');
 });
 
+test('robotla seçilen tahminin yanında robot işareti görünür',()=>{
+  const profile=require('./player-profile.js');
+  const model=profile.buildModel([
+    {player_name:'Hakan',week:6,fixture_id:46,home_team:'Kasımpaşa',away_team:'Konyaspor',predicted_home:2,predicted_away:0,real_home:null,real_away:null,robot_applied:true}
+  ]);
+  assert.equal(model.matches[0].prediction,'2-0 🤖');
+  assert.match(profile.profileMarkup(model),/2-0 🤖/);
+});
+
 test('yalnız doğru sonuçta top işareti gösterilir',()=>{
   const profile=require('./player-profile.js');
   assert.equal(profile.matchSymbol({predicted_home:1,predicted_away:0,real_home:3,real_away:1}),'⚽');
