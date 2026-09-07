@@ -31,7 +31,9 @@ test('kampanya veritabanında uygulandığı andan itibaren beş gün sürer',()
 test('modal top görselini, ödül metnini ve tamam düğmesini gösterir',()=>{
   assert.match(ui,/champions-prize-ball-v1\.webp/);
   assert.match(ui,/Şampiyonlar Ligi Büyük Ödülü/);
-  assert.match(ui,/Sezon sonu Şampiyonlar Ligi sıralamasını 1\. bitiren yarışmacıya bu futbol topu hediye!/);
+  assert.match(ui,/championsPrizeBody/);
+  assert.match(ui,/textContent=row\.body/);
+  assert.match(sql,/Sezon sonu Şampiyonlar Ligi sıralamasını 1\. bitiren yarışmacıya bu futbol topu hediye!/);
   assert.match(ui,/Tamam, Tahmine Başla/);
   assert.match(html,/champions-prize-announcement\.js/);
 });

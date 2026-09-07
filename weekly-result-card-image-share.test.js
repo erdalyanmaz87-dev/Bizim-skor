@@ -13,7 +13,7 @@ test('buildCardSvg creates a compact premium social card without printing the lo
   assert.match(svg,/1080/);
   assert.match(svg,/1350/);
   assert.match(svg,/Erdal/);
-  assert.match(svg,/3\. HAFTA/);
+  assert.match(svg,/3\. Hafta/);
   assert.match(svg,/HAFTALIK SONUÇ/);
   assert.match(svg,/PUAN/);
   assert.match(svg,/TAM SKOR/);
