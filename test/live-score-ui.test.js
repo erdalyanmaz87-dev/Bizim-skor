@@ -21,6 +21,28 @@ test('on dakikadan eski canlı veriyi gecikmiş sayar',()=>{
   assert.equal(Live.isStale('2026-08-30T17:01:00Z',now),false);
 });
 
+test('canlı skor yönetimi günün tüm maçlarını listeler',()=>{
+  const rows=[
+    {competition:'super_lig',fixture_id:1,kickoff:'2026-09-08T17:00:00+03:00'},
+    {competition:'champions_league',fixture_id:2,kickoff:'2026-09-08T20:00:00+03:00'},
+    {competition:'super_lig',fixture_id:3,kickoff:'2026-09-09T17:00:00+03:00'}
+  ];
+  assert.deepEqual(
+    Live.todayMatchRows(rows,new Date('2026-09-08T12:00:00+03:00')).map(r=>r.competition),
+    ['super_lig','champions_league']
+  );
+});
+
+test('canlı skor yönetimi seçiminde lig bilgisini saklar',()=>{
+  const html=Live.renderAdminPanelMarkup([
+    {competition:'super_lig',fixture_id:1,home_team:'Fenerbahçe',away_team:'Eyüpspor'},
+    {competition:'champions_league',fixture_id:2,home_team:'PSV',away_team:'Shakhtar Donetsk'}
+  ]);
+  assert.match(html,/value="super_lig:1"/);
+  assert.match(html,/value="champions_league:2"/);
+  assert.match(html,/Şampiyonlar Ligi/);
+});
+
 test('tam bilenler bandını güvenli metinle oluşturur',()=>{
   assert.equal(Live.formatExactPredictors([]),'Şu an tam skoru bilen yok.');
   assert.equal(Live.formatExactPredictors(['Erdal','YEK']),'🎯 Şu an tam bilenler: Erdal • YEK');
