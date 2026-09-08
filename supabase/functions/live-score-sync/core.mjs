@@ -33,9 +33,33 @@ export function adaptivePollIntervalMinutes({request_count,remaining_window_minu
   return Math.max(1,Math.min(15,Math.ceil(remaining/available)));
 }
 
-export function shouldAdaptivePoll({active_fixture_count,request_count,remaining_window_minutes,last_requested_at,now=new Date()}){
+export function fixtureMinimumPollIntervalMinutes(activeFixtures,overrides){
+  const active=new Set((Array.isArray(activeFixtures)?activeFixtures:[]).map(row=>`${row.competition}:${Number(row.fixture_id)}`));
+  return (Array.isArray(overrides)?overrides:[]).reduce((minimum,row)=>{
+    if(!active.has(`${row.competition}:${Number(row.fixture_id)}`))return minimum;
+    const interval=Math.max(0,Math.min(15,Math.floor(Number(row.minimum_interval_minutes)||0)));
+    return Math.max(minimum,interval);
+  },0);
+}
+
+export function configuredMinimumPollIntervalMinutes(activeFixtures){
+  const active=Array.isArray(activeFixtures)?activeFixtures:[];
+  if(active.some(row=>String(row.competition)==='champions_league'))return 2;
+  const keys=new Set(active.map(row=>`${row.competition}:${Number(row.fixture_id)}`));
+  if(keys.has('super_lig:33')||keys.has('super_lig:34')||keys.has('super_lig:30'))return 2;
+  return 5;
+}
+
+export function resolvePollIntervalMinutes({minimum_interval_minutes=0,...quota}){
+  const adaptive=adaptivePollIntervalMinutes(quota);
+  if(adaptive===null)return null;
+  const minimum=Math.max(0,Math.min(15,Math.floor(Number(minimum_interval_minutes)||0)));
+  return Math.max(adaptive,minimum);
+}
+
+export function shouldAdaptivePoll({active_fixture_count,request_count,remaining_window_minutes,minimum_interval_minutes=0,last_requested_at,now=new Date()}){
   if(Number(active_fixture_count)<1)return false;
-  const interval=adaptivePollIntervalMinutes({request_count,remaining_window_minutes});
+  const interval=resolvePollIntervalMinutes({request_count,remaining_window_minutes,minimum_interval_minutes});
   if(interval===null)return false;
   if(!last_requested_at)return true;
   return new Date(now).getTime()-new Date(last_requested_at).getTime()>=interval*60000;
