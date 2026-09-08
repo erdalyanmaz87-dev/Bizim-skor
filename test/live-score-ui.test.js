@@ -78,3 +78,20 @@ test('takım ve oyuncu adlarında html çalıştırmaz',()=>{
   assert.doesNotMatch(html,/<script|<img/i);
   assert.match(html,/&lt;script&gt;/);
 });
+
+test('çoğalmış canlı skor yönetimi kartlarını tek karta düşürür',()=>{
+  const removed=[];
+  const panels=[0,1,2].map(i=>({remove(){removed.push(i)}}));
+  const fakeDocument={querySelectorAll(){return panels}};
+  const kept=Live.removeDuplicateAdminPanels(fakeDocument);
+  assert.equal(kept,panels[0]);
+  assert.deepEqual(removed,[1,2]);
+});
+
+test('canlı skor yönetimi Günün Maçları bölümünün üstüne yerleşir',()=>{
+  const calls=[];
+  const anchor={insertAdjacentHTML(position,html){calls.push({position,html})}};
+  Live.insertAdminPanelBeforeDailyMatches(anchor,'<div id="adminLiveScorePanel"></div>');
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].position,'beforebegin');
+});
