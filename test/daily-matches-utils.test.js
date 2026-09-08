@@ -1,7 +1,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 
-let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'',mergeDailyMatchesWithLiveState=()=>[],resolvePlayerName=async()=>'',loadMyPredictions=async()=>false,setPredictions=()=>{};
+let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'',mergeDailyMatchesWithLiveState=()=>[],resolvePlayerName=async()=>'',loadMyPredictions=async()=>false,setPredictions=()=>{},predictionStatus=()=>null,scoringValues=()=>({});
 try{
   const api=require('../daily-matches-utils');
   selectDailyMatches=api.selectDailyMatches||selectDailyMatches;
@@ -10,6 +10,8 @@ try{
   resolvePlayerName=api.resolvePlayerName||resolvePlayerName;
   loadMyPredictions=api.loadMyPredictions||loadMyPredictions;
   setPredictions=api.__setMyPredictionsForTest||setPredictions;
+  predictionStatus=api.predictionStatus||predictionStatus;
+  scoringValues=api.scoringValues||scoringValues;
 }catch{}
 
 const fixtures=[
@@ -72,9 +74,29 @@ test('günün maçında kayıtlı tahmini müsabaka türüne göre gösterir',()
   const result=selectDailyMatches([
     {id:2,competition:'champions_league',home_team:'Real Madrid',away_team:'Inter',kickoff:'2026-09-08T19:00:00Z'}
   ],new Date('2026-09-08T06:00:00Z'));
-  assert.deepEqual(result.matches[0].my_prediction,{home:3,away:1});
+  assert.deepEqual(result.matches[0].my_prediction,{home:3,away:1,fixture_id:2,competition:'champions_league',week:undefined});
   const html=renderDailyMatchesMarkup(result,x=>x);
   assert.match(html,/Sizin tahmininiz: <b>3 - 1<\/b>/);
+});
+
+test('canlı skor sırasında tahmin tutuyorsa anlık puanı gösterir',()=>{
+  const html=renderDailyMatchesMarkup({label:'Günün Maçları',matches:[{
+    id:23,competition:'champions_league',time:'22.00',home_team:'Real Madrid',away_team:'Inter',
+    my_prediction:{home:2,away:1,fixture_id:23,competition:'champions_league'},
+    live:{home_score:2,away_score:1,status:'1H'}
+  }]},x=>x);
+  assert.match(html,/Skor şu an tutuyor • Anlık 8 puan/);
+});
+
+test('fırsat maçında canlı anlık puan iki kat görünür',()=>{
+  const status=predictionStatus({home:3,away:2},{home:3,away:2},true,'super_lig');
+  assert.equal(status.points,16);
+  assert.match(status.label,/Anlık 16 puan/);
+});
+
+test('uluslar ligi normal ve fırsat puanları ayrı hesaplanır',()=>{
+  assert.deepEqual(scoringValues('nations_league',false),{exact:4,result:1});
+  assert.deepEqual(scoringValues('nations_league',true),{exact:8,result:2});
 });
 
 test('oyuncu adını token ile canlı oturumdan çözer ve localStoragea yazar',async()=>{
