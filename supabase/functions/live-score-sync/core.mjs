@@ -12,6 +12,28 @@ export function normalizeApiFootballFixture(raw){
   return{provider_fixture_id,status,elapsed,home_score,away_score};
 }
 
+export function toProviderFixtureShape(match){
+  return{
+    fixture:{id:Number(match?.id),date:match?.utcDate},
+    teams:{home:{name:String(match?.homeTeam?.name||'')},away:{name:String(match?.awayTeam?.name||'')}}
+  };
+}
+
+export function normalizeFootballDataMatch(match){
+  const provider_fixture_id=Number(match?.id);
+  const providerStatus=String(match?.status||'');
+  const elapsed=match?.minute==null?null:Number(match.minute);
+  const home_score=match?.score?.fullTime?.home;
+  const away_score=match?.score?.fullTime?.away;
+  let status='';
+  if(providerStatus==='FINISHED')status='FT';
+  else if(providerStatus==='PAUSED')status='HT';
+  else if(providerStatus==='IN_PLAY'||providerStatus==='LIVE')status=(Number(elapsed)||0)<=45?'1H':'2H';
+  else status=providerStatus;
+  if(!Number.isInteger(provider_fixture_id)||!status||!validScore(home_score)||!validScore(away_score))throw new Error('Geçersiz football-data skoru');
+  return{provider_fixture_id,status,elapsed,home_score,away_score};
+}
+
 export function nextTerminalState(previous,observation){
   const terminal=TERMINAL.has(String(observation?.status||''));
   if(!terminal||!validScore(observation?.home_score)||!validScore(observation?.away_score))return{terminal_seen_count:0,terminal_signature:null,should_finalize:false};
