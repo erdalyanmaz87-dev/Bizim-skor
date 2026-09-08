@@ -1,12 +1,15 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 
-let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'',mergeDailyMatchesWithLiveState=()=>[];
+let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'',mergeDailyMatchesWithLiveState=()=>[],resolvePlayerName=async()=>'',loadMyPredictions=async()=>false,setPredictions=()=>{};
 try{
   const api=require('../daily-matches-utils');
   selectDailyMatches=api.selectDailyMatches||selectDailyMatches;
   renderDailyMatchesMarkup=api.renderDailyMatchesMarkup||renderDailyMatchesMarkup;
   mergeDailyMatchesWithLiveState=api.mergeDailyMatchesWithLiveState||mergeDailyMatchesWithLiveState;
+  resolvePlayerName=api.resolvePlayerName||resolvePlayerName;
+  loadMyPredictions=api.loadMyPredictions||loadMyPredictions;
+  setPredictions=api.__setMyPredictionsForTest||setPredictions;
 }catch{}
 
 const fixtures=[
@@ -62,4 +65,50 @@ test('canlı skoru yalnız müsabaka türü ve fikstür kimliği birlikte eşle�
   assert.equal(merged[0].live.home_score,1);
   assert.equal(merged[1].live.home_score,2);
   assert.equal(merged[2].live,null);
+});
+
+test('günün maçında kayıtlı tahmini müsabaka türüne göre gösterir',()=>{
+  setPredictions([{competition:'champions_league',fixture_id:2,home_score:3,away_score:1}]);
+  const result=selectDailyMatches([
+    {id:2,competition:'champions_league',home_team:'Real Madrid',away_team:'Inter',kickoff:'2026-09-08T19:00:00Z'}
+  ],new Date('2026-09-08T06:00:00Z'));
+  assert.deepEqual(result.matches[0].my_prediction,{home:3,away:1});
+  const html=renderDailyMatchesMarkup(result,x=>x);
+  assert.match(html,/Sizin tahmininiz: <b>3 - 1<\/b>/);
+});
+
+test('oyuncu adını token ile canlı oturumdan çözer ve localStoragea yazar',async()=>{
+  const previous=globalThis.sb;
+  const previousStorage=globalThis.localStorage;
+  const store=new Map([['bizimSkorFriendToken','token-1'],['bizimSkorName','Eski İsim']]);
+  globalThis.localStorage={getItem:key=>store.get(key)||'',setItem:(key,value)=>store.set(key,value)};
+  globalThis.sb={rpc:async(name,args)=>{
+    assert.equal(name,'friend_session_player');
+    assert.deepEqual(args,{p_token:'token-1'});
+    return {data:'Erdal YANMAZ',error:null};
+  }};
+  const name=await resolvePlayerName();
+  assert.equal(name,'Erdal YANMAZ');
+  assert.equal(store.get('bizimSkorName'),'Erdal YANMAZ');
+  globalThis.sb=previous;
+  globalThis.localStorage=previousStorage;
+});
+
+test('tahminleri çekerken localStorage adı yerine tokenın çözdüğü güncel oyuncuyu kullanır',async()=>{
+  const previous=globalThis.sb;
+  const previousStorage=globalThis.localStorage;
+  const calls=[];
+  const store=new Map([['bizimSkorFriendToken','token-1'],['bizimSkorName','Yanlış İsim']]);
+  globalThis.localStorage={getItem:key=>store.get(key)||'',setItem:(key,value)=>store.set(key,value)};
+  const chain=table=>({
+    select:()=>({eq:(field,value)=>{calls.push({table,field,value});return Promise.resolve({data:[],error:null})}})
+  });
+  globalThis.sb={
+    rpc:async()=>({data:'Doğru Oyuncu',error:null}),
+    from:chain
+  };
+  await loadMyPredictions();
+  assert.deepEqual(calls.map(x=>x.value),['Doğru Oyuncu','Doğru Oyuncu','Doğru Oyuncu']);
+  globalThis.sb=previous;
+  globalThis.localStorage=previousStorage;
 });
