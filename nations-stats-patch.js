@@ -1,0 +1,7 @@
+(function(root){
+function inject(){const doc=root.document,api=root.BizimSkorNationsUI,stats=root.BizimSkorMatchStatistics;if(!doc||!api||!stats?.open)return;const fixtures=api.getFixtures?.()||[];doc.querySelectorAll('#nationsFixtures .nations-match').forEach((row,index)=>{if(row.querySelector('[data-nations-stats]'))return;const fixture=fixtures[index];if(!fixture)return;const button=doc.createElement('button');button.type='button';button.dataset.nationsStats=String(fixture.id);button.textContent='📊 Maç İstatistikleri';button.className='nations-stats-button';button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();stats.open(fixture.id)});row.appendChild(button)})}
+function ensureStyles(){const doc=root.document;if(!doc||doc.getElementById('nationsStatsPatchStyles'))return;doc.head.insertAdjacentHTML('beforeend','<style id="nationsStatsPatchStyles">.nations-stats-button{grid-column:1/-1;width:100%;margin:7px 0 1px;padding:9px 10px;border:1px solid #fecaca;border-radius:10px;background:#fff;color:#991b1b;font-size:12px;font-weight:900}</style>')}
+function mount(){if(!root.document)return;ensureStyles();const run=()=>setTimeout(inject,0);new MutationObserver(run).observe(root.document.body,{childList:true,subtree:true});root.document.addEventListener('click',run);root.addEventListener?.('bizimskor:nations-ready',run);run()}
+if(typeof document!=='undefined')mount();
+root.BizimSkorNationsStatsPatch=Object.freeze({inject,mount});
+})(typeof globalThis!=='undefined'?globalThis:this);
