@@ -1,17 +1,17 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 
-let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'',mergeDailyMatchesWithLiveState=()=>[],resolvePlayerName=async()=>'',loadMyPredictions=async()=>false,setPredictions=()=>{},predictionStatus=()=>null,scoringValues=()=>({});
+let selectDailyMatches=()=>({label:'',matches:[]}),renderDailyMatchesMarkup=()=>'',mergeDailyMatchesWithLiveState=()=>[],resolvePlayerName=async()=>'',loadPredictionsByToken=async()=>false,loadMyPredictions=async()=>false,setPredictions=()=>{},predictionStatus=()=>null;
 try{
   const api=require('../daily-matches-utils');
   selectDailyMatches=api.selectDailyMatches||selectDailyMatches;
   renderDailyMatchesMarkup=api.renderDailyMatchesMarkup||renderDailyMatchesMarkup;
   mergeDailyMatchesWithLiveState=api.mergeDailyMatchesWithLiveState||mergeDailyMatchesWithLiveState;
   resolvePlayerName=api.resolvePlayerName||resolvePlayerName;
+  loadPredictionsByToken=api.loadPredictionsByToken||loadPredictionsByToken;
   loadMyPredictions=api.loadMyPredictions||loadMyPredictions;
-  setPredictions=api.__setMyPredictionsForTest||setPredictions;
   predictionStatus=api.predictionStatus||predictionStatus;
-  scoringValues=api.scoringValues||scoringValues;
+  setPredictions=api.__setMyPredictionsForTest||setPredictions;
 }catch{}
 
 const fixtures=[
@@ -79,24 +79,14 @@ test('günün maçında kayıtlı tahmini müsabaka türüne göre gösterir',()
   assert.match(html,/Sizin tahmininiz: <b>3 - 1<\/b>/);
 });
 
-test('canlı skor sırasında tahmin tutuyorsa anlık puanı gösterir',()=>{
-  const html=renderDailyMatchesMarkup({label:'Günün Maçları',matches:[{
-    id:23,competition:'champions_league',time:'22.00',home_team:'Real Madrid',away_team:'Inter',
-    my_prediction:{home:2,away:1,fixture_id:23,competition:'champions_league'},
-    live:{home_score:2,away_score:1,status:'1H'}
-  }]},x=>x);
-  assert.match(html,/Skor şu an tutuyor • Anlık 8 puan/);
+test('canlı skor durumunda normal maç puanını 4 ve 1 olarak gösterir',()=>{
+  assert.deepEqual(predictionStatus({home:2,away:1},{home:2,away:1},false,'champions_league'),{kind:'exact',points:4,label:'🎯 Skor şu an tutuyor • Anlık 4 puan'});
+  assert.deepEqual(predictionStatus({home:2,away:1},{home:1,away:0},false,'super_lig'),{kind:'result',points:1,label:'✅ Sonuç şu an tutuyor • Anlık 1 puan'});
 });
 
-test('fırsat maçında canlı anlık puan iki kat görünür',()=>{
-  const status=predictionStatus({home:3,away:2},{home:3,away:2},true,'super_lig');
-  assert.equal(status.points,16);
-  assert.match(status.label,/Anlık 16 puan/);
-});
-
-test('uluslar ligi normal ve fırsat puanları ayrı hesaplanır',()=>{
-  assert.deepEqual(scoringValues('nations_league',false),{exact:4,result:1});
-  assert.deepEqual(scoringValues('nations_league',true),{exact:8,result:2});
+test('canlı skor durumunda fırsat maçını iki kat gösterir',()=>{
+  assert.deepEqual(predictionStatus({home:2,away:1},{home:2,away:1},true,'super_lig'),{kind:'exact',points:8,label:'🎯 Skor şu an tutuyor • Anlık 8 puan'});
+  assert.deepEqual(predictionStatus({home:2,away:1},{home:1,away:0},true,'nations_league'),{kind:'result',points:2,label:'✅ Sonuç şu an tutuyor • Anlık 2 puan'});
 });
 
 test('oyuncu adını token ile canlı oturumdan çözer ve localStoragea yazar',async()=>{
@@ -116,7 +106,25 @@ test('oyuncu adını token ile canlı oturumdan çözer ve localStoragea yazar',
   globalThis.localStorage=previousStorage;
 });
 
-test('tahminleri çekerken localStorage adı yerine tokenın çözdüğü güncel oyuncuyu kullanır',async()=>{
+test('tahminleri token RPC ile tek seferde çeker',async()=>{
+  const previous=globalThis.sb;
+  const previousStorage=globalThis.localStorage;
+  const store=new Map([['bizimSkorFriendToken','token-1']]);
+  globalThis.localStorage={getItem:key=>store.get(key)||'',setItem:(key,value)=>store.set(key,value)};
+  globalThis.sb={rpc:async(name,args)=>{
+    assert.equal(name,'get_my_daily_match_predictions');
+    assert.deepEqual(args,{p_token:'token-1'});
+    return {data:[{competition:'champions_league',fixture_id:3,home_score:2,away_score:0}],error:null};
+  }};
+  const ok=await loadPredictionsByToken();
+  assert.equal(ok,true);
+  const result=selectDailyMatches([{id:3,competition:'champions_league',home_team:'Real Madrid',away_team:'Inter',kickoff:'2026-09-08T19:00:00Z'}],new Date('2026-09-08T06:00:00Z'));
+  assert.deepEqual(result.matches[0].my_prediction,{home:2,away:0,fixture_id:3,competition:'champions_league',week:undefined});
+  globalThis.sb=previous;
+  globalThis.localStorage=previousStorage;
+});
+
+test('token RPC başarısız olursa tahminleri tokenın çözdüğü oyuncuyla yedekten çeker',async()=>{
   const previous=globalThis.sb;
   const previousStorage=globalThis.localStorage;
   const calls=[];
@@ -126,7 +134,7 @@ test('tahminleri çekerken localStorage adı yerine tokenın çözdüğü günce
     select:()=>({eq:(field,value)=>{calls.push({table,field,value});return Promise.resolve({data:[],error:null})}})
   });
   globalThis.sb={
-    rpc:async()=>({data:'Doğru Oyuncu',error:null}),
+    rpc:async name=>name==='get_my_daily_match_predictions'?{data:null,error:new Error('rpc yok')}:{data:'Doğru Oyuncu',error:null},
     from:chain
   };
   await loadMyPredictions();
