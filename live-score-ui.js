@@ -6,7 +6,7 @@
   const LIVE=new Set(['1H','HT','2H','ET','BT','P']);
   const TERMINAL=new Set(['FT','AET','PEN']);
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'
   })[char]);
 
   function isLiveStatus(status){return LIVE.has(String(status||'').toUpperCase())}
@@ -59,6 +59,17 @@
   }
   function currentClient(){try{return typeof sb!=='undefined'?sb:root?.sb}catch(_){return root?.sb}}
   function currentStorage(){try{return root?.localStorage}catch(_){return null}}
+  function removeDuplicateAdminPanels(doc){
+    const panels=Array.from(doc?.querySelectorAll?.('#adminLiveScorePanel')||[]);
+    const kept=panels[0]||null;
+    panels.slice(1).forEach(panel=>panel?.remove?.());
+    return kept;
+  }
+  function insertAdminPanelBeforeDailyMatches(anchor,markup){
+    if(!anchor?.insertAdjacentHTML)return false;
+    anchor.insertAdjacentHTML('beforebegin',markup);
+    return true;
+  }
   function todayMatchRows(rows,now=new Date()){
     const today=turkeyDate(now);
     return (rows||[]).filter(r=>turkeyDate(r.kickoff)===today);
@@ -73,8 +84,10 @@
   }
   async function mountAdminPanel(){
     if(typeof document==='undefined')return false;
-    const storage=currentStorage(),name=storage?.getItem('bizimSkorName'),token=storage?.getItem('bizimSkorFriendToken'),existing=document.getElementById('adminLiveScorePanel');
-    if(!isAdminName(name)||!token){existing?.remove();return false}
+    const storage=currentStorage(),name=storage?.getItem('bizimSkorName'),token=storage?.getItem('bizimSkorFriendToken');
+    const existingPanels=Array.from(document.querySelectorAll?.('#adminLiveScorePanel')||[]);
+    if(!isAdminName(name)||!token){existingPanels.forEach(panel=>panel.remove?.());return false}
+    removeDuplicateAdminPanels(document);
     const anchor=document.getElementById('dailyMatches');
     if(!anchor)return false;
     const client=currentClient();if(!client?.rpc)return false;
@@ -82,8 +95,8 @@
     try{q=await client.rpc('get_today_live_match_cards',{p_now:new Date().toISOString()})}catch(e){console.warn('admin live cards',e);return false}
     if(q?.error){console.warn('admin live cards',q.error);return false}
     const rows=todayMatchRows(q?.data||[]);
-    existing?.remove();
-    anchor.insertAdjacentHTML('afterend',renderAdminPanelMarkup(rows));
+    Array.from(document.querySelectorAll?.('#adminLiveScorePanel')||[]).forEach(panel=>panel.remove?.());
+    insertAdminPanelBeforeDailyMatches(anchor,renderAdminPanelMarkup(rows));
     const panel=document.getElementById('adminLiveScorePanel');if(!panel||!rows.length)return true;
     const select=document.getElementById('adminLiveFixture'),home=document.getElementById('adminLiveHome'),away=document.getElementById('adminLiveAway'),elapsed=document.getElementById('adminLiveElapsed'),status=document.getElementById('adminLiveStatus');
     const byKey=new Map(rows.map(r=>[rowKey(r),r]));
@@ -112,7 +125,10 @@
     const sync=()=>mountAdminPanel().catch(e=>console.warn('admin live mount',e));
     if(document.readyState==='complete')setTimeout(sync,300);else window.addEventListener('load',()=>setTimeout(sync,500),{once:true});
     window.addEventListener('bizimskor:session-ready',()=>setTimeout(sync,100));
-    setInterval(()=>{const p=document.getElementById('adminLiveScorePanel'),n=currentStorage()?.getItem('bizimSkorName');if(p&&!isAdminName(n))p.remove();else if(!p&&isAdminName(n)&&currentStorage()?.getItem('bizimSkorFriendToken'))sync()},3000);
+    setInterval(()=>{
+      const p=removeDuplicateAdminPanels(document),n=currentStorage()?.getItem('bizimSkorName');
+      if(p&&!isAdminName(n))p.remove();else if(!p&&isAdminName(n)&&currentStorage()?.getItem('bizimSkorFriendToken'))sync();
+    },3000);
   }
-  return{isLiveStatus,isTerminalStatus,isStale,detectGoal,formatExactPredictors,renderLiveMatchMarkup,isAdminName,validateAdminScoreInput,competitionLabel,renderAdminPanelMarkup,todayMatchRows,todaySuperLigRows,mountAdminPanel,autoMountAdmin};
+  return{isLiveStatus,isTerminalStatus,isStale,detectGoal,formatExactPredictors,renderLiveMatchMarkup,isAdminName,validateAdminScoreInput,competitionLabel,renderAdminPanelMarkup,todayMatchRows,todaySuperLigRows,removeDuplicateAdminPanels,insertAdminPanelBeforeDailyMatches,mountAdminPanel,autoMountAdmin};
 });
