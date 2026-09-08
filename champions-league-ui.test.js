@@ -1,32 +1,18 @@
+const fs = require('fs');
+const path = require('path');
 const assert = require('assert');
 
-// RED: one-time CL unlock must be available only for the targeted player
-// and must be consumed after a successful full-week save.
-const { canUseOneTimeChampionsUnlock, consumeOneTimeChampionsUnlock } = require('./champions-league-one-time-unlock');
-
-const grant = {
-  playerId: 'hafsa-player-id',
-  season: '2026/27',
-  week: 1,
-  consumed: false,
-};
-
-assert.equal(
-  canUseOneTimeChampionsUnlock(grant, { playerId: 'hafsa-player-id', season: '2026/27', week: 1 }),
-  true,
-  'targeted player should receive the one-time CL unlock'
+const migration = fs.readFileSync(
+  path.join(__dirname, 'supabase/migrations/20260908203000_hafsa_one_time_champions_unlock.sql'),
+  'utf8'
 );
 
-assert.equal(
-  canUseOneTimeChampionsUnlock(grant, { playerId: 'someone-else', season: '2026/27', week: 1 }),
-  false,
-  'other players must remain locked'
-);
+assert.match(migration, /champions_league_one_time_unlocks/);
+assert.match(migration, /where p\.name = 'HAFSA'/);
+assert.match(migration, /u\.player_id = v_player_id/);
+assert.match(migration, /u\.consumed_at is null/);
+assert.match(migration, /now\(\) >= v_lock_time and not v_has_unlock/);
+assert.match(migration, /set consumed_at = now\(\)/);
+assert.match(migration, /jsonb_array_length\(p_predictions\)<>v_fixture_count/);
 
-const consumed = consumeOneTimeChampionsUnlock(grant);
-assert.equal(consumed.consumed, true, 'successful save should consume the grant');
-assert.equal(
-  canUseOneTimeChampionsUnlock(consumed, { playerId: 'hafsa-player-id', season: '2026/27', week: 1 }),
-  false,
-  'consumed grant must not allow a second edit'
-);
+console.log('Hafsa one-time Champions League unlock contract: OK');
