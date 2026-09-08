@@ -1,23 +1,25 @@
 const assert=require('assert');
 const ui=require('./horizontal-menu.js');
 assert.deepStrictEqual(
-  ui.orderMenuTabs(['chat','general','history','sezu','weeklyRankings','friendLeagues','rules','resultsWeek','footballCenter','championsRanking','championsPred']),
-  ['championsRanking','general','weeklyRankings','sezu','resultsWeek','footballCenter','friendLeagues','history','rules','chat']
+  ui.orderMenuTabs(['chat','general','history','sezu','weeklyRankings','friendLeagues','rules','resultsWeek','footballCenter','championsRanking','championsPred','nationsRanking']),
+  ['championsRanking','nationsRanking','general','weeklyRankings','resultsWeek','footballCenter','friendLeagues','history','rules','chat']
 );
 assert.deepStrictEqual(
-  ui.orderMenuTabs(['chat','general','live','resultsWeek','championsRanking']),
+  ui.orderMenuTabs(['chat','general','live','resultsWeek','championsRanking','sezu']),
   ['championsRanking','general','live','resultsWeek','chat']
 );
+assert.strictEqual(ui.isHiddenMenuTab('sezu'),true);
+assert.strictEqual(ui.isHiddenMenuTab('general'),false);
 assert.strictEqual(ui.menuLabel('championsRanking'),'Şampiyonlar Ligi Genel Sıralaması');
 assert.strictEqual(ui.menuIcon('championsRanking'),'⭐');
+assert.strictEqual(ui.menuLabel('nationsRanking'),'UEFA Uluslar Ligi Genel Sıralaması');
+assert.strictEqual(ui.menuIcon('nationsRanking'),'🌍');
 assert.strictEqual(ui.menuLabel('weeklyRankings'),'Hafta Sıralaması');
 assert.strictEqual(ui.menuLabel('live'),'Hafta Sıralaması');
 assert.strictEqual(ui.menuLabel('resultsWeek'),'Fikstür');
 assert.strictEqual(ui.menuIcon('resultsWeek'),'📅');
 assert.strictEqual(ui.menuLabel('general'),'Süper Lig Genel Sıralaması');
 assert.strictEqual(ui.menuIcon('general'),'🇹🇷');
-assert.strictEqual(ui.menuLabel('sezu'),'Sezu Genel Sıralaması');
-assert.strictEqual(ui.menuIcon('sezu'),'🏆');
 assert.strictEqual(ui.menuDirection(),'column');
 assert.strictEqual(ui.tabMarkup('championsRanking'),'<span class="bs-menu-icon" aria-hidden="true">⭐</span><span class="bs-menu-label">Şampiyonlar Ligi Genel Sıralaması</span>');
 assert.strictEqual(ui.tabMarkup('general'),'<span class="bs-menu-icon" aria-hidden="true">🇹🇷</span><span class="bs-menu-label">Süper Lig Genel Sıralaması</span>');
