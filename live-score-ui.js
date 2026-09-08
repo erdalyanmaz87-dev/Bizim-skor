@@ -6,7 +6,7 @@
   const LIVE=new Set(['1H','HT','2H','ET','BT','P']);
   const TERMINAL=new Set(['FT','AET','PEN']);
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   })[char]);
 
   function isLiveStatus(status){return LIVE.has(String(status||'').toUpperCase())}
