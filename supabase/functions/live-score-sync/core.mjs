@@ -44,6 +44,7 @@ export function fixtureMinimumPollIntervalMinutes(activeFixtures,overrides){
 
 export function configuredMinimumPollIntervalMinutes(activeFixtures){
   const active=Array.isArray(activeFixtures)?activeFixtures:[];
+  if(active.length===0)return 2;
   if(active.some(row=>String(row.competition)==='champions_league'))return 2;
   const keys=new Set(active.map(row=>`${row.competition}:${Number(row.fixture_id)}`));
   if(keys.has('super_lig:33')||keys.has('super_lig:34')||keys.has('super_lig:30'))return 2;
