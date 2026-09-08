@@ -65,3 +65,11 @@ test('çoğalmış canlı skor yönetimi kartlarını tek karta düşürür',()=
   assert.equal(kept,panels[0]);
   assert.deepEqual(removed,[1,2]);
 });
+
+test('canlı skor yönetimi Günün Maçları bölümünün üstüne yerleşir',()=>{
+  const calls=[];
+  const anchor={insertAdjacentHTML(position,html){calls.push({position,html})}};
+  Live.insertAdminPanelBeforeDailyMatches(anchor,'<div id="adminLiveScorePanel"></div>');
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].position,'beforebegin');
+});
