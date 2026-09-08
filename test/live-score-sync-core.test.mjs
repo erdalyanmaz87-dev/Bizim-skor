@@ -46,3 +46,7 @@ test('kısa Şampiyonlar Ligi takım adlarını sağlayıcıdaki tam adlarla eş
 test('aktif Şampiyonlar Ligi maçı varsa minimum canlı skor aralığı iki dakikadır',()=>{
   assert.equal(configuredMinimumPollIntervalMinutes([{competition:'champions_league',fixture_id:3}]),2);
 });
+
+test('zamanlayıcı sadece CL aktifken Süper Lig listesi boş olsa da iki dakikayı seçer',()=>{
+  assert.equal(configuredMinimumPollIntervalMinutes([]),2);
+});
