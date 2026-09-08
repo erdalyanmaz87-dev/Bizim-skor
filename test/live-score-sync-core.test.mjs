@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeApiFootballFixture,nextTerminalState,shouldPoll} from '../supabase/functions/live-score-sync/core.mjs';
+import {normalizeApiFootballFixture,nextTerminalState,shouldPoll,matchScheduledProviderFixture} from '../supabase/functions/live-score-sync/core.mjs';
 
 test('API-Football canlı fikstürünü sadeleştirir',()=>{
   assert.deepEqual(normalizeApiFootballFixture({fixture:{id:77,status:{short:'2H',elapsed:67}},goals:{home:1,away:1}}),{
@@ -34,4 +34,11 @@ test('yalnız aktif maç varken kota ve beş dakika uygunsa sorgular',()=>{
   assert.equal(shouldPoll({active_fixture_count:1,request_count:95,last_requested_at:null,now}),false);
   assert.equal(shouldPoll({active_fixture_count:0,request_count:0,last_requested_at:null,now}),false);
   assert.equal(shouldPoll({active_fixture_count:1,request_count:0,last_requested_at:'2026-08-30T17:06:00Z',now}),false);
+});
+
+test('kısa Şampiyonlar Ligi takım adlarını sağlayıcıdaki tam adlarla eşleştirir',()=>{
+  const kickoff='2026-09-08T16:45:00Z';
+  const internal={home_team:'AEK',away_team:'LASK',kickoff};
+  const provider={fixture:{id:74165868,date:kickoff},teams:{home:{name:'AEK Athens'},away:{name:'LASK Linz'}}};
+  assert.equal(matchScheduledProviderFixture(internal,[provider]),provider);
 });
