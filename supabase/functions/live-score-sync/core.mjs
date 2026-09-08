@@ -48,7 +48,7 @@ export function isPollableFixture({cache_status,result_finalized}){
 
 function teamKey(value){
   const key=String(value||'').toLocaleLowerCase('tr-TR').replace(/ı/g,'i').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
-  return ({erzurumsporfk:'erzurumbb'})[key]||key;
+  return ({erzurumsporfk:'erzurumbb',aekathens:'aek',lasklinz:'lask'})[key]||key;
 }
 
 function sameTeam(left,right){
