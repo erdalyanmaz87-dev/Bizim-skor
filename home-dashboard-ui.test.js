@@ -1,4 +1,5 @@
 const assert=require('assert');
+const fs=require('fs');
 const ui=require('./home-dashboard-ui.js');
 assert.deepStrictEqual(ui.resultSummary([
  {home_score:2,away_score:1,real_home:1,real_away:0},
@@ -26,6 +27,18 @@ assert.strictEqual(ui.rankingTabForCard('champions'),'championsRanking');
 assert.strictEqual(ui.rankingTabForCard('sezu'),'sezu');
 assert.strictEqual(ui.rankingTabForCard('general'),'general');
 assert.strictEqual(ui.rankingTabForCard('rate'),null);
+
+const source=fs.readFileSync(require.resolve('./home-dashboard-ui.js'),'utf8');
+const dashboard=source.slice(source.indexOf('function mountShell()'),source.indexOf('function syncRanks'));
+const order=[
+  "card(championsRankingLabel(),'bsChampionsRank','champions')",
+  "card(generalRankingLabel(),'bsGeneralRank','general')",
+  "card(nationsRankingLabel(),'bsNationsRank','nations')",
+  "card('Süper Lig Sıralaması','bsWeekRank','league')",
+  "card('Doğru Sonuç Oranı','bsCorrectRate','rate')"
+].map(token=>dashboard.indexOf(token));
+assert(order.every(index=>index>=0),'Benim Durumum kartlarından biri bulunamadı');
+assert(order.every((index,i)=>i===0||order[i-1]<index),'Benim Durumum kart sırası yanlış');
 
 const nodes={
  personalWeekRank:{textContent:'8.'},personalGeneralRank:{textContent:'10.'},
