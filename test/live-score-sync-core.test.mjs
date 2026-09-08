@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeApiFootballFixture,nextTerminalState,shouldPoll,matchScheduledProviderFixture} from '../supabase/functions/live-score-sync/core.mjs';
+import {normalizeApiFootballFixture,nextTerminalState,shouldPoll,matchScheduledProviderFixture,configuredMinimumPollIntervalMinutes} from '../supabase/functions/live-score-sync/core.mjs';
 
 test('API-Football canlı fikstürünü sadeleştirir',()=>{
   assert.deepEqual(normalizeApiFootballFixture({fixture:{id:77,status:{short:'2H',elapsed:67}},goals:{home:1,away:1}}),{
@@ -41,4 +41,8 @@ test('kısa Şampiyonlar Ligi takım adlarını sağlayıcıdaki tam adlarla eş
   const internal={home_team:'AEK',away_team:'LASK',kickoff};
   const provider={fixture:{id:74165868,date:kickoff},teams:{home:{name:'AEK Athens'},away:{name:'LASK Linz'}}};
   assert.equal(matchScheduledProviderFixture(internal,[provider]),provider);
+});
+
+test('aktif Şampiyonlar Ligi maçı varsa minimum canlı skor aralığı iki dakikadır',()=>{
+  assert.equal(configuredMinimumPollIntervalMinutes([{competition:'champions_league',fixture_id:3}]),2);
 });
