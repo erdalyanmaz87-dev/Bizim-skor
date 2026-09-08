@@ -23,3 +23,12 @@ test('maç taslakları fixture id bazında birbirinden bağımsız tutulur',()=>
   assert.deepEqual(drafts.get('1'),{home:3,away:1,elapsed:70,savedAt:'2026-09-08T19:03:00Z'});
   assert.deepEqual(drafts.get('2'),{home:0,away:0,elapsed:12,savedAt:'2026-09-08T19:01:00Z'});
 });
+
+test('oyuncunun canlı skor kartında manuel dakika kaydetme zamanından itibaren ilerler',()=>{
+  const html=live.renderLiveMatchMarkup(
+    {competition:'super_lig',id:7,home_team:'A',away_team:'B'},
+    {status:'1H',elapsed:3,home_score:0,away_score:0,fetched_at:'2026-09-08T18:00:00.000Z'},
+    new Date('2026-09-08T18:10:59.000Z')
+  );
+  assert.match(html,/13’/);
+});
