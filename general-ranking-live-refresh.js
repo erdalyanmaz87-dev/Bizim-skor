@@ -33,6 +33,49 @@
     });
   }
 
+  function ensureArenaNavigation(){
+    const doc=root.document;
+    if(!doc)return{};
+    const tabs=doc.querySelector('.tabs');
+    if(!tabs)return{};
+
+    let arenaTab=tabs.querySelector('.tab[data-tab="arena"]');
+    if(!arenaTab){
+      arenaTab=doc.createElement('button');
+      arenaTab.className='tab arena-tab';
+      arenaTab.dataset.tab='arena';
+      arenaTab.textContent='🏆 Arena';
+      tabs.insertBefore(arenaTab,tabs.firstChild);
+    }
+
+    let arenaSection=doc.getElementById('arena');
+    if(!arenaSection){
+      arenaSection=doc.createElement('section');
+      arenaSection.id='arena';
+      arenaSection.className='hide';
+      tabs.parentNode.insertBefore(arenaSection,tabs.nextSibling);
+    }
+
+    if(!tabs.dataset.arenaBound){
+      tabs.dataset.arenaBound='1';
+      tabs.addEventListener('click',event=>{
+        const tab=event.target.closest('.tab');
+        if(!tab)return;
+        if(tab.dataset.tab==='arena'){
+          doc.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+          doc.querySelectorAll('section[id]').forEach(x=>x.classList.add('hide'));
+          arenaTab.classList.add('active');
+          arenaSection.classList.remove('hide');
+        }else{
+          arenaTab.classList.remove('active');
+          arenaSection.classList.add('hide');
+        }
+      });
+    }
+
+    return{arenaTab,arenaSection};
+  }
+
   function ensureLeagueMountPoints(){
     const doc=root.document;
     if(!doc)return{};
@@ -46,13 +89,13 @@
       known.appendChild(summaryHost);
     }
 
-    const general=doc.getElementById('general');
+    const{arenaSection}=ensureArenaNavigation();
     let detailHost=doc.getElementById('leagueSystemPanel');
-    if(general&&!detailHost){
+    if(arenaSection&&!detailHost){
       const card=doc.createElement('div');
       card.className='c league-ranking-card';
-      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div><div class="small">Bizim Skor Ligleri</div><h3 style="margin:2px 0">🏆 Ligim</h3></div><span class="small">4 haftalık dönem</span></div><div id="leagueSystemPanel"><p class="small">Lig bilgileri yükleniyor…</p></div>';
-      general.appendChild(card);
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div><div class="small">Bizim Skor Ligleri</div><h3 style="margin:2px 0">🏆 Bizim Skor Arena</h3></div><span class="small">4 Süper Lig haftalık dönem</span></div><div id="leagueSystemPanel"><p class="small">Arena bilgileri yükleniyor…</p></div>';
+      arenaSection.appendChild(card);
       detailHost=card.querySelector('#leagueSystemPanel');
     }
     return{summaryHost,detailHost};
@@ -63,6 +106,7 @@
     const token=root.localStorage?.getItem('bizimSkorFriendToken');
     if(!root.sb||!token)return false;
     try{
+      ensureArenaNavigation();
       await loadScript('league-system-utils.js');
       await loadScript('league-system-ui.js');
       if(!root.BizimSkorLeagues)return false;
@@ -79,14 +123,14 @@
 
       summaryHost?.addEventListener('click',event=>{
         if(!event.target.closest('[data-league-open]'))return;
-        root.document.querySelector('.tab[data-tab="general"]')?.click();
+        root.document.querySelector('.tab[data-tab="arena"]')?.click();
         setTimeout(()=>detailHost?.scrollIntoView({behavior:'smooth',block:'start'}),80);
       });
 
       root.__bizimSkorLeagueMounted=true;
       return true;
     }catch(error){
-      console.warn('Bizim Skor Ligleri yüklenemedi',error);
+      console.warn('Bizim Skor Arena yüklenemedi',error);
       return false;
     }
   }
@@ -110,6 +154,7 @@
     if(root.document){
       const ready=()=>{
         removeLeakedNewlineText();
+        ensureArenaNavigation();
         scheduleLeagueMount();
       };
       if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',ready,{once:true});
@@ -126,5 +171,5 @@
       ).subscribe();
     return true;
   }
-  return Object.freeze({mount,removeLeakedNewlineText,mountLeagues,ensureLeagueMountPoints,scheduleLeagueMount});
+  return Object.freeze({mount,removeLeakedNewlineText,mountLeagues,ensureArenaNavigation,ensureLeagueMountPoints,scheduleLeagueMount});
 });
