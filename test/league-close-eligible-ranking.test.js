@@ -37,3 +37,13 @@ test('iki tur şartını tamamlamayan oyuncunun otomatik bir alt lig düşüşü
   assert.match(source,/not m\.is_eligible and m\.league_code='silver' then 'bronze'/i);
   assert.match(source,/not m\.is_eligible and m\.league_code='bronze' then 'bronze'/i);
 });
+
+test('uygun olmayan oyuncu kontenjan doldurmak için yükseltilmez',()=>{
+  const source=sql();
+  const decisions=source.match(/decisions as \([\s\S]*?\n  \)\n  insert into public\.league_history/i)?.[0]||'';
+  assert.match(decisions,/when m\.is_eligible and m\.league_code='elite'/i);
+  assert.match(decisions,/when m\.is_eligible and m\.league_code='gold'/i);
+  assert.match(decisions,/when m\.is_eligible and m\.league_code='silver'/i);
+  assert.match(decisions,/when m\.is_eligible and m\.league_code='bronze'/i);
+  assert.doesNotMatch(decisions,/when not m\.is_eligible[^\n]*then 'champions'/i);
+});
