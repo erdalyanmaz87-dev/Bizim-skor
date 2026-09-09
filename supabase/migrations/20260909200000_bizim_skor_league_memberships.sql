@@ -10,13 +10,14 @@ set search_path=''
 as $$
 declare
   v_status text;
+  v_starts_at timestamptz;
   v_locked jsonb;
   v_slots jsonb;
-  v_eligible_count integer;
+  v_baseline_count integer;
   v_changed integer := 0;
 begin
-  select status,locked_capacities,locked_promotion_slots
-    into v_status,v_locked,v_slots
+  select status,starts_at,locked_capacities,locked_promotion_slots
+    into v_status,v_starts_at,v_locked,v_slots
   from public.league_periods
   where id=p_period_id
   for update;
@@ -68,17 +69,19 @@ begin
 
   get diagnostics v_changed=row_count;
 
-  select count(*) into v_eligible_count
-  from public.league_memberships m
-  where m.period_id=p_period_id and m.is_eligible;
-
-  -- Dönem kontenjanı ilk kilitlemede belirlenir; sonraki refresh'ler bunu ASLA değiştirmez.
+  -- Kontenjanlar dönem başında sistemde bulunan aktif oyuncu tabanına göre kilitlenir.
+  -- Dönem başladıktan sonra kayıt olan oyuncular Bronz'a girebilir ama mevcut hattı değiştiremez.
   if coalesce(v_locked,'{}'::jsonb)='{}'::jsonb then
-    v_locked:=public.league_allocate_capacities(v_eligible_count);
+    select count(*)::integer into v_baseline_count
+    from public.players p
+    where coalesce(p.is_active,true)
+      and p.created_at<=v_starts_at;
+
+    v_locked:=public.league_allocate_capacities(v_baseline_count);
     v_slots:=public.league_promotion_slots(v_locked);
 
     update public.league_periods
-    set active_player_count=v_eligible_count,
+    set active_player_count=v_baseline_count,
         locked_capacities=v_locked,
         locked_promotion_slots=v_slots
     where id=p_period_id;
@@ -257,5 +260,5 @@ grant execute on function public.get_my_league_summary(text) to anon;
 grant execute on function public.get_league_table(text,text) to anon;
 
 -- Geliştirme testi:
--- Dönem ilk kilitlendiğinde locked_promotion_slots kaydedilir.
--- Sonradan yeni uygun Bronz oyuncular eklense bile refresh_league_memberships bu JSON'u değiştirmez.
+-- Dönem başında mevcut aktif oyuncular kilitlenir.
+-- Dönem başladıktan sonra kayıt olan uygun Bronz oyuncuların eklenmesi locked_promotion_slots değerini değiştirmez.
