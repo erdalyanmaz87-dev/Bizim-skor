@@ -35,7 +35,7 @@ as $$
       and f.kickoff<p_before
     group by f.season,f.week
     having count(distinct f.id)>0
-       and count(distinct r.fixture_id)=count(distinct f.id)
+       and count(distinct r.fixture_id) filter(where r.home_score is not null and r.away_score is not null)=count(distinct f.id)
   ), complete_players as (
     select tr.season,tr.week,tr.fixture_count,p.player_name
     from target_rounds tr
