@@ -2,6 +2,7 @@
 -- Tamamlanmış Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi turları ayrı ayrı 0-100 normalize edilir.
 -- Oyuncunun başlangıç puanı katıldığı tamamlanmış turların ortalamasıdır; katılmadığı tur 0 sayılmaz.
 -- Hiç tamamlanmış turu olmayan gerçek katılımcı 0.00 ile başlar.
+-- Eşitlik: performans > davet > geçerli tur > tam skor > ham puan > oyuncu ID.
 -- Bu puan SADECE ilk görünür başlangıç sırası içindir; 5. haftadan itibaren dönem performansı sıfırdan oluşur.
 
 create or replace function public.league_historical_seed_scores(
@@ -242,16 +243,22 @@ begin
     select distinct lower(p.player_name) from public.nations_league_predictions p
   ), historical as (
     select * from public.league_historical_seed_scores(p_starts_at)
+  ), invites as (
+    select lower(i.inviter_name) as player_key,count(*)::integer as invite_count
+    from public.player_invites i
+    group by lower(i.inviter_name)
   ), scored as (
     select
       pl.id as player_id,
       coalesce(h.performance_score,0)::numeric(6,2) as performance_score,
+      coalesce(i.invite_count,0)::integer as invite_count,
       coalesce(h.valid_round_count,0)::integer as valid_round_count,
       coalesce(h.exact_score_count,0)::integer as exact_score_count,
       coalesce(h.raw_points,0)::bigint as raw_points
     from public.players pl
     join participants x on x.player_key=lower(pl.name)
     left join historical h on h.player_id=pl.id
+    left join invites i on i.player_key=lower(pl.name)
     where coalesce(pl.is_active,true)
       and pl.created_at<=p_starts_at
   ), ordered as (
@@ -259,6 +266,7 @@ begin
       s.*,
       row_number() over(
         order by s.performance_score desc,
+                 s.invite_count desc,
                  s.valid_round_count desc,
                  s.exact_score_count desc,
                  s.raw_points desc,
@@ -289,11 +297,11 @@ begin
   )
   insert into public.league_memberships(
     period_id,player_id,league_code,starting_league_code,is_eligible,
-    valid_round_count,performance_score,exact_score_count,rank_in_league,promotion_status
+    valid_round_count,performance_score,exact_score_count,raw_points,rank_in_league,promotion_status
   )
   select
     v_period_id,s.player_id,s.league_code,s.league_code,false,
-    0,s.performance_score,s.exact_score_count,s.league_rank,'none'
+    0,s.performance_score,s.exact_score_count,s.raw_points,s.league_rank,'none'
   from seeded s;
 
   return v_period_id;
@@ -304,5 +312,5 @@ revoke execute on function public.league_historical_seed_scores(timestamptz) fro
 revoke execute on function public.initialize_first_league_period(timestamptz,timestamptz) from public,anon,authenticated;
 
 -- 77 katılımcı için kapasite örneği: 8 Şampiyonlar / 12 Elit / 15 Altın / 19 Gümüş / 23 Bronz.
--- İlk görünür sıra geçmiş normalize performansla oluşur.
+-- İlk görünür sıra geçmiş normalize performansla oluşur; eşit performansta daha fazla davet eden öne geçer.
 -- 5. hafta dönem performansı geldiğinde geçmiş seed puanı taşınmaz; dönem sıralaması yeni turlarla yeniden hesaplanır.
