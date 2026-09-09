@@ -23,10 +23,11 @@ test('Süper Lig Şampiyonlar Ligi ve Uluslar Ligi ayrı ayrı keşfedilir',()=>
   }
 });
 
-test('yalnız dönem başladıktan sonra başlayan ve tüm sonuçları tamamlanmış turlar işlenir',()=>{
+test('yalnız dönem başladıktan sonra başlayan ve skorları tamamen dolu turlar işlenir',()=>{
   const source=sql();
   assert.match(source,/min\(f\.kickoff\)\s*>=\s*v_starts_at/i);
-  assert.match(source,/count\(distinct\s+r\.fixture_id\)\s*=\s*count\(distinct\s+f\.id\)/i);
+  const nonNullCounts=[...source.matchAll(/count\(distinct\s+r\.fixture_id\)\s+filter\s*\(where\s+r\.home_score\s+is\s+not\s+null\s+and\s+r\.away_score\s+is\s+not\s+null\)\s*=\s*count\(distinct\s+f\.id\)/gi)];
+  assert.equal(nonNullCounts.length,3);
 });
 
 test('round key sezon ve hafta ile oluşturulur',()=>{
