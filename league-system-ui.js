@@ -78,21 +78,27 @@
     const detailHost=options.detailHost||root.document?.getElementById('leagueSystemPanel');
     if(!sb||!token)return false;
 
-    const summaryResult=await sb.rpc('get_my_league_summary',{p_token:token});
+    const [summaryResult,countResult]=await Promise.all([
+      sb.rpc('get_my_league_summary',{p_token:token}),
+      sb.rpc('get_league_counts',{p_token:token})
+    ]);
     if(summaryResult.error)throw summaryResult.error;
+    if(countResult.error)throw countResult.error;
     const summary=Array.isArray(summaryResult.data)?summaryResult.data[0]:summaryResult.data;
     if(!summary)return false;
+
+    const counts={champions:0,elite:0,gold:0,silver:0,bronze:0};
+    (countResult.data||[]).forEach(row=>{if(Object.hasOwn(counts,row.league_code))counts[row.league_code]=Number(row.player_count)||0});
 
     if(summaryHost)summaryHost.innerHTML=renderLeagueSummary(summary);
     if(!detailHost)return true;
 
     async function loadLeague(code){
-      const tableResult=await sb.rpc('get_league_table',{p_token:token,p_league_code:code||null});
+      const target=code||summary.league_code||'bronze';
+      const tableResult=await sb.rpc('get_league_table',{p_token:token,p_league_code:target});
       if(tableResult.error)throw tableResult.error;
       const rows=tableResult.data||[];
-      const counts={};
-      rows.forEach(r=>{counts[r.league_code]=(counts[r.league_code]||0)+1});
-      detailHost.innerHTML=renderLeagueShell({...summary,league_code:code||summary.league_code},rows,counts);
+      detailHost.innerHTML=renderLeagueShell({...summary,league_code:target},rows,counts);
       detailHost.querySelector('[data-league-rules]')?.addEventListener('click',()=>{
         const host=detailHost.querySelector('.league-rules-host');
         if(host)host.hidden=!host.hidden;
