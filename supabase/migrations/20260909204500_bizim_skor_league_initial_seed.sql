@@ -1,8 +1,7 @@
--- Bizim Skor Ligleri: yalnızca ilk dönem için normalize geçmiş performansla başlangıç yerleştirmesi.
--- Tamamlanmış Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi turları ayrı ayrı 0-100 normalize edilir.
--- Oyuncunun başlangıç puanı katıldığı tamamlanmış turların ortalamasıdır; katılmadığı tur 0 sayılmaz.
--- Hiç tamamlanmış turu olmayan gerçek katılımcı 0.00 ile başlar.
--- Eşitlik: performans > davet > geçerli tur > tam skor > ham puan > oyuncu ID.
+-- Bizim Skor Ligleri: yalnızca ilk dönem için başlangıç yerleştirmesi.
+-- Kesin başlangıç kuralı: Süper Lig 3. ve 4. haftalar ayrı ayrı 0-100 normalize edilir.
+-- Oyuncu haftalardan birini eksik bıraktıysa o hafta 0 kabul edilir ve iki haftanın puanı 2'ye bölünür.
+-- Eşitlik: performans > davet > oynanan tur > tam skor > ham puan > oyuncu ID.
 -- Bu puan SADECE ilk görünür başlangıç sırası içindir; 5. haftadan itibaren dönem performansı sıfırdan oluşur.
 
 create or replace function public.league_historical_seed_scores(
@@ -19,26 +18,27 @@ stable
 security definer
 set search_path=''
 as $$
-  with completed_super_rounds as (
+  with target_rounds as (
     select f.season,f.week,count(distinct f.id)::integer as fixture_count
     from public.fixtures f
     left join public.results r on r.fixture_id=f.id
-    where f.kickoff<p_before
+    where f.week in (3,4)
+      and f.kickoff<p_before
     group by f.season,f.week
     having count(distinct f.id)>0
        and count(distinct r.fixture_id)=count(distinct f.id)
-  ), super_players as (
-    select csr.season,csr.week,csr.fixture_count,p.player_name
-    from completed_super_rounds csr
-    join public.fixtures f on f.season=csr.season and f.week=csr.week
+  ), complete_players as (
+    select tr.season,tr.week,tr.fixture_count,p.player_name
+    from target_rounds tr
+    join public.fixtures f on f.season=tr.season and f.week=tr.week
     join public.predictions p on p.fixture_id=f.id
-    group by csr.season,csr.week,csr.fixture_count,p.player_name
-    having count(distinct p.fixture_id)=csr.fixture_count
-  ), super_scored as (
+    group by tr.season,tr.week,tr.fixture_count,p.player_name
+    having count(distinct p.fixture_id)=tr.fixture_count
+  ), scored as (
     select
       pl.id as player_id,
-      sp.season,
-      sp.week,
+      cp.season,
+      cp.week,
       pl.created_at,
       pl.name as player_name,
       coalesce(sum(public.league_super_match_points(
@@ -46,56 +46,13 @@ as $$
       )),0)::bigint as points,
       count(*) filter(where p.home_score=r.home_score and p.away_score=r.away_score)::integer as exact_count,
       count(*) filter(where sign(p.home_score-p.away_score)=sign(r.home_score-r.away_score))::integer as correct_count
-    from super_players sp
-    join public.players pl on lower(pl.name)=lower(sp.player_name) and coalesce(pl.is_active,true)
-    join public.predictions p on lower(p.player_name)=lower(sp.player_name)
-    join public.fixtures f on f.id=p.fixture_id and f.season=sp.season and f.week=sp.week
-    join public.results r on r.fixture_id=f.id
-    group by pl.id,sp.season,sp.week,pl.created_at,pl.name
-  ), super_ranked as (
-    select
-      s.*,
-      row_number() over(
-        partition by s.season,s.week
-        order by s.points desc,s.exact_count desc,s.correct_count desc,s.created_at,s.player_name collate "tr-TR-x-icu"
-      )::integer as round_rank,
-      count(*) over(partition by s.season,s.week)::integer as participant_count
-    from super_scored s
-  ),
-  completed_champions_rounds as (
-    select f.season,f.week,count(distinct f.id)::integer as fixture_count
-    from public.champions_league_fixtures f
-    left join public.champions_league_results r on r.fixture_id=f.id
-    where f.kickoff<p_before
-    group by f.season,f.week
-    having count(distinct f.id)>0
-       and count(distinct r.fixture_id)=count(distinct f.id)
-  ), champions_players as (
-    select ccr.season,ccr.week,ccr.fixture_count,p.player_name
-    from completed_champions_rounds ccr
-    join public.champions_league_fixtures f on f.season=ccr.season and f.week=ccr.week
-    join public.champions_league_predictions p on p.fixture_id=f.id
-    group by ccr.season,ccr.week,ccr.fixture_count,p.player_name
-    having count(distinct p.fixture_id)=ccr.fixture_count
-  ), champions_scored as (
-    select
-      pl.id as player_id,
-      cp.season,
-      cp.week,
-      pl.created_at,
-      pl.name as player_name,
-      coalesce(sum(public.champions_match_points(
-        f.id,p.home_score,p.away_score,r.home_score,r.away_score
-      )),0)::bigint as points,
-      count(*) filter(where p.home_score=r.home_score and p.away_score=r.away_score)::integer as exact_count,
-      count(*) filter(where sign(p.home_score-p.away_score)=sign(r.home_score-r.away_score))::integer as correct_count
-    from champions_players cp
+    from complete_players cp
     join public.players pl on lower(pl.name)=lower(cp.player_name) and coalesce(pl.is_active,true)
-    join public.champions_league_predictions p on lower(p.player_name)=lower(cp.player_name)
-    join public.champions_league_fixtures f on f.id=p.fixture_id and f.season=cp.season and f.week=cp.week
-    join public.champions_league_results r on r.fixture_id=f.id
+    join public.predictions p on lower(p.player_name)=lower(cp.player_name)
+    join public.fixtures f on f.id=p.fixture_id and f.season=cp.season and f.week=cp.week
+    join public.results r on r.fixture_id=f.id
     group by pl.id,cp.season,cp.week,pl.created_at,pl.name
-  ), champions_ranked as (
+  ), ranked as (
     select
       s.*,
       row_number() over(
@@ -103,80 +60,32 @@ as $$
         order by s.points desc,s.exact_count desc,s.correct_count desc,s.created_at,s.player_name collate "tr-TR-x-icu"
       )::integer as round_rank,
       count(*) over(partition by s.season,s.week)::integer as participant_count
-    from champions_scored s
-  ),
-  completed_nations_rounds as (
-    select f.season,f.week,count(distinct f.id)::integer as fixture_count
-    from public.nations_league_fixtures f
-    left join public.nations_league_results r on r.fixture_id=f.id
-    where f.kickoff<p_before
-    group by f.season,f.week
-    having count(distinct f.id)>0
-       and count(distinct r.fixture_id)=count(distinct f.id)
-  ), nations_players as (
-    select cnr.season,cnr.week,cnr.fixture_count,p.player_name
-    from completed_nations_rounds cnr
-    join public.nations_league_fixtures f on f.season=cnr.season and f.week=cnr.week
-    join public.nations_league_predictions p on p.fixture_id=f.id
-    group by cnr.season,cnr.week,cnr.fixture_count,p.player_name
-    having count(distinct p.fixture_id)=cnr.fixture_count
-  ), nations_scored as (
-    select
-      pl.id as player_id,
-      np.season,
-      np.week,
-      pl.created_at,
-      pl.name as player_name,
-      coalesce(sum(public.nations_match_points(
-        f.id,p.home_score,p.away_score,r.home_score,r.away_score
-      )),0)::bigint as points,
-      count(*) filter(where p.home_score=r.home_score and p.away_score=r.away_score)::integer as exact_count,
-      count(*) filter(where sign(p.home_score-p.away_score)=sign(r.home_score-r.away_score))::integer as correct_count
-    from nations_players np
-    join public.players pl on lower(pl.name)=lower(np.player_name) and coalesce(pl.is_active,true)
-    join public.nations_league_predictions p on lower(p.player_name)=lower(np.player_name)
-    join public.nations_league_fixtures f on f.id=p.fixture_id and f.season=np.season and f.week=np.week
-    join public.nations_league_results r on r.fixture_id=f.id
-    group by pl.id,np.season,np.week,pl.created_at,pl.name
-  ), nations_ranked as (
-    select
-      s.*,
-      row_number() over(
-        partition by s.season,s.week
-        order by s.points desc,s.exact_count desc,s.correct_count desc,s.created_at,s.player_name collate "tr-TR-x-icu"
-      )::integer as round_rank,
-      count(*) over(partition by s.season,s.week)::integer as participant_count
-    from nations_scored s
-  ), rounds as (
-    select player_id,
-           public.league_normalized_performance(round_rank,participant_count) as performance_score,
-           exact_count,
-           points
-    from super_ranked where participant_count>=2
-    union all
-    select player_id,
-           public.league_normalized_performance(round_rank,participant_count),
-           exact_count,
-           points
-    from champions_ranked where participant_count>=2
-    union all
-    select player_id,
-           public.league_normalized_performance(round_rank,participant_count),
-           exact_count,
-           points
-    from nations_ranked where participant_count>=2
-  ), aggregated as (
+    from scored s
+  ), normalized as (
     select
       r.player_id,
-      round(avg(r.performance_score),2)::numeric(6,2) as performance_score,
-      count(*)::integer as valid_round_count,
-      sum(r.exact_count)::integer as exact_score_count,
-      sum(r.points)::bigint as raw_points
-    from rounds r
-    group by r.player_id
+      r.week,
+      public.league_normalized_performance(r.round_rank,r.participant_count) as performance_score,
+      r.exact_count,
+      r.points
+    from ranked r
+    where r.participant_count>=2
+  ), players_in_window as (
+    select distinct player_id from normalized
+  ), two_week as (
+    select
+      p.player_id,
+      round((coalesce(w3.performance_score,0)+coalesce(w4.performance_score,0))/2.0,2)::numeric(6,2) as performance_score,
+      ((case when w3.player_id is not null then 1 else 0 end)
+       +(case when w4.player_id is not null then 1 else 0 end))::integer as valid_round_count,
+      (coalesce(w3.exact_count,0)+coalesce(w4.exact_count,0))::integer as exact_score_count,
+      (coalesce(w3.points,0)+coalesce(w4.points,0))::bigint as raw_points
+    from players_in_window p
+    left join normalized w3 on w3.player_id=p.player_id and w3.week=3
+    left join normalized w4 on w4.player_id=p.player_id and w4.week=4
   )
-  select a.player_id,a.performance_score,a.valid_round_count,a.exact_score_count,a.raw_points
-  from aggregated a;
+  select t.player_id,t.performance_score,t.valid_round_count,t.exact_score_count,t.raw_points
+  from two_week t;
 $$;
 
 create or replace function public.initialize_first_league_period(
@@ -312,5 +221,6 @@ revoke execute on function public.league_historical_seed_scores(timestamptz) fro
 revoke execute on function public.initialize_first_league_period(timestamptz,timestamptz) from public,anon,authenticated;
 
 -- 77 katılımcı için kapasite örneği: 8 Şampiyonlar / 12 Elit / 15 Altın / 19 Gümüş / 23 Bronz.
--- İlk görünür sıra geçmiş normalize performansla oluşur; eşit performansta daha fazla davet eden öne geçer.
+-- İlk görünür sıra Süper Lig 3+4 iki haftalık normalize performansla oluşur.
+-- Eksik hafta 0 kabul edilir. Eşit performansta daha fazla davet eden öne geçer.
 -- 5. hafta dönem performansı geldiğinde geçmiş seed puanı taşınmaz; dönem sıralaması yeni turlarla yeniden hesaplanır.
