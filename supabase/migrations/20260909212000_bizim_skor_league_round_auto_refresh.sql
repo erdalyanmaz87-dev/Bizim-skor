@@ -11,12 +11,13 @@ as $$
 declare
   v_status text;
   v_starts_at timestamptz;
+  v_ends_at timestamptz;
   v_total integer := 0;
   v_written integer := 0;
   rec record;
 begin
-  select lp.status,lp.starts_at
-    into v_status,v_starts_at
+  select lp.status,lp.starts_at,lp.ends_at
+    into v_status,v_starts_at,v_ends_at
   from public.league_periods lp
   where lp.id=p_period_id
   for update;
@@ -28,13 +29,14 @@ begin
     raise exception 'Kapalı lig dönemi yenilenemez';
   end if;
 
-  -- Süper Lig: tur bütünü dönem başladıktan sonra başlamış ve tüm sonuçları mevcut olmalı.
+  -- Bir yarışma turunun tamamı dönem penceresinde kalmalı ve tüm sonuçları mevcut olmalı.
   for rec in
     select f.season,f.week
     from public.fixtures f
     left join public.results r on r.fixture_id=f.id
     group by f.season,f.week
     having min(f.kickoff)>=v_starts_at
+       and max(f.kickoff)<=v_ends_at
        and count(distinct f.id)>0
        and count(distinct r.fixture_id)=count(distinct f.id)
     order by min(f.kickoff),f.season,f.week
@@ -47,13 +49,13 @@ begin
     v_total:=v_total+coalesce(v_written,0);
   end loop;
 
-  -- UEFA Şampiyonlar Ligi.
   for rec in
     select f.season,f.week
     from public.champions_league_fixtures f
     left join public.champions_league_results r on r.fixture_id=f.id
     group by f.season,f.week
     having min(f.kickoff)>=v_starts_at
+       and max(f.kickoff)<=v_ends_at
        and count(distinct f.id)>0
        and count(distinct r.fixture_id)=count(distinct f.id)
     order by min(f.kickoff),f.season,f.week
@@ -66,13 +68,13 @@ begin
     v_total:=v_total+coalesce(v_written,0);
   end loop;
 
-  -- Uluslar Ligi.
   for rec in
     select f.season,f.week
     from public.nations_league_fixtures f
     left join public.nations_league_results r on r.fixture_id=f.id
     group by f.season,f.week
     having min(f.kickoff)>=v_starts_at
+       and max(f.kickoff)<=v_ends_at
        and count(distinct f.id)>0
        and count(distinct r.fixture_id)=count(distinct f.id)
     order by min(f.kickoff),f.season,f.week
@@ -92,5 +94,4 @@ $$;
 
 revoke execute on function public.refresh_league_period_rounds(bigint) from public,anon,authenticated;
 
--- Bu fonksiyon maintain_league_periods() tarafından saatlik çağrılır.
 -- Aynı tur tekrar keşfedilirse refresh_league_round UPSERT kullandığı için mükerrer satır oluşmaz.
