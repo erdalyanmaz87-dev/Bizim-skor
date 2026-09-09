@@ -5,6 +5,7 @@ const UI=require('../league-system-ui');
 test('uygun olmayan oyuncuya bir tur daha mesajı gösterir',()=>{
   const html=UI.renderLeagueSummary({is_eligible:false,valid_round_count:1,rounds_needed:1,league_code:'bronze'});
   assert.match(html,/Lig sistemine katılmak için 1 tahmin turu daha tamamla/);
+  assert.match(html,/bir alt lige düşersin/);
 });
 
 test('kullanıcının ligi için yükselme ve düşme sınıflarını üretir',()=>{
@@ -19,10 +20,12 @@ test('kullanıcının ligi için yükselme ve düşme sınıflarını üretir',(
   assert.match(html,/league-me/);
 });
 
-test('kurallar 4 hafta ve 2 tur şartını açıklar',()=>{
+test('kurallar 4 hafta, 2 tur ve pasiflik düşüşünü açıklar',()=>{
   const html=UI.renderLeagueRules();
   assert.match(html,/4 hafta/);
   assert.match(html,/en az 2 ayrı tahmin turu/);
+  assert.match(html,/bir alt lige düşer/);
+  assert.match(html,/Bronz Lig oyuncusu Bronz Lig’de kalır/);
 });
 
 test('diğer ligleri kompakt seçenekler olarak gösterir',()=>{
