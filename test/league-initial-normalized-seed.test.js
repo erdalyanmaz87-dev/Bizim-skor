@@ -5,8 +5,12 @@ const path=require('node:path');
 
 const seedFile=path.join(__dirname,'../supabase/migrations/20260909204500_bizim_skor_league_initial_seed.sql');
 const membershipsFile=path.join(__dirname,'../supabase/migrations/20260909200000_bizim_skor_league_memberships.sql');
+const roundsFile=path.join(__dirname,'../supabase/migrations/20260909193000_bizim_skor_league_rounds.sql');
+const baseFile=path.join(__dirname,'../supabase/migrations/20260909190000_bizim_skor_leagues.sql');
 const seedSql=()=>fs.readFileSync(seedFile,'utf8');
 const membershipsSql=()=>fs.readFileSync(membershipsFile,'utf8');
+const roundsSql=()=>fs.readFileSync(roundsFile,'utf8');
+const baseSql=()=>fs.readFileSync(baseFile,'utf8');
 
 test('ilk yerleştirme eski genel sıralamayı kullanmaz',()=>{
   const source=seedSql();
@@ -25,13 +29,26 @@ test('tarihsel seed puanı tamamlanmış Süper Lig Şampiyonlar Ligi ve Uluslar
 
 test('hiç tamamlanmış turu olmayan katılımcı sıfır normalize puanla kalır',()=>{
   const source=seedSql();
-  assert.match(source,/coalesce\(a\.performance_score,0\)/i);
-  assert.match(source,/coalesce\(a\.valid_round_count,0\)/i);
+  assert.match(source,/coalesce\(h\.performance_score,0\)/i);
+  assert.match(source,/coalesce\(h\.valid_round_count,0\)/i);
 });
 
-test('ilk seed eşitlik sırası performans tur tam skor ham puan ve oyuncu id şeklindedir',()=>{
+test('ilk seed eşitlik sırası performans davet tur tam skor ham puan ve oyuncu id şeklindedir',()=>{
   const source=seedSql();
-  assert.match(source,/order by\s+s\.performance_score desc[\s\S]*s\.valid_round_count desc[\s\S]*s\.exact_score_count desc[\s\S]*s\.raw_points desc[\s\S]*s\.player_id/i);
+  assert.match(source,/player_invites/i);
+  assert.match(source,/order by\s+s\.performance_score desc[\s\S]*s\.invite_count desc[\s\S]*s\.valid_round_count desc[\s\S]*s\.exact_score_count desc[\s\S]*s\.raw_points desc[\s\S]*s\.player_id/i);
+});
+
+test('tur ve üyelik tabloları ham puanı saklar',()=>{
+  assert.match(baseSql(),/league_round_performance[\s\S]*raw_points bigint/i);
+  assert.match(baseSql(),/league_memberships[\s\S]*raw_points bigint/i);
+  assert.match(roundsSql(),/raw_points/i);
+});
+
+test('dönem içi lig eşitlik sırası performans davet tur tam skor ham puan ve oyuncu id şeklindedir',()=>{
+  const source=membershipsSql();
+  assert.match(source,/player_invites/i);
+  assert.match(source,/order by\s+m\.performance_score desc nulls last[\s\S]*coalesce\(i\.invite_count,0\) desc[\s\S]*m\.valid_round_count desc[\s\S]*m\.exact_score_count desc[\s\S]*m\.raw_points desc[\s\S]*m\.player_id/i);
 });
 
 test('başlangıç üyeliği normalize puanı ve lig içi başlangıç sırasını gösterir ama dönem turunu sıfırdan başlatır',()=>{
