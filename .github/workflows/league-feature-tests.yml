@@ -49,3 +49,4 @@ jobs:
           test/league-round-tie-ranking.test.js
           test/league-close-eligible-ranking.test.js
           test/league-movement-plan.test.js
+          test/league-counts-rpc.test.js
