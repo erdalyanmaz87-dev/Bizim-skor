@@ -28,6 +28,11 @@ test('ilk seed yalnız aynı sezonun Süper Lig 3 ve 4 haftasını kullanır',()
   assert.match(source,/league_normalized_performance/i);
 });
 
+test('ilk seed haftası yalnız bütün skorları doluysa tamamlanmış sayılır',()=>{
+  const source=seedSql();
+  assert.match(source,/count\(distinct\s+r\.fixture_id\)\s+filter\s*\(where\s+r\.home_score\s+is\s+not\s+null\s+and\s+r\.away_score\s+is\s+not\s+null\)\s*=\s*count\(distinct\s+f\.id\)/i);
+});
+
 test('3 ve 4. haftada eşit performanslı oyuncular ortak rank alır',()=>{
   const source=seedSql();
   assert.match(source,/rank\(\)\s+over\(\s*partition by s\.season,s\.week\s+order by s\.points desc,s\.exact_count desc,s\.correct_count desc\s*\)/i);
