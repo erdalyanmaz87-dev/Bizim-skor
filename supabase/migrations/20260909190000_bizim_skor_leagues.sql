@@ -85,7 +85,7 @@ as $$
       or p_rank < 1
       or p_rank > p_participant_count
       then null
-    else round((100 * (1 - ((p_rank - 1)::numeric / p_participant_count::numeric)))::numeric, 2)
+    else round((100 * ((p_participant_count - p_rank)::numeric / (p_participant_count - 1)::numeric))::numeric, 2)
   end;
 $$;
 
@@ -192,6 +192,7 @@ revoke execute on function public.get_current_league_period() from public,authen
 grant execute on function public.get_current_league_period() to anon;
 
 -- Geliştirme doğrulama örnekleri:
--- select public.league_normalized_performance(1,69); -- 100.00
--- select public.league_allocate_capacities(63);       -- 6 / 9 / 13 / 16 / 19
+-- select public.league_normalized_performance(1,69);   -- 100.00
+-- select public.league_normalized_performance(69,69); -- 0.00
+-- select public.league_allocate_capacities(63);        -- 6 / 9 / 13 / 16 / 19
 -- select public.league_promotion_slots(public.league_allocate_capacities(63)); -- 2 / 3 / 4 / 5
