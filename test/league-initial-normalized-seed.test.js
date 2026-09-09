@@ -18,13 +18,19 @@ test('ilk yerleştirme eski genel sıralamayı kullanmaz',()=>{
   assert.match(source,/league_historical_seed_scores/i);
 });
 
-test('tarihsel seed puanı tamamlanmış Süper Lig Şampiyonlar Ligi ve Uluslar Ligi turlarını normalize eder',()=>{
+test('ilk seed yalnız Süper Lig 3 ve 4 haftayı kullanır',()=>{
   const source=seedSql();
-  for(const table of ['fixtures','champions_league_fixtures','nations_league_fixtures']){
-    assert.match(source,new RegExp(`public\\.${table}`,'i'));
-  }
+  assert.match(source,/f\.week\s+in\s*\(3\s*,\s*4\)/i);
+  assert.doesNotMatch(source,/champions_league_fixtures/i);
+  assert.doesNotMatch(source,/nations_league_fixtures/i);
   assert.match(source,/league_normalized_performance/i);
-  assert.match(source,/round\(avg\(r\.performance_score\),2\)/i);
+});
+
+test('eksik hafta sıfır kabul edilip iki haftaya bölünür',()=>{
+  const source=seedSql();
+  assert.match(source,/coalesce\(w3\.performance_score,0\)/i);
+  assert.match(source,/coalesce\(w4\.performance_score,0\)/i);
+  assert.match(source,/\/\s*2\.0/i);
 });
 
 test('hiç tamamlanmış turu olmayan katılımcı sıfır normalize puanla kalır',()=>{
