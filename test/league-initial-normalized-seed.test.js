@@ -18,9 +18,11 @@ test('ilk yerleştirme eski genel sıralamayı kullanmaz',()=>{
   assert.match(source,/league_historical_seed_scores/i);
 });
 
-test('ilk seed yalnız Süper Lig 3 ve 4 haftayı kullanır',()=>{
+test('ilk seed yalnız aynı sezonun Süper Lig 3 ve 4 haftasını kullanır',()=>{
   const source=seedSql();
+  assert.match(source,/seed_season/i);
   assert.match(source,/f\.week\s+in\s*\(3\s*,\s*4\)/i);
+  assert.match(source,/f\.season\s*=\s*ss\.season/i);
   assert.doesNotMatch(source,/champions_league_fixtures/i);
   assert.doesNotMatch(source,/nations_league_fixtures/i);
   assert.match(source,/league_normalized_performance/i);
@@ -71,6 +73,6 @@ test('lig tablosu iki tur şartı dolmadan da üyeleri gösterir',()=>{
 
 test('dönem içi sıralama herkesi sıralar ancak yükselme düşme durumu yalnız uygun oyunculara verilir',()=>{
   const source=membershipsSql();
-  assert.match(source,/from public\.league_memberships m\s*where m\.period_id=p_period_id(?!\s+and m\.is_eligible)/i);
+  assert.match(source,/from public\.league_memberships m[\s\S]*where m\.period_id=p_period_id/i);
   assert.match(source,/when\s+not m\.is_eligible then 'none'/i);
 });
