@@ -2,6 +2,126 @@
 -- Yeni oyuncular Bronz'dan başlar. Herkes sıralamada görünür; yükselme/düşme için en az 2 geçerli tur gerekir.
 -- Eşitlik: performans > davet > geçerli tur > tam skor > ham puan > oyuncu ID.
 
+create or replace function public.league_movement_plan(
+  p_period_id bigint
+) returns table(
+  promote_elite integer,
+  promote_gold integer,
+  promote_silver integer,
+  promote_bronze integer,
+  regular_down_champions integer,
+  regular_down_elite integer,
+  regular_down_gold integer,
+  regular_down_silver integer
+)
+language plpgsql
+stable
+security definer
+set search_path=''
+as $$
+declare
+  v_slots jsonb;
+  v_q_ce integer:=0;
+  v_q_eg integer:=0;
+  v_q_gs integer:=0;
+  v_q_sb integer:=0;
+
+  v_inactive_champions integer:=0;
+  v_inactive_elite integer:=0;
+  v_inactive_gold integer:=0;
+  v_inactive_silver integer:=0;
+
+  v_eligible_champions integer:=0;
+  v_eligible_elite integer:=0;
+  v_eligible_gold integer:=0;
+  v_eligible_silver integer:=0;
+  v_eligible_bronze integer:=0;
+
+  v_regular_down_champions integer:=0;
+  v_regular_down_elite integer:=0;
+  v_regular_down_gold integer:=0;
+  v_regular_down_silver integer:=0;
+
+  v_actual_down_champions integer:=0;
+  v_actual_down_elite integer:=0;
+  v_actual_down_gold integer:=0;
+  v_actual_down_silver integer:=0;
+
+  v_promote_elite integer:=0;
+  v_promote_gold integer:=0;
+  v_promote_silver integer:=0;
+  v_promote_bronze integer:=0;
+begin
+  select lp.locked_promotion_slots
+    into v_slots
+  from public.league_periods lp
+  where lp.id=p_period_id;
+
+  if v_slots is null then
+    raise exception 'Lig dönemi bulunamadı';
+  end if;
+
+  v_q_ce:=coalesce((v_slots->>'champions_elite')::integer,0);
+  v_q_eg:=coalesce((v_slots->>'elite_gold')::integer,0);
+  v_q_gs:=coalesce((v_slots->>'gold_silver')::integer,0);
+  v_q_sb:=coalesce((v_slots->>'silver_bronze')::integer,0);
+
+  select
+    count(*) filter(where league_code='champions' and not is_eligible)::integer,
+    count(*) filter(where league_code='elite' and not is_eligible)::integer,
+    count(*) filter(where league_code='gold' and not is_eligible)::integer,
+    count(*) filter(where league_code='silver' and not is_eligible)::integer,
+    count(*) filter(where league_code='champions' and is_eligible)::integer,
+    count(*) filter(where league_code='elite' and is_eligible)::integer,
+    count(*) filter(where league_code='gold' and is_eligible)::integer,
+    count(*) filter(where league_code='silver' and is_eligible)::integer,
+    count(*) filter(where league_code='bronze' and is_eligible)::integer
+  into
+    v_inactive_champions,v_inactive_elite,v_inactive_gold,v_inactive_silver,
+    v_eligible_champions,v_eligible_elite,v_eligible_gold,v_eligible_silver,v_eligible_bronze
+  from public.league_memberships
+  where period_id=p_period_id;
+
+  v_regular_down_champions:=least(
+    v_eligible_champions,
+    greatest(0,greatest(v_q_ce,v_inactive_champions)-v_inactive_champions)
+  );
+  v_actual_down_champions:=v_inactive_champions+v_regular_down_champions;
+  v_promote_elite:=least(v_eligible_elite,v_actual_down_champions);
+
+  v_regular_down_elite:=least(
+    greatest(0,v_eligible_elite-v_promote_elite),
+    greatest(0,greatest(v_q_eg,v_inactive_elite)-v_inactive_elite)
+  );
+  v_actual_down_elite:=v_inactive_elite+v_regular_down_elite;
+  v_promote_gold:=least(v_eligible_gold,v_actual_down_elite);
+
+  v_regular_down_gold:=least(
+    greatest(0,v_eligible_gold-v_promote_gold),
+    greatest(0,greatest(v_q_gs,v_inactive_gold)-v_inactive_gold)
+  );
+  v_actual_down_gold:=v_inactive_gold+v_regular_down_gold;
+  v_promote_silver:=least(v_eligible_silver,v_actual_down_gold);
+
+  v_regular_down_silver:=least(
+    greatest(0,v_eligible_silver-v_promote_silver),
+    greatest(0,greatest(v_q_sb,v_inactive_silver)-v_inactive_silver)
+  );
+  v_actual_down_silver:=v_inactive_silver+v_regular_down_silver;
+  v_promote_bronze:=least(v_eligible_bronze,v_actual_down_silver);
+
+  return query select
+    v_promote_elite,
+    v_promote_gold,
+    v_promote_silver,
+    v_promote_bronze,
+    v_regular_down_champions,
+    v_regular_down_elite,
+    v_regular_down_gold,
+    v_regular_down_silver;
+end;
+$$;
+
 create or replace function public.refresh_league_memberships(
   p_period_id bigint
 ) returns integer
@@ -129,6 +249,7 @@ begin
   ), ordered as (
     select
       m.id,
+      m.league_code,
       row_number() over(
         partition by m.league_code
         order by m.performance_score desc nulls last,
@@ -143,33 +264,52 @@ begin
     join public.players p on p.id=m.player_id
     left join invites i on i.player_key=lower(p.name)
     where m.period_id=p_period_id
+  ), eligible_ordered as (
+    select
+      o.id,
+      row_number() over(
+        partition by o.league_code
+        order by o.league_rank
+      )::integer as eligible_rank,
+      count(*) over(partition by o.league_code)::integer as eligible_size
+    from ordered o
+    join public.league_memberships m on m.id=o.id
+    where m.is_eligible
+  ), movement_plan as (
+    select * from public.league_movement_plan(p_period_id)
   ), statuses as (
     select
       o.id,o.league_rank,o.league_size,
       m.league_code,
       case
         when not m.is_eligible then 'none'
-        when m.league_code='champions' and o.league_rank=1 then 'championship'
+        when m.league_code='champions' and eo.eligible_rank=1 then 'championship'
         when m.league_code='champions'
-          and o.league_rank > o.league_size-coalesce((v_slots->>'champions_elite')::integer,0) then 'relegation'
+          and mp.regular_down_champions>0
+          and eo.eligible_rank>eo.eligible_size-mp.regular_down_champions then 'relegation'
         when m.league_code='elite'
-          and o.league_rank <= coalesce((v_slots->>'champions_elite')::integer,0) then 'promotion'
+          and eo.eligible_rank<=mp.promote_elite then 'promotion'
         when m.league_code='elite'
-          and o.league_rank > o.league_size-coalesce((v_slots->>'elite_gold')::integer,0) then 'relegation'
+          and mp.regular_down_elite>0
+          and eo.eligible_rank>eo.eligible_size-mp.regular_down_elite then 'relegation'
         when m.league_code='gold'
-          and o.league_rank <= coalesce((v_slots->>'elite_gold')::integer,0) then 'promotion'
+          and eo.eligible_rank<=mp.promote_gold then 'promotion'
         when m.league_code='gold'
-          and o.league_rank > o.league_size-coalesce((v_slots->>'gold_silver')::integer,0) then 'relegation'
+          and mp.regular_down_gold>0
+          and eo.eligible_rank>eo.eligible_size-mp.regular_down_gold then 'relegation'
         when m.league_code='silver'
-          and o.league_rank <= coalesce((v_slots->>'gold_silver')::integer,0) then 'promotion'
+          and eo.eligible_rank<=mp.promote_silver then 'promotion'
         when m.league_code='silver'
-          and o.league_rank > o.league_size-coalesce((v_slots->>'silver_bronze')::integer,0) then 'relegation'
+          and mp.regular_down_silver>0
+          and eo.eligible_rank>eo.eligible_size-mp.regular_down_silver then 'relegation'
         when m.league_code='bronze'
-          and o.league_rank <= coalesce((v_slots->>'silver_bronze')::integer,0) then 'promotion'
+          and eo.eligible_rank<=mp.promote_bronze then 'promotion'
         else 'none'
       end as promotion_status
     from ordered o
     join public.league_memberships m on m.id=o.id
+    left join eligible_ordered eo on eo.id=o.id
+    cross join movement_plan mp
   )
   update public.league_memberships m
   set rank_in_league=s.league_rank,
@@ -291,6 +431,7 @@ begin
 end;
 $$;
 
+revoke execute on function public.league_movement_plan(bigint) from public,anon,authenticated;
 revoke execute on function public.refresh_league_memberships(bigint) from public,anon,authenticated;
 revoke execute on function public.get_my_league_summary(text) from public,authenticated;
 revoke execute on function public.get_league_table(text,text) from public,authenticated;
@@ -299,4 +440,4 @@ grant execute on function public.get_league_table(text,text) to anon;
 
 -- İlk açılışta tüm üyeler Süper Lig 3+4 haftalık normalize başlangıç sırasıyla görünür.
 -- İlk dönem turu işlendiğinde başlangıç puanı temizlenir ve yeni dönem performansı sıfırdan hesaplanır.
--- 2 geçerli tur şartı yalnız yükselme/düşme uygunluğunu etkiler; tablo görünürlüğünü etkilemez.
+-- Canlı yükselme/düşme göstergesi ile dönem kapanışı aynı hareket planını kullanır.
