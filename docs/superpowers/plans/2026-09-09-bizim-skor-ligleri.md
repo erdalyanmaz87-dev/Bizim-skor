@@ -51,6 +51,7 @@
 - ilk gerçek dönem turu geldiğinde seed performansı temizlenir
 - dönem performansı yalnız dönem turlarından hesaplanır
 - eşitlikte benzersiz davet sayısı kullanılır
+- canlı yükselme/düşme statüsü ve dönem kapanışı ortak `league_movement_plan` kullanır
 - `get_my_league_summary`
 - `get_league_table`
 
@@ -60,6 +61,7 @@
 - Bronz aşağı düşmez
 - hareket seçiminde yalnız uygun oyuncular için `eligible_rank` üretilir
 - pasif oyuncular uygun oyuncuların yükselme sırasını bloke etmez
+- orta ligde aynı uygun oyuncu hem yükselme hem düşme grubuna giremez
 - kapanış idempotenttir
 
 ### Sonraki dönem
@@ -68,7 +70,8 @@
 - yeni oyuncu Bronz başlar
 
 ### Otomasyon
-- `20260909212000_bizim_skor_league_round_auto_refresh.sql`
+- `20260909210500_bizim_skor_league_round_auto_refresh.sql`
+- dönem otomasyonundan önce kurulur
 - saatlik açık dönem tur keşfi
 - üç organizasyon
 - yalnız tüm ev/deplasman skorları dolu turlar
@@ -84,20 +87,27 @@
 - `league-system-ui.js`
 - `Ligim` özeti
 - oyuncu uygun olmasa bile lig/sıra/puan görünür
-- 2 tur uyarısı ayrıca gösterilir
+- 2 tur uyarısı yalnız oyuncunun kendi ligi görüntülenirken gösterilir
 - diğer ligleri görüntüleme
 - kurallar paneli
 - mevcut genel sıralama akışına izole entegrasyon
 
+## Doğrulama Durumu
+
+- [x] Lig testleri için izole GitHub Actions workflow'u eklendi.
+- [x] Son tam doğrulanmış koşuda 62/62 test geçti, 0 hata.
+- [x] 77 oyunculuk ilk seed yeni ortak-rank ve benzersiz davet mantığıyla production verisi üzerinde read-only olarak tekrar hesaplandı; lig sınırları kontrol edildi.
+- [x] Otomatik tur yenileme migration'ı dönem otomasyonundan önce gelecek şekilde sıralandı.
+- [x] Vercel build kontrollerinde başarılı koşular görüldü.
+
 ## Kalan İşler — Production Öncesi
 
+- [ ] Son UI düzeltmesinden sonraki GitHub Actions koşusunun yeşil olduğunu doğrulama.
 - [ ] Tüm migrationların gerçek PostgreSQL üzerinde development/staging yürütme doğrulaması.
-- [ ] `node --test` ile tüm lig test paketinin gerçek koşumu. GitHub repo için ayrı test workflow'u şu an yok; Vercel build başarısı test koşumu yerine geçmez.
-- [ ] 77 oyunculuk ilk seed'i güncel davet verisi ve ortak-rank değişikliğiyle yeniden hesaplayıp sınırları doğrulama.
-- [ ] Yükselme/düşme kapanışını temsili veriyle SQL seviyesinde simüle etme.
-- [ ] Yeni dönem açılışında lig boyutlarını ve uygun oyuncu yetersizliği kenar durumunu doğrulama.
+- [ ] Yükselme/düşme kapanışını temsili veriyle gerçek SQL seviyesinde simüle etme.
+- [ ] Yeni dönem açılışında lig boyutlarını ve uygun oyuncu yetersizliği kenar durumunu gerçek SQL ile doğrulama.
 - [ ] UI regresyon kontrolü: Süper Lig / CL / Uluslar Ligi / Arkadaş Ligleri / canlı skor / bildirim / davet sistemi etkilenmiyor.
-- [ ] Production migration sırasını tek tek kontrol etme.
+- [ ] Production migration sırasını son kez tek tek kontrol etme.
 - [ ] Kullanıcıdan production için ayrıca açık onay alma.
 
 ## Doğrulama İlkesi
