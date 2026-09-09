@@ -1,0 +1,53 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+
+const seedFile=path.join(__dirname,'../supabase/migrations/20260909204500_bizim_skor_league_initial_seed.sql');
+const membershipsFile=path.join(__dirname,'../supabase/migrations/20260909200000_bizim_skor_league_memberships.sql');
+const seedSql=()=>fs.readFileSync(seedFile,'utf8');
+const membershipsSql=()=>fs.readFileSync(membershipsFile,'utf8');
+
+test('ilk yerleştirme eski genel sıralamayı kullanmaz',()=>{
+  const source=seedSql();
+  assert.doesNotMatch(source,/get_super_league_general_ranking/i);
+  assert.match(source,/league_historical_seed_scores/i);
+});
+
+test('tarihsel seed puanı tamamlanmış Süper Lig Şampiyonlar Ligi ve Uluslar Ligi turlarını normalize eder',()=>{
+  const source=seedSql();
+  for(const table of ['fixtures','champions_league_fixtures','nations_league_fixtures']){
+    assert.match(source,new RegExp(`public\\.${table}`,'i'));
+  }
+  assert.match(source,/league_normalized_performance/i);
+  assert.match(source,/round\(avg\(r\.performance_score\),2\)/i);
+});
+
+test('hiç tamamlanmış turu olmayan katılımcı sıfır normalize puanla kalır',()=>{
+  const source=seedSql();
+  assert.match(source,/coalesce\(a\.performance_score,0\)/i);
+  assert.match(source,/coalesce\(a\.valid_round_count,0\)/i);
+});
+
+test('ilk seed eşitlik sırası performans tur tam skor ham puan ve oyuncu id şeklindedir',()=>{
+  const source=seedSql();
+  assert.match(source,/order by\s+s\.performance_score desc[\s\S]*s\.valid_round_count desc[\s\S]*s\.exact_score_count desc[\s\S]*s\.raw_points desc[\s\S]*s\.player_id/i);
+});
+
+test('başlangıç üyeliği normalize puanı ve lig içi başlangıç sırasını gösterir ama dönem turunu sıfırdan başlatır',()=>{
+  const source=seedSql();
+  assert.match(source,/performance_score[\s\S]*rank_in_league/i);
+  assert.match(source,/false\s*,\s*0\s*,\s*s\.performance_score/i);
+});
+
+test('lig tablosu iki tur şartı dolmadan da üyeleri gösterir',()=>{
+  const source=membershipsSql();
+  const tableFn=source.match(/create or replace function public\.get_league_table[\s\S]*?revoke execute on function public\.refresh_league_memberships/i)?.[0]||'';
+  assert.doesNotMatch(tableFn,/and\s+m\.is_eligible/i);
+});
+
+test('dönem içi sıralama herkesi sıralar ancak yükselme düşme durumu yalnız uygun oyunculara verilir',()=>{
+  const source=membershipsSql();
+  assert.match(source,/from public\.league_memberships m\s*where m\.period_id=p_period_id(?!\s+and m\.is_eligible)/i);
+  assert.match(source,/when\s+not m\.is_eligible then 'none'/i);
+});
