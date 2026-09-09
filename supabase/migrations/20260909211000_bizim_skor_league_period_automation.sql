@@ -1,4 +1,5 @@
--- Bizim Skor Ligleri: süresi dolan açık dönemi kapatır ve yeni 28 günlük dönemi otomatik açar.
+-- Bizim Skor Ligleri: dönem devri takvime değil 4 tamamlanmış Süper Lig haftasına bağlıdır.
+-- Şampiyonlar Ligi ve Uluslar Ligi turları performansa dahil olabilir ancak dönem sayacını ilerletmez.
 -- Mevcut oyun cron işlerinden bağımsız, ayrı bir pg_cron işi kullanır.
 
 create or replace function public.maintain_league_periods()
@@ -9,29 +10,88 @@ set search_path=''
 as $$
 declare
   v_period_id bigint;
-  v_ends_at timestamptz;
+  v_starts_at timestamptz;
+  v_completed_super_weeks integer:=0;
+  v_last_completed_week integer;
+  v_season text;
+  v_next_start timestamptz;
+  v_next_end timestamptz;
 begin
-  select id,ends_at
-    into v_period_id,v_ends_at
+  select id,starts_at
+    into v_period_id,v_starts_at
   from public.league_periods
   where status='open'
-    and ends_at<=now()
-  order by ends_at
+  order by starts_at desc
   limit 1
   for update;
 
-  -- Süresi dolmuş açık dönem yoksa hiçbir şey yapma.
   if v_period_id is null then
+    return false;
+  end if;
+
+  -- Dönem başlangıcından itibaren tamamlanan Süper Lig haftalarını say.
+  -- Bir hafta ancak o haftadaki tüm fikstürlerin sonucu mevcutsa tamamlanmış sayılır.
+  with super_weeks as (
+    select
+      f.season,
+      f.week,
+      min(f.kickoff) as first_kickoff,
+      max(f.kickoff) as last_kickoff,
+      count(distinct f.id) as fixture_count,
+      count(distinct r.fixture_id) as result_count
+    from public.fixtures f
+    left join public.results r on r.fixture_id=f.id
+    where f.kickoff>=v_starts_at
+    group by f.season,f.week
+  ), completed as (
+    select season,week,first_kickoff,last_kickoff
+    from super_weeks
+    where fixture_count>0
+      and result_count=fixture_count
+    order by first_kickoff
+    limit 4
+  )
+  select
+    count(*)::integer,
+    max(week),
+    max(season) filter(where week=(select max(c2.week) from completed c2))
+  into v_completed_super_weeks,v_last_completed_week,v_season
+  from completed;
+
+  if v_completed_super_weeks<4 then
     return false;
   end if;
 
   perform public.close_league_period(v_period_id);
 
-  -- Yeni dönem önceki dönemin tam bittiği anda başlar ve 28 gün sürer.
+  -- Yeni dönem, sonraki Süper Lig haftasının ilk maçında başlar.
+  select min(f.kickoff)
+    into v_next_start
+  from public.fixtures f
+  where f.season=v_season
+    and f.week>v_last_completed_week;
+
+  if v_next_start is null then
+    v_next_start:=now();
+  end if;
+
+  -- ends_at yalnız bilgi/arayüz alanıdır; gerçek kapanış koşulu 4 tamamlanmış Süper Lig haftasıdır.
+  select max(f.kickoff)
+    into v_next_end
+  from public.fixtures f
+  where f.season=v_season
+    and f.week between v_last_completed_week+1 and v_last_completed_week+4;
+
+  if v_next_end is null or v_next_end<=v_next_start then
+    v_next_end:=v_next_start + interval '35 days';
+  else
+    v_next_end:=v_next_end + interval '2 days';
+  end if;
+
   perform public.open_next_league_period(
     v_period_id,
-    v_ends_at,
-    v_ends_at + interval '28 days'
+    v_next_start,
+    v_next_end
   );
 
   return true;
@@ -63,8 +123,6 @@ select cron.schedule(
   $cron$
 );
 
--- Davranış:
--- ends_at gelmeden çağrı -> false
--- ends_at geldikten sonraki ilk saatlik çalışmada -> mevcut dönem kapanır, yenisi açılır
--- yeni dönem starts_at = eski ends_at
--- yeni dönem ends_at = eski ends_at + 28 gün
+-- Örnek ilk dönem: Süper Lig 5-6-7-8. haftalar.
+-- Bu pencere içinde oynanan CL/Uluslar Ligi turları lig performansına dahil edilir.
+-- 8. hafta tüm sonuçları tamamlanınca dönem kapanır; sonraki dönem 9. haftanın ilk maçında başlar.
