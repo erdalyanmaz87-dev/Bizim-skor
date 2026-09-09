@@ -48,7 +48,6 @@ as $$
       pl.id as player_id,
       cp.season,
       cp.week,
-      pl.created_at,
       pl.name as player_name,
       coalesce(sum(public.league_super_match_points(
         f.id,f.week,p.home_score,p.away_score,r.home_score,r.away_score
@@ -60,13 +59,13 @@ as $$
     join public.predictions p on lower(p.player_name)=lower(cp.player_name)
     join public.fixtures f on f.id=p.fixture_id and f.season=cp.season and f.week=cp.week
     join public.results r on r.fixture_id=f.id
-    group by pl.id,cp.season,cp.week,pl.created_at,pl.name
+    group by pl.id,cp.season,cp.week,pl.name
   ), ranked as (
     select
       s.*,
-      row_number() over(
+      rank() over(
         partition by s.season,s.week
-        order by s.points desc,s.exact_count desc,s.correct_count desc,s.created_at,s.player_name collate "tr-TR-x-icu"
+        order by s.points desc,s.exact_count desc,s.correct_count desc
       )::integer as round_rank,
       count(*) over(partition by s.season,s.week)::integer as participant_count
     from scored s
@@ -231,5 +230,6 @@ revoke execute on function public.initialize_first_league_period(timestamptz,tim
 
 -- 77 katılımcı için kapasite örneği: 8 Şampiyonlar / 12 Elit / 15 Altın / 19 Gümüş / 23 Bronz.
 -- İlk görünür sıra aynı sezonun Süper Lig 3+4 haftalık normalize performansıyla oluşur.
--- Eksik hafta 0 kabul edilir. Eşit performansta daha fazla davet eden öne geçer.
+-- Eksik hafta 0 kabul edilir. Haftalık gerçek eşitliklerde ortak normalize derece verilir.
+-- Eşit başlangıç performansında daha fazla davet eden öne geçer.
 -- 5. hafta dönem performansı geldiğinde geçmiş seed puanı taşınmaz; dönem sıralaması yeni turlarla yeniden hesaplanır.
