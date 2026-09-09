@@ -1,6 +1,6 @@
 -- Bizim Skor Ligleri: dönem içinde 2 geçerli turu tamamlamayan oyuncu bir alt lige düşer.
 -- Bronz Lig oyuncusu Bronz'da kalır.
--- İnaktif düşüşler sabit düşme kotasının içine sayılır; kota aşılırsa alttan aynı sayıda ek yükselme yapılır.
+-- Hareket sayıları üst ligden gerçekten düşen oyuncu sayısına göre aşağı doğru zincirlenir.
 -- Yükselme/düşme seçiminde yalnız uygun oyuncular kendi aralarında ayrıca sıralanır.
 
 create or replace function public.close_league_period(
@@ -35,10 +35,19 @@ declare
   v_down_gold integer:=0;
   v_down_silver integer:=0;
 
+  v_promote_elite integer:=0;
+  v_promote_gold integer:=0;
+  v_promote_silver integer:=0;
+
   v_regular_down_champions integer:=0;
   v_regular_down_elite integer:=0;
   v_regular_down_gold integer:=0;
   v_regular_down_silver integer:=0;
+
+  v_actual_down_champions integer:=0;
+  v_actual_down_elite integer:=0;
+  v_actual_down_gold integer:=0;
+  v_actual_down_silver integer:=0;
 begin
   select status,locked_promotion_slots into v_status,v_slots
   from public.league_periods
@@ -74,15 +83,40 @@ begin
   from public.league_memberships
   where period_id=p_period_id;
 
+  -- Şampiyonlar: önce gerçek düşüşü hesapla.
   v_down_champions:=greatest(v_q_ce,v_inactive_champions);
-  v_down_elite:=greatest(v_q_eg,v_inactive_elite);
-  v_down_gold:=greatest(v_q_gs,v_inactive_gold);
-  v_down_silver:=greatest(v_q_sb,v_inactive_silver);
+  v_regular_down_champions:=least(
+    v_eligible_champions,
+    greatest(0,v_down_champions-v_inactive_champions)
+  );
+  v_actual_down_champions:=v_inactive_champions+v_regular_down_champions;
 
-  v_regular_down_champions:=least(v_eligible_champions,greatest(0,v_down_champions-v_inactive_champions));
-  v_regular_down_elite:=least(v_eligible_elite,greatest(0,v_down_elite-v_inactive_elite));
-  v_regular_down_gold:=least(v_eligible_gold,greatest(0,v_down_gold-v_inactive_gold));
-  v_regular_down_silver:=least(v_eligible_silver,greatest(0,v_down_silver-v_inactive_silver));
+  -- Elit'ten Şampiyonlar'a çıkacaklar, Şampiyonlar'dan gerçekten düşen sayı kadar olabilir.
+  v_promote_elite:=least(v_eligible_elite,v_actual_down_champions);
+  v_down_elite:=greatest(v_q_eg,v_inactive_elite);
+  v_regular_down_elite:=least(
+    greatest(0,v_eligible_elite-v_promote_elite),
+    greatest(0,v_down_elite-v_inactive_elite)
+  );
+  v_actual_down_elite:=v_inactive_elite+v_regular_down_elite;
+
+  -- Gold'dan Elit'e çıkacaklar, Elit'ten gerçekten düşen sayı kadar olabilir.
+  v_promote_gold:=least(v_eligible_gold,v_actual_down_elite);
+  v_down_gold:=greatest(v_q_gs,v_inactive_gold);
+  v_regular_down_gold:=least(
+    greatest(0,v_eligible_gold-v_promote_gold),
+    greatest(0,v_down_gold-v_inactive_gold)
+  );
+  v_actual_down_gold:=v_inactive_gold+v_regular_down_gold;
+
+  -- Gümüş'ten Gold'a çıkacaklar, Gold'dan gerçekten düşen sayı kadar olabilir.
+  v_promote_silver:=least(v_eligible_silver,v_actual_down_gold);
+  v_down_silver:=greatest(v_q_sb,v_inactive_silver);
+  v_regular_down_silver:=least(
+    greatest(0,v_eligible_silver-v_promote_silver),
+    greatest(0,v_down_silver-v_inactive_silver)
+  );
+  v_actual_down_silver:=v_inactive_silver+v_regular_down_silver;
 
   with eligible_ranks as (
     select
@@ -110,10 +144,10 @@ begin
         when not m.is_eligible and m.league_code='silver' then 'bronze'
         when not m.is_eligible and m.league_code='bronze' then 'bronze'
 
-        when m.is_eligible and m.league_code='elite' and er.eligible_rank<=v_down_champions then 'champions'
-        when m.is_eligible and m.league_code='gold' and er.eligible_rank<=v_down_elite then 'elite'
-        when m.is_eligible and m.league_code='silver' and er.eligible_rank<=v_down_gold then 'gold'
-        when m.is_eligible and m.league_code='bronze' and er.eligible_rank<=v_down_silver then 'silver'
+        when m.is_eligible and m.league_code='elite' and er.eligible_rank<=v_actual_down_champions then 'champions'
+        when m.is_eligible and m.league_code='gold' and er.eligible_rank<=v_actual_down_elite then 'elite'
+        when m.is_eligible and m.league_code='silver' and er.eligible_rank<=v_actual_down_gold then 'gold'
+        when m.is_eligible and m.league_code='bronze' and er.eligible_rank<=v_actual_down_silver then 'silver'
 
         when m.is_eligible and m.league_code='champions'
           and er.eligible_rank>v_eligible_champions-v_regular_down_champions then 'elite'
@@ -160,5 +194,6 @@ $$;
 
 revoke execute on function public.close_league_period(bigint) from public,anon,authenticated;
 
--- Uygun olmayan oyuncular tablo sırasını korur ancak hareket seçiminde eligible_rank'e dahil edilmez.
--- Böylece örneğin Elit'in ilk iki tablolanan oyuncusu pasifse, en iyi iki uygun Elit oyuncu yine yükselir.
+-- Orta ligde aynı uygun oyuncu hem yukarı hem aşağı hareket edemez.
+-- Alt ligden yükselen oyuncu sayısı, üst ligden gerçekten düşen oyuncu sayısıyla sınırlıdır.
+-- Yeterli uygun oyuncu yoksa uygun olmayan oyuncu sırf kapasiteyi doldurmak için yükseltilmez.
