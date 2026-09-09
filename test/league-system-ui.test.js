@@ -10,6 +10,13 @@ test('uygun olmayan oyuncunun ligi sırası puanı görünür ve iki tur uyarıs
   assert.match(html,/Yükselme\/düşme için 2 tahmin turu daha tamamla/);
 });
 
+test('iki tur uyarısı yalnız oyuncunun kendi liginde görünür',()=>{
+  const own=UI.renderLeagueShell({is_eligible:false,rounds_needed:2,league_code:'gold',own_league_code:'gold'},[],{});
+  const other=UI.renderLeagueShell({is_eligible:false,rounds_needed:2,league_code:'silver',own_league_code:'gold'},[],{});
+  assert.match(own,/league-eligibility-note/);
+  assert.doesNotMatch(other,/league-eligibility-note/);
+});
+
 test('kullanıcının ligi için yükselme ve düşme sınıflarını üretir',()=>{
   const rows=[
     {league_rank:1,player_name:'A',performance_score:92,valid_round_count:4,exact_score_count:8,promotion_status:'promotion',is_me:false},
