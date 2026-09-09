@@ -10,7 +10,7 @@ const closeSql=()=>fs.readFileSync(closeFile,'utf8');
 
 test('ortak hareket planı helperı tanımlıdır',()=>{
   const source=memberships();
-  assert.match(source,/create or replace function public\.league_movement_plan\(p_period_id bigint\)/i);
+  assert.match(source,/create or replace function public\.league_movement_plan\(\s*p_period_id bigint\s*\)/i);
   for(const field of [
     'promote_elite','promote_gold','promote_silver','promote_bronze',
     'regular_down_champions','regular_down_elite','regular_down_gold','regular_down_silver'
