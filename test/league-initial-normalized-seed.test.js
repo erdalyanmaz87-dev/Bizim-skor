@@ -28,6 +28,14 @@ test('ilk seed yalnız aynı sezonun Süper Lig 3 ve 4 haftasını kullanır',()
   assert.match(source,/league_normalized_performance/i);
 });
 
+test('3 ve 4. haftada eşit performanslı oyuncular ortak rank alır',()=>{
+  const source=seedSql();
+  assert.match(source,/rank\(\)\s+over\(\s*partition by s\.season,s\.week\s+order by s\.points desc,s\.exact_count desc,s\.correct_count desc\s*\)/i);
+  const rankedBlock=source.match(/\), ranked as \([\s\S]*?from scored s\s*\)/i)?.[0]||'';
+  assert.doesNotMatch(rankedBlock,/created_at/i);
+  assert.doesNotMatch(rankedBlock,/player_name\s+collate/i);
+});
+
 test('eksik hafta sıfır kabul edilip iki haftaya bölünür',()=>{
   const source=seedSql();
   assert.match(source,/coalesce\(w3\.performance_score,0\)/i);
