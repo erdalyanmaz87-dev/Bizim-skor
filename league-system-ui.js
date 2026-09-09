@@ -53,7 +53,9 @@
 
   function renderLeagueShell(summary={},rows=[],counts={}){
     const code=summary.league_code||'bronze';
-    return `<div class="league-shell"><div class="league-header"><div><div class="league-eyebrow">Bizim Skor Ligleri</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><button type="button" class="league-rules-button" data-league-rules="1">ⓘ Kurallar</button></div>${renderLeagueTable(rows,{...summary,league_code:code})}${!summary.is_eligible?`<div class="league-eligibility-note">Yükselme/düşme için ${Math.max(1,Number(summary.rounds_needed)||2)} tahmin turu daha tamamlamalısın.</div>`:''}${renderOtherLeagueChips(counts,code)}<div class="league-rules-host" hidden>${renderLeagueRules()}</div></div>`;
+    const ownCode=summary.own_league_code||code;
+    const showEligibilityNote=!summary.is_eligible&&code===ownCode;
+    return `<div class="league-shell"><div class="league-header"><div><div class="league-eyebrow">Bizim Skor Ligleri</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><button type="button" class="league-rules-button" data-league-rules="1">ⓘ Kurallar</button></div>${renderLeagueTable(rows,{...summary,league_code:code})}${showEligibilityNote?`<div class="league-eligibility-note">Yükselme/düşme için ${Math.max(1,Number(summary.rounds_needed)||2)} tahmin turu daha tamamlamalısın.</div>`:''}${renderOtherLeagueChips(counts,code)}<div class="league-rules-host" hidden>${renderLeagueRules()}</div></div>`;
   }
 
   function css(){
@@ -83,11 +85,12 @@
     if(!detailHost)return true;
 
     async function loadLeague(code){
-      const target=code||summary.league_code||'bronze';
+      const ownLeague=summary.league_code||'bronze';
+      const target=code||ownLeague;
       const tableResult=await sb.rpc('get_league_table',{p_token:token,p_league_code:target});
       if(tableResult.error)throw tableResult.error;
       const rows=tableResult.data||[];
-      detailHost.innerHTML=renderLeagueShell({...summary,league_code:target},rows,counts);
+      detailHost.innerHTML=renderLeagueShell({...summary,league_code:target,own_league_code:ownLeague},rows,counts);
       detailHost.querySelector('[data-league-rules]')?.addEventListener('click',()=>{
         const host=detailHost.querySelector('.league-rules-host');
         if(host)host.hidden=!host.hidden;
