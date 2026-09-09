@@ -17,6 +17,7 @@ on:
       - 'supabase/migrations/20260909205000_bizim_skor_league_inactivity_relegation.sql'
       - 'supabase/migrations/20260909210000_bizim_skor_league_next_period.sql'
       - 'supabase/migrations/20260909210500_bizim_skor_league_round_auto_refresh.sql'
+      - 'supabase/migrations/20260909210750_bizim_skor_league_first_period_bootstrap.sql'
       - 'supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql'
       - 'test/league-*.test.js'
       - 'test/general-ranking-live-refresh-league.test.js'
@@ -54,3 +55,4 @@ jobs:
           test/league-movement-plan.test.js
           test/league-counts-rpc.test.js
           test/league-migration-ownership.test.js
+          test/league-first-period-bootstrap.test.js
