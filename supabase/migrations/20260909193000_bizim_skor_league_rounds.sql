@@ -68,8 +68,6 @@ begin
     raise exception 'Tur anahtarı geçersiz: %',p_round_key;
   end if;
 
-  -- Aynı tur daha önce işlendiyse aşağıdaki UPSERT aynı anahtarları günceller;
-  -- mükerrer satır üretmez.
   if p_competition='super_lig' then
     select count(*) into v_fixture_count
     from public.fixtures f
@@ -108,10 +106,10 @@ begin
       from scored s
     )
     insert into public.league_round_performance(
-      period_id,player_id,competition,round_key,participant_count,rank,performance_score,exact_score_count,updated_at
+      period_id,player_id,competition,round_key,participant_count,rank,performance_score,exact_score_count,raw_points,updated_at
     )
     select p_period_id,r.player_id,p_competition,p_round_key,r.participant_count,r.display_rank,
-      public.league_normalized_performance(r.display_rank,r.participant_count),r.exact_count,now()
+      public.league_normalized_performance(r.display_rank,r.participant_count),r.exact_count,r.points,now()
     from ranked r
     where r.participant_count>=2
     on conflict(period_id,player_id,competition,round_key) do update
@@ -119,6 +117,7 @@ begin
           rank=excluded.rank,
           performance_score=excluded.performance_score,
           exact_score_count=excluded.exact_score_count,
+          raw_points=excluded.raw_points,
           updated_at=now();
 
     get diagnostics v_written = row_count;
@@ -159,10 +158,10 @@ begin
       from scored s
     )
     insert into public.league_round_performance(
-      period_id,player_id,competition,round_key,participant_count,rank,performance_score,exact_score_count,updated_at
+      period_id,player_id,competition,round_key,participant_count,rank,performance_score,exact_score_count,raw_points,updated_at
     )
     select p_period_id,r.player_id,p_competition,p_round_key,r.participant_count,r.display_rank,
-      public.league_normalized_performance(r.display_rank,r.participant_count),r.exact_count,now()
+      public.league_normalized_performance(r.display_rank,r.participant_count),r.exact_count,r.points,now()
     from ranked r
     where r.participant_count>=2
     on conflict(period_id,player_id,competition,round_key) do update
@@ -170,6 +169,7 @@ begin
           rank=excluded.rank,
           performance_score=excluded.performance_score,
           exact_score_count=excluded.exact_score_count,
+          raw_points=excluded.raw_points,
           updated_at=now();
 
     get diagnostics v_written = row_count;
@@ -210,10 +210,10 @@ begin
       from scored s
     )
     insert into public.league_round_performance(
-      period_id,player_id,competition,round_key,participant_count,rank,performance_score,exact_score_count,updated_at
+      period_id,player_id,competition,round_key,participant_count,rank,performance_score,exact_score_count,raw_points,updated_at
     )
     select p_period_id,r.player_id,p_competition,p_round_key,r.participant_count,r.display_rank,
-      public.league_normalized_performance(r.display_rank,r.participant_count),r.exact_count,now()
+      public.league_normalized_performance(r.display_rank,r.participant_count),r.exact_count,r.points,now()
     from ranked r
     where r.participant_count>=2
     on conflict(period_id,player_id,competition,round_key) do update
@@ -221,6 +221,7 @@ begin
           rank=excluded.rank,
           performance_score=excluded.performance_score,
           exact_score_count=excluded.exact_score_count,
+          raw_points=excluded.raw_points,
           updated_at=now();
 
     get diagnostics v_written = row_count;
@@ -230,11 +231,8 @@ begin
 end;
 $$;
 
--- Tarayıcı bu yenileme fonksiyonunu doğrudan çağıramaz.
 revoke execute on function public.league_super_match_points(bigint,integer,integer,integer,integer,integer) from public,anon,authenticated;
 revoke execute on function public.refresh_league_round(bigint,text,text) from public,anon,authenticated;
 
 -- Doğrulama senaryosu (development):
--- 1) refresh_league_round(...,'champions_league','2026/27:1') iki kez çağrılır.
--- 2) league_round_performance satır sayısı ikinci çağrıda artmamalı.
--- 3) O tura hiç tahmin vermeyen oyuncu için satır bulunmamalı; 0 puan satırı üretilmemeli.
+-- Aynı tur iki kez işlendiğinde mükerrer satır oluşmaz; raw_points dahil tüm performans alanları güncellenir.
