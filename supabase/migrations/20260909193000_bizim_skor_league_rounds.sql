@@ -87,7 +87,6 @@ begin
       select
         pl.id as player_id,
         cp.player_name,
-        pl.created_at,
         coalesce(sum(public.league_super_match_points(
           f.id,f.week,p.home_score,p.away_score,r.home_score,r.away_score
         )),0)::bigint as points,
@@ -98,10 +97,10 @@ begin
       join public.predictions p on p.player_name=cp.player_name
       join public.fixtures f on f.id=p.fixture_id and f.season=v_season and f.week=v_week
       left join public.results r on r.fixture_id=f.id
-      group by pl.id,cp.player_name,pl.created_at
+      group by pl.id,cp.player_name
     ), ranked as (
       select s.*,
-        row_number() over(order by s.points desc,s.exact_count desc,s.correct_count desc,s.created_at,s.player_name collate "tr-TR-x-icu")::integer as display_rank,
+        rank() over(order by s.points desc,s.exact_count desc,s.correct_count desc)::integer as display_rank,
         count(*) over()::integer as participant_count
       from scored s
     )
@@ -141,7 +140,6 @@ begin
       select
         pl.id as player_id,
         cp.player_name,
-        pl.created_at,
         coalesce(sum(public.champions_match_points(f.id,p.home_score,p.away_score,r.home_score,r.away_score)),0)::bigint as points,
         count(*) filter(where r.fixture_id is not null and p.home_score=r.home_score and p.away_score=r.away_score)::integer as exact_count,
         count(*) filter(where r.fixture_id is not null and sign(p.home_score-p.away_score)=sign(r.home_score-r.away_score))::integer as correct_count
@@ -150,10 +148,10 @@ begin
       join public.champions_league_predictions p on p.player_name=cp.player_name
       join public.champions_league_fixtures f on f.id=p.fixture_id and f.season=v_season and f.week=v_week
       left join public.champions_league_results r on r.fixture_id=f.id
-      group by pl.id,cp.player_name,pl.created_at
+      group by pl.id,cp.player_name
     ), ranked as (
       select s.*,
-        row_number() over(order by s.points desc,s.exact_count desc,s.correct_count desc,s.created_at,s.player_name collate "tr-TR-x-icu")::integer as display_rank,
+        rank() over(order by s.points desc,s.exact_count desc,s.correct_count desc)::integer as display_rank,
         count(*) over()::integer as participant_count
       from scored s
     )
@@ -193,7 +191,6 @@ begin
       select
         pl.id as player_id,
         cp.player_name,
-        pl.created_at,
         coalesce(sum(public.nations_match_points(f.id,p.home_score,p.away_score,r.home_score,r.away_score)),0)::bigint as points,
         count(*) filter(where r.fixture_id is not null and p.home_score=r.home_score and p.away_score=r.away_score)::integer as exact_count,
         count(*) filter(where r.fixture_id is not null and sign(p.home_score-p.away_score)=sign(r.home_score-r.away_score))::integer as correct_count
@@ -202,10 +199,10 @@ begin
       join public.nations_league_predictions p on p.player_name=cp.player_name
       join public.nations_league_fixtures f on f.id=p.fixture_id and f.season=v_season and f.week=v_week
       left join public.nations_league_results r on r.fixture_id=f.id
-      group by pl.id,cp.player_name,pl.created_at
+      group by pl.id,cp.player_name
     ), ranked as (
       select s.*,
-        row_number() over(order by s.points desc,s.exact_count desc,s.correct_count desc,s.created_at,s.player_name collate "tr-TR-x-icu")::integer as display_rank,
+        rank() over(order by s.points desc,s.exact_count desc,s.correct_count desc)::integer as display_rank,
         count(*) over()::integer as participant_count
       from scored s
     )
@@ -234,5 +231,5 @@ $$;
 revoke execute on function public.league_super_match_points(bigint,integer,integer,integer,integer,integer) from public,anon,authenticated;
 revoke execute on function public.refresh_league_round(bigint,text,text) from public,anon,authenticated;
 
--- Doğrulama senaryosu (development):
--- Aynı tur iki kez işlendiğinde mükerrer satır oluşmaz; raw_points dahil tüm performans alanları güncellenir.
+-- Aynı ham puan + tam skor + doğru sonuç değerine sahip oyuncular turda ortak derece alır.
+-- Bu ortak derece aynı normalize performansı üretir; kayıt zamanı veya isim performans puanını değiştirmez.
