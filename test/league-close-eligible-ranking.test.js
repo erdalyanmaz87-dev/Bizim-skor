@@ -13,12 +13,29 @@ test('kapanış uygun oyuncular için ayrı eligible_rank üretir',()=>{
   assert.match(source,/where m\.period_id=p_period_id\s+and m\.is_eligible/i);
 });
 
-test('yükselme seçimi ham lig sırası yerine eligible_rank kullanır',()=>{
+test('gerçek düşüş sayıları ayrı hesaplanır',()=>{
   const source=sql();
-  assert.match(source,/er\.eligible_rank<=v_down_champions/i);
-  assert.match(source,/er\.eligible_rank<=v_down_elite/i);
-  assert.match(source,/er\.eligible_rank<=v_down_gold/i);
-  assert.match(source,/er\.eligible_rank<=v_down_silver/i);
+  for(const name of ['champions','elite','gold','silver']){
+    assert.match(source,new RegExp(`v_actual_down_${name}`,'i'));
+  }
+});
+
+test('üst lige çıkış gerçek üst lig düşüş sayısını kullanır',()=>{
+  const source=sql();
+  assert.match(source,/er\.eligible_rank<=v_actual_down_champions/i);
+  assert.match(source,/er\.eligible_rank<=v_actual_down_elite/i);
+  assert.match(source,/er\.eligible_rank<=v_actual_down_gold/i);
+  assert.match(source,/er\.eligible_rank<=v_actual_down_silver/i);
+});
+
+test('orta ligde normal düşüş üst lige çıkan uygun oyuncularla çakışmaz',()=>{
+  const source=sql();
+  assert.match(source,/v_promote_elite:=least\(v_eligible_elite,v_actual_down_champions\)/i);
+  assert.match(source,/v_regular_down_elite:=least\(greatest\(0,v_eligible_elite-v_promote_elite\)/i);
+  assert.match(source,/v_promote_gold:=least\(v_eligible_gold,v_actual_down_elite\)/i);
+  assert.match(source,/v_regular_down_gold:=least\(greatest\(0,v_eligible_gold-v_promote_gold\)/i);
+  assert.match(source,/v_promote_silver:=least\(v_eligible_silver,v_actual_down_gold\)/i);
+  assert.match(source,/v_regular_down_silver:=least\(greatest\(0,v_eligible_silver-v_promote_silver\)/i);
 });
 
 test('normal düşüş alt sıradaki uygun oyunculara eligible_rank ile uygulanır',()=>{
