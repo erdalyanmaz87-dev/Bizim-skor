@@ -2,10 +2,12 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const UI=require('../league-system-ui');
 
-test('uygun olmayan oyuncuya bir tur daha mesajı gösterir',()=>{
-  const html=UI.renderLeagueSummary({is_eligible:false,valid_round_count:1,rounds_needed:1,league_code:'bronze'});
-  assert.match(html,/Lig sistemine katılmak için 1 tahmin turu daha tamamla/);
-  assert.match(html,/bir alt lige düşersin/);
+test('uygun olmayan oyuncunun ligi sırası puanı görünür ve iki tur uyarısı gösterilir',()=>{
+  const html=UI.renderLeagueSummary({is_eligible:false,valid_round_count:0,rounds_needed:2,league_code:'gold',rank_in_league:7,league_size:15,performance_score:42.86});
+  assert.match(html,/Altın Lig/);
+  assert.match(html,/7 \/ 15/);
+  assert.match(html,/42\.86/);
+  assert.match(html,/Yükselme\/düşme için 2 tahmin turu daha tamamla/);
 });
 
 test('kullanıcının ligi için yükselme ve düşme sınıflarını üretir',()=>{
@@ -20,9 +22,9 @@ test('kullanıcının ligi için yükselme ve düşme sınıflarını üretir',(
   assert.match(html,/league-me/);
 });
 
-test('kurallar 4 hafta, 2 tur ve pasiflik düşüşünü açıklar',()=>{
+test('kurallar 4 Süper Lig haftası, 2 tur ve pasiflik düşüşünü açıklar',()=>{
   const html=UI.renderLeagueRules();
-  assert.match(html,/4 hafta/);
+  assert.match(html,/4 Süper Lig haftası/);
   assert.match(html,/en az 2 ayrı tahmin turu/);
   assert.match(html,/bir alt lige düşer/);
   assert.match(html,/Bronz Lig oyuncusu Bronz Lig’de kalır/);
