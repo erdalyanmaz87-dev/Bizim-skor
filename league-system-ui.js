@@ -1,0 +1,108 @@
+(function(root,factory){
+  const api=factory();
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  else root.BizimSkorLeagues=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  const LABELS={
+    champions:'Şampiyonlar',
+    elite:'Elit Lig',
+    gold:'Altın Lig',
+    silver:'Gümüş Lig',
+    bronze:'Bronz Lig'
+  };
+  const ICONS={champions:'👑',elite:'💎',gold:'🥇',silver:'🥈',bronze:'🥉'};
+
+  function esc(value){
+    return String(value??'')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#39;');
+  }
+
+  function label(code){return LABELS[code]||'Bronz Lig'}
+
+  function renderLeagueSummary(summary={}){
+    if(!summary.is_eligible){
+      const needed=Math.max(1,Number(summary.rounds_needed)||Math.max(1,2-(Number(summary.valid_round_count)||0)));
+      return `<div class="league-summary league-summary-pending"><div class="league-summary-title">🥉 Bizim Skor Ligleri</div><div class="league-summary-message">Lig sistemine katılmak için ${needed} tahmin turu daha tamamla</div><div class="league-summary-note">Yeni oyuncular Bronz Lig’den başlar.</div></div>`;
+    }
+    const code=summary.league_code||'bronze';
+    const rank=Number(summary.rank_in_league)||0;
+    const size=Number(summary.league_size)||0;
+    const status=summary.promotion_status||'none';
+    let statusText='Güvenli bölgedesin';
+    if(status==='promotion')statusText='⬆ Yükselme hattındasın';
+    else if(status==='relegation')statusText='⬇ Düşme hattındasın';
+    else if(status==='championship')statusText='🏆 Liderlik koltuğundasın';
+    return `<button type="button" class="league-summary league-summary-button" data-league-open="1"><span class="league-summary-title">${ICONS[code]||'🥉'} ${esc(label(code))}</span><strong class="league-summary-rank">${rank||'—'} / ${size||'—'}</strong><span class="league-summary-status">${esc(statusText)}</span><span class="league-summary-action">Ligimi Gör ›</span></button>`;
+  }
+
+  function rowClass(row){
+    const classes=['league-row'];
+    if(row.promotion_status==='promotion')classes.push('league-promotion-zone');
+    if(row.promotion_status==='relegation')classes.push('league-relegation-zone');
+    if(row.promotion_status==='championship')classes.push('league-championship-zone');
+    if(row.is_me)classes.push('league-me');
+    return classes.join(' ');
+  }
+
+  function renderLeagueTable(rows=[],summary={}){
+    const code=summary.league_code||rows[0]?.league_code||'bronze';
+    if(!rows.length)return `<div class="league-empty">Bu ligde henüz sıralamaya giren oyuncu yok.</div>`;
+    return `<div class="league-table-wrap"><div class="league-table-head"><span>#</span><span>Oyuncu</span><span>Perf.</span><span>Tur</span></div>${rows.map(row=>`<div class="${rowClass(row)}"><span class="league-rank">${esc(row.league_rank)}</span><span class="league-player">${row.is_me?'<b>Sen • </b>':''}${esc(row.player_name)}</span><span class="league-performance">${esc(row.performance_score??'—')}</span><span class="league-rounds">${esc(row.valid_round_count??0)}</span></div>`).join('')}<div class="league-table-foot">${ICONS[code]||'🥉'} ${esc(label(code))}</div></div>`;
+  }
+
+  function renderLeagueRules(){
+    return `<div class="league-rules"><h3>ⓘ Lig Kuralları</h3><p>Lig dönemi <b>4 hafta</b> sürer.</p><p>Lig sistemine katılmak için dönem içinde <b>en az 2 ayrı tahmin turu</b> tamamlamak gerekir.</p><p>Yeni oyuncular Bronz Lig’den başlar.</p><p>Yükselme ve düşme kontenjanları dönem başında belirlenir ve dönem boyunca değişmez.</p><p>Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi turlarındaki dereceler ortak performansa çevrilir.</p><p>Katılmadığın tur sana 0 puan yazmaz.</p></div>`;
+  }
+
+  function renderOtherLeagueChips(counts={},currentLeague){
+    return `<div class="league-other"><div class="league-other-title">Diğer Ligler</div><div class="league-chips">${Object.keys(LABELS).map(code=>`<button type="button" class="league-chip${code===currentLeague?' league-chip-active':''}" data-league-code="${code}">${ICONS[code]} <span>${esc(LABELS[code])}</span><small>${Number(counts[code])||0}</small></button>`).join('')}</div></div>`;
+  }
+
+  function renderLeagueShell(summary={},rows=[],counts={}){
+    const code=summary.league_code||'bronze';
+    return `<div class="league-shell"><div class="league-header"><div><div class="league-eyebrow">Bizim Skor Ligleri</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><button type="button" class="league-rules-button" data-league-rules="1">ⓘ Kurallar</button></div>${summary.is_eligible?renderLeagueTable(rows,summary):renderLeagueSummary(summary)}${renderOtherLeagueChips(counts,code)}<div class="league-rules-host" hidden>${renderLeagueRules()}</div></div>`;
+  }
+
+  function css(){
+    return `.league-summary{box-sizing:border-box;width:100%;border:1px solid #dbeafe;border-radius:14px;background:linear-gradient(135deg,#f8fafc,#eff6ff);padding:12px;text-align:left;color:#0f172a}.league-summary-button{display:grid;grid-template-columns:1fr auto;gap:5px 10px;cursor:pointer}.league-summary-title{font-weight:900}.league-summary-rank{font-size:18px}.league-summary-status{font-size:12px;color:#166534}.league-summary-action{font-size:12px;text-align:right;color:#1d4ed8;font-weight:800}.league-summary-message{margin-top:6px;font-weight:800}.league-summary-note{margin-top:4px;font-size:12px;color:#64748b}.league-shell{border:1px solid #e2e8f0;border-radius:16px;background:#fff;padding:14px}.league-header{display:flex;justify-content:space-between;gap:10px;align-items:start}.league-header h2{margin:3px 0 12px}.league-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:900}.league-rules-button{padding:8px 10px;background:#f1f5f9;color:#334155;font-size:12px}.league-table-head,.league-row{display:grid;grid-template-columns:34px minmax(0,1fr) 58px 40px;gap:6px;align-items:center;padding:9px 8px}.league-table-head{font-size:11px;color:#64748b;font-weight:800;border-bottom:1px solid #e2e8f0}.league-row{border-bottom:1px solid #f1f5f9;font-size:13px}.league-promotion-zone{background:#ecfdf5}.league-relegation-zone{background:#fef2f2}.league-championship-zone{background:#fffbeb}.league-me{outline:2px solid #0f172a;outline-offset:-2px;border-radius:8px}.league-rank,.league-performance,.league-rounds{text-align:center;font-weight:800}.league-table-foot{padding:9px 8px;font-size:12px;color:#64748b}.league-other{margin-top:14px}.league-other-title{font-weight:900;margin-bottom:8px}.league-chips{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.league-chip{flex:0 0 auto;padding:9px 10px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155;display:flex;align-items:center;gap:5px}.league-chip small{background:#e2e8f0;border-radius:999px;padding:2px 5px}.league-chip-active{background:#0f172a;color:#fff}.league-chip-active small{background:#334155}.league-rules{padding:10px 2px}.league-rules p{font-size:13px;line-height:1.45}.league-empty{padding:18px;text-align:center;color:#64748b}`;
+  }
+
+  async function mount(options={}){
+    const sb=options.sb||root.sb;
+    const token=options.token||root.localStorage?.getItem('bizimSkorFriendToken');
+    const summaryHost=options.summaryHost||root.document?.getElementById('personalLeagueSummary');
+    const detailHost=options.detailHost||root.document?.getElementById('leagueSystemPanel');
+    if(!sb||!token)return false;
+
+    const summaryResult=await sb.rpc('get_my_league_summary',{p_token:token});
+    if(summaryResult.error)throw summaryResult.error;
+    const summary=Array.isArray(summaryResult.data)?summaryResult.data[0]:summaryResult.data;
+    if(!summary)return false;
+
+    if(summaryHost)summaryHost.innerHTML=renderLeagueSummary(summary);
+    if(!detailHost)return true;
+
+    async function loadLeague(code){
+      const tableResult=await sb.rpc('get_league_table',{p_token:token,p_league_code:code||null});
+      if(tableResult.error)throw tableResult.error;
+      const rows=tableResult.data||[];
+      const counts={};
+      rows.forEach(r=>{counts[r.league_code]=(counts[r.league_code]||0)+1});
+      detailHost.innerHTML=renderLeagueShell({...summary,league_code:code||summary.league_code},rows,counts);
+      detailHost.querySelector('[data-league-rules]')?.addEventListener('click',()=>{
+        const host=detailHost.querySelector('.league-rules-host');
+        if(host)host.hidden=!host.hidden;
+      });
+      detailHost.querySelectorAll('[data-league-code]').forEach(btn=>btn.addEventListener('click',()=>loadLeague(btn.dataset.leagueCode)));
+    }
+
+    await loadLeague(summary.league_code||'bronze');
+    return true;
+  }
+
+  return {esc,renderLeagueSummary,renderLeagueTable,renderLeagueRules,renderOtherLeagueChips,renderLeagueShell,css,mount};
+});
