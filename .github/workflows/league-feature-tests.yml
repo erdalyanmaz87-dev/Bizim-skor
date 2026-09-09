@@ -11,8 +11,6 @@ on:
       - 'supabase/migrations/20260909193000_bizim_skor_league_rounds.sql'
       - 'supabase/migrations/20260909200000_bizim_skor_league_memberships.sql'
       - 'supabase/migrations/20260909200200_bizim_skor_league_counts_rpc.sql'
-      - 'supabase/migrations/20260909201500_bizim_skor_league_counts.sql'
-      - 'supabase/migrations/20260909203000_bizim_skor_league_period_close.sql'
       - 'supabase/migrations/20260909204500_bizim_skor_league_initial_seed.sql'
       - 'supabase/migrations/20260909205000_bizim_skor_league_inactivity_relegation.sql'
       - 'supabase/migrations/20260909210000_bizim_skor_league_next_period.sql'
@@ -56,3 +54,56 @@ jobs:
           test/league-counts-rpc.test.js
           test/league-migration-ownership.test.js
           test/league-first-period-bootstrap.test.js
+
+  postgres-migration-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bizim_skor_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d bizim_skor_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: bizim_skor_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap production-shaped schema
+        run: psql -v ON_ERROR_STOP=1 -f test/league-postgres-smoke-bootstrap.sql
+
+      - name: Apply league migrations in order
+        run: |
+          set -euo pipefail
+          for migration in \
+            supabase/migrations/20260909190000_bizim_skor_leagues.sql \
+            supabase/migrations/20260909193000_bizim_skor_league_rounds.sql \
+            supabase/migrations/20260909200000_bizim_skor_league_memberships.sql \
+            supabase/migrations/20260909200200_bizim_skor_league_counts_rpc.sql \
+            supabase/migrations/20260909204500_bizim_skor_league_initial_seed.sql \
+            supabase/migrations/20260909205000_bizim_skor_league_inactivity_relegation.sql \
+            supabase/migrations/20260909210000_bizim_skor_league_next_period.sql \
+            supabase/migrations/20260909210500_bizim_skor_league_round_auto_refresh.sql \
+            supabase/migrations/20260909210750_bizim_skor_league_first_period_bootstrap.sql \
+            supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql
+          do
+            echo "Applying $migration"
+            psql -v ON_ERROR_STOP=1 -f "$migration"
+          done
+
+      - name: Verify key league functions exist
+        run: |
+          psql -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_proc where pronamespace='public'::regnamespace and proname in ('initialize_first_league_period','bootstrap_first_league_period','maintain_league_periods','refresh_league_period_rounds','close_league_period','get_league_counts');" | grep -x '6'
