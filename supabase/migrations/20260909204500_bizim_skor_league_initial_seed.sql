@@ -161,7 +161,7 @@ begin
   ), historical as (
     select * from public.league_historical_seed_scores(p_starts_at)
   ), invites as (
-    select lower(i.inviter_name) as player_key,count(*)::integer as invite_count
+    select lower(i.inviter_name) as player_key,count(distinct lower(i.invited_name))::integer as invite_count
     from public.player_invites i
     group by lower(i.inviter_name)
   ), scored as (
@@ -231,5 +231,5 @@ revoke execute on function public.initialize_first_league_period(timestamptz,tim
 -- 77 katılımcı için kapasite örneği: 8 Şampiyonlar / 12 Elit / 15 Altın / 19 Gümüş / 23 Bronz.
 -- İlk görünür sıra aynı sezonun Süper Lig 3+4 haftalık normalize performansıyla oluşur.
 -- Eksik hafta 0 kabul edilir. Haftalık gerçek eşitliklerde ortak normalize derece verilir.
--- Eşit başlangıç performansında daha fazla davet eden öne geçer.
+-- Eşit başlangıç performansında benzersiz davet edilen oyuncu sayısı daha fazla olan öne geçer.
 -- 5. hafta dönem performansı geldiğinde geçmiş seed puanı taşınmaz; dönem sıralaması yeni turlarla yeniden hesaplanır.
