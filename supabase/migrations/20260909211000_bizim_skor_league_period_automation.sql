@@ -30,10 +30,8 @@ begin
     return false;
   end if;
 
-  -- Önce açık dönem içindeki tamamlanmış Süper Lig / CL / Uluslar Ligi turlarını işle.
   perform public.refresh_league_period_rounds(v_period_id);
 
-  -- Dönemin başladığı Süper Lig sezon ve haftasını sabitle.
   with week_starts as (
     select f.season,f.week,min(f.kickoff) as first_kickoff
     from public.fixtures f
@@ -50,12 +48,11 @@ begin
     return false;
   end if;
 
-  -- Yalnız başlangıç haftası ve onu izleyen 3 ardışık hafta hedeflenir.
   with target_weeks as (
     select
       f.week,
       count(distinct f.id) as fixture_count,
-      count(distinct r.fixture_id) as result_count
+      count(distinct r.fixture_id) filter(where r.home_score is not null and r.away_score is not null) as result_count
     from public.fixtures f
     left join public.results r on r.fixture_id=f.id
     where f.season=v_start_season
@@ -85,7 +82,6 @@ begin
 
   v_next_week:=v_start_week+4;
 
-  -- Sonraki haftanın fikstürü yüklenmeden mevcut dönemi kapatma.
   select min(f.kickoff)
     into v_next_start
   from public.fixtures f
