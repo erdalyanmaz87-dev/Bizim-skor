@@ -27,7 +27,21 @@ begin
   for update;
 
   if v_period_id is null then
-    return false;
+    if not public.bootstrap_first_league_period() then
+      return false;
+    end if;
+
+    select id,starts_at
+      into v_period_id,v_starts_at
+    from public.league_periods
+    where status='open'
+    order by starts_at desc
+    limit 1
+    for update;
+
+    if v_period_id is null then
+      return false;
+    end if;
   end if;
 
   perform public.refresh_league_period_rounds(v_period_id);
@@ -92,16 +106,14 @@ begin
     return false;
   end if;
 
-  select max(f.kickoff)
+  select min(f.kickoff)
     into v_next_end
   from public.fixtures f
   where f.season=v_start_season
-    and f.week between v_next_week and v_next_week+3;
+    and f.week=v_next_week+4;
 
   if v_next_end is null or v_next_end<=v_next_start then
-    v_next_end:=v_next_start + interval '35 days';
-  else
-    v_next_end:=v_next_end + interval '2 days';
+    return false;
   end if;
 
   perform public.close_league_period(v_period_id);
@@ -139,6 +151,6 @@ select cron.schedule(
   $cron$
 );
 
--- İlk dönem: Süper Lig 5-6-7-8. haftalar.
+-- İlk dönem: Süper Lig 5-6-7-8. haftalar; pencere 5. hafta ilk maçından 9. hafta ilk maçına kadardır.
 -- Bu pencere içinde tamamlanan CL/Uluslar Ligi turları performansa dahil edilir.
--- 8. hafta tamamen bitince ve 9. hafta fikstürü yüklüyse dönem devri yapılır.
+-- Sonraki dönem de aynı mantıkla 9. hafta ilk maçından 13. hafta ilk maçına kadar sürer.
