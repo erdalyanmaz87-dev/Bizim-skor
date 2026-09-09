@@ -1,5 +1,5 @@
 -- Bizim Skor Ligleri: yalnızca ilk dönem için başlangıç yerleştirmesi.
--- Kesin başlangıç kuralı: Süper Lig 3. ve 4. haftalar ayrı ayrı 0-100 normalize edilir.
+-- Kesin başlangıç kuralı: aynı sezonun Süper Lig 3. ve 4. haftaları ayrı ayrı 0-100 normalize edilir.
 -- Oyuncu haftalardan birini eksik bıraktıysa o hafta 0 kabul edilir ve iki haftanın puanı 2'ye bölünür.
 -- Eşitlik: performans > davet > oynanan tur > tam skor > ham puan > oyuncu ID.
 -- Bu puan SADECE ilk görünür başlangıç sırası içindir; 5. haftadan itibaren dönem performansı sıfırdan oluşur.
@@ -18,11 +18,20 @@ stable
 security definer
 set search_path=''
 as $$
-  with target_rounds as (
+  with seed_season as (
+    select f.season
+    from public.fixtures f
+    where f.week=4 and f.kickoff<p_before
+    group by f.season
+    order by max(f.kickoff) desc
+    limit 1
+  ), target_rounds as (
     select f.season,f.week,count(distinct f.id)::integer as fixture_count
     from public.fixtures f
+    cross join seed_season ss
     left join public.results r on r.fixture_id=f.id
-    where f.week in (3,4)
+    where f.season=ss.season
+      and f.week in (3,4)
       and f.kickoff<p_before
     group by f.season,f.week
     having count(distinct f.id)>0
@@ -221,6 +230,6 @@ revoke execute on function public.league_historical_seed_scores(timestamptz) fro
 revoke execute on function public.initialize_first_league_period(timestamptz,timestamptz) from public,anon,authenticated;
 
 -- 77 katılımcı için kapasite örneği: 8 Şampiyonlar / 12 Elit / 15 Altın / 19 Gümüş / 23 Bronz.
--- İlk görünür sıra Süper Lig 3+4 iki haftalık normalize performansla oluşur.
+-- İlk görünür sıra aynı sezonun Süper Lig 3+4 haftalık normalize performansıyla oluşur.
 -- Eksik hafta 0 kabul edilir. Eşit performansta daha fazla davet eden öne geçer.
 -- 5. hafta dönem performansı geldiğinde geçmiş seed puanı taşınmaz; dönem sıralaması yeni turlarla yeniden hesaplanır.
