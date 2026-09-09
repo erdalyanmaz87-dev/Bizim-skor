@@ -17,8 +17,10 @@ test('bir Süper Lig haftası ancak tüm fikstür sonuçları girildiyse tamamla
   const source=sql();
   assert.match(source,/public\.fixtures/i);
   assert.match(source,/public\.results/i);
+  assert.match(source,/count\(distinct\s+f\.id\)\s+as\s+fixture_count/i);
+  assert.match(source,/count\(distinct\s+r\.fixture_id\)\s+as\s+result_count/i);
   assert.match(source,/group by\s+f\.season\s*,\s*f\.week/i);
-  assert.match(source,/count\(distinct\s+r\.fixture_id\)\s*=\s*count\(distinct\s+f\.id\)/i);
+  assert.match(source,/result_count\s*=\s*fixture_count/i);
 });
 
 test('dönem 4 tamamlanmış Süper Lig haftasından önce kapanmaz',()=>{
