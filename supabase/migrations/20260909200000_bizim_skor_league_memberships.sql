@@ -69,11 +69,19 @@ begin
 
   get diagnostics v_changed=row_count;
 
-  -- Kontenjanlar dönem başında sistemde bulunan aktif oyuncu tabanına göre kilitlenir.
-  -- Dönem başladıktan sonra kayıt olan oyuncular Bronz'a girebilir ama mevcut hattı değiştiremez.
+  -- Kontenjanlar dönem başında gerçekten oyuna katılmış aktif oyuncu tabanına göre kilitlenir.
+  -- Sadece hesabı olup hiç tahmin yapmamış oyuncular başlangıç kapasitesini şişirmez.
   if coalesce(v_locked,'{}'::jsonb)='{}'::jsonb then
+    with participants as (
+      select distinct lower(p.player_name) as player_key from public.predictions p
+      union
+      select distinct lower(p.player_name) from public.champions_league_predictions p
+      union
+      select distinct lower(p.player_name) from public.nations_league_predictions p
+    )
     select count(*)::integer into v_baseline_count
     from public.players p
+    join participants x on x.player_key=lower(p.name)
     where coalesce(p.is_active,true)
       and p.created_at<=v_starts_at;
 
@@ -260,5 +268,5 @@ grant execute on function public.get_my_league_summary(text) to anon;
 grant execute on function public.get_league_table(text,text) to anon;
 
 -- Geliştirme testi:
--- Dönem başında mevcut aktif oyuncular kilitlenir.
+-- Dönem başında aktif ve en az bir tahmin yapmış oyuncular kilitlenir.
 -- Dönem başladıktan sonra kayıt olan uygun Bronz oyuncuların eklenmesi locked_promotion_slots değerini değiştirmez.
