@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 
-const file=path.join(__dirname,'../supabase/migrations/20260909212000_bizim_skor_league_round_auto_refresh.sql');
+const file=path.join(__dirname,'../supabase/migrations/20260909210500_bizim_skor_league_round_auto_refresh.sql');
 const sql=()=>fs.readFileSync(file,'utf8');
 
 test('açık dönem için tamamlanmış turları otomatik yenileyen fonksiyon vardır',()=>{
