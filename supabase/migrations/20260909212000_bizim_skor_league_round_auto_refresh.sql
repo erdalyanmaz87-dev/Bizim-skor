@@ -29,7 +29,7 @@ begin
     raise exception 'Kapalı lig dönemi yenilenemez';
   end if;
 
-  -- Bir yarışma turunun tamamı dönem penceresinde kalmalı ve tüm sonuçları mevcut olmalı.
+  -- Bir yarışma turunun tamamı dönem penceresinde kalmalı ve tüm skorları dolu olmalı.
   for rec in
     select f.season,f.week
     from public.fixtures f
@@ -38,7 +38,7 @@ begin
     having min(f.kickoff)>=v_starts_at
        and max(f.kickoff)<=v_ends_at
        and count(distinct f.id)>0
-       and count(distinct r.fixture_id)=count(distinct f.id)
+       and count(distinct r.fixture_id) filter(where r.home_score is not null and r.away_score is not null)=count(distinct f.id)
     order by min(f.kickoff),f.season,f.week
   loop
     v_written:=public.refresh_league_round(
@@ -57,7 +57,7 @@ begin
     having min(f.kickoff)>=v_starts_at
        and max(f.kickoff)<=v_ends_at
        and count(distinct f.id)>0
-       and count(distinct r.fixture_id)=count(distinct f.id)
+       and count(distinct r.fixture_id) filter(where r.home_score is not null and r.away_score is not null)=count(distinct f.id)
     order by min(f.kickoff),f.season,f.week
   loop
     v_written:=public.refresh_league_round(
@@ -76,7 +76,7 @@ begin
     having min(f.kickoff)>=v_starts_at
        and max(f.kickoff)<=v_ends_at
        and count(distinct f.id)>0
-       and count(distinct r.fixture_id)=count(distinct f.id)
+       and count(distinct r.fixture_id) filter(where r.home_score is not null and r.away_score is not null)=count(distinct f.id)
     order by min(f.kickoff),f.season,f.week
   loop
     v_written:=public.refresh_league_round(
