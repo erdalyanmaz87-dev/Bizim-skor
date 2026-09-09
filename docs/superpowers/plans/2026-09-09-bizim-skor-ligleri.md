@@ -54,6 +54,7 @@
 - canlı yükselme/düşme statüsü ve dönem kapanışı ortak `league_movement_plan` kullanır
 - `get_my_league_summary`
 - `get_league_table`
+- `20260909200200_bizim_skor_league_counts_rpc.sql`: `get_league_counts`, Ligim ekranındaki diğer lig sayaçları
 
 ### Dönem kapanışı
 - `20260909205000_bizim_skor_league_inactivity_relegation.sql`
@@ -95,14 +96,15 @@
 ## Doğrulama Durumu
 
 - [x] Lig testleri için izole GitHub Actions workflow'u eklendi.
-- [x] Son tam doğrulanmış koşuda 62/62 test geçti, 0 hata.
+- [x] Son tam doğrulanmış koşuda **66/66 test geçti, 0 hata**.
+- [x] Eksik `get_league_counts` RPC testi önce gerçek Actions koşusunda kırmızı doğrulandı, sonra RPC eklenerek yeşile çevrildi.
 - [x] 77 oyunculuk ilk seed yeni ortak-rank ve benzersiz davet mantığıyla production verisi üzerinde read-only olarak tekrar hesaplandı; lig sınırları kontrol edildi.
 - [x] Otomatik tur yenileme migration'ı dönem otomasyonundan önce gelecek şekilde sıralandı.
+- [x] Production kaynak tabloları/kolonları, CL ve Uluslar Ligi puan fonksiyonları, oturum fonksiyonu ve `pg_cron` read-only olarak doğrulandı.
 - [x] Vercel build kontrollerinde başarılı koşular görüldü.
 
 ## Kalan İşler — Production Öncesi
 
-- [ ] Son UI düzeltmesinden sonraki GitHub Actions koşusunun yeşil olduğunu doğrulama.
 - [ ] Tüm migrationların gerçek PostgreSQL üzerinde development/staging yürütme doğrulaması.
 - [ ] Yükselme/düşme kapanışını temsili veriyle gerçek SQL seviyesinde simüle etme.
 - [ ] Yeni dönem açılışında lig boyutlarını ve uygun oyuncu yetersizliği kenar durumunu gerçek SQL ile doğrulama.
