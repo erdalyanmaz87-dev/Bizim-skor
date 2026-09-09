@@ -34,12 +34,16 @@ begin
   perform public.refresh_league_period_rounds(v_period_id);
 
   -- Dönemin başladığı Süper Lig sezon ve haftasını sabitle.
-  -- İlk dönem örneği: starts_at 5. hafta ilk maçına denk gelir ve start_week=5 olur.
-  select f.season,f.week
+  with week_starts as (
+    select f.season,f.week,min(f.kickoff) as first_kickoff
+    from public.fixtures f
+    group by f.season,f.week
+  )
+  select ws.season,ws.week
     into v_start_season,v_start_week
-  from public.fixtures f
-  where min(f.kickoff) over(partition by f.season,f.week)>=v_starts_at
-  order by min(f.kickoff) over(partition by f.season,f.week),f.season,f.week
+  from week_starts ws
+  where ws.first_kickoff>=v_starts_at
+  order by ws.first_kickoff,ws.season,ws.week
   limit 1;
 
   if v_start_season is null or v_start_week is null then
@@ -47,7 +51,6 @@ begin
   end if;
 
   -- Yalnız başlangıç haftası ve onu izleyen 3 ardışık hafta hedeflenir.
-  -- Ertelenmiş eski haftalar veya daha ileride tamamlanan başka haftalar sayılamaz.
   with target_weeks as (
     select
       f.week,
@@ -65,7 +68,6 @@ begin
   where fixture_count>0
     and result_count=fixture_count;
 
-  -- Dört haftanın da fikstürü yüklenmiş ve tüm sonuçları tamamlanmış olmalı.
   if not exists(
     select 1
     from public.fixtures f
@@ -81,11 +83,9 @@ begin
     return false;
   end if;
 
-  perform public.close_league_period(v_period_id);
-
   v_next_week:=v_start_week+4;
 
-  -- Yeni dönem tam olarak bir sonraki Süper Lig haftasının ilk maçında başlar.
+  -- Sonraki haftanın fikstürü yüklenmeden mevcut dönemi kapatma.
   select min(f.kickoff)
     into v_next_start
   from public.fixtures f
@@ -93,9 +93,7 @@ begin
     and f.week=v_next_week;
 
   if v_next_start is null then
-    -- Sonraki hafta henüz sisteme yüklenmediyse mevcut dönemi kapalı bırakıp
-    -- yanlış bir başlangıç tarihi üretmeyiz. Yeni dönem sonraki bakım çağrısında açılabilir.
-    return true;
+    return false;
   end if;
 
   select max(f.kickoff)
@@ -110,6 +108,7 @@ begin
     v_next_end:=v_next_end + interval '2 days';
   end if;
 
+  perform public.close_league_period(v_period_id);
   perform public.open_next_league_period(
     v_period_id,
     v_next_start,
@@ -122,7 +121,6 @@ $$;
 
 revoke execute on function public.maintain_league_periods() from public,anon,authenticated;
 
--- Aynı isimli eski işi güvenli biçimde kaldırıp yeniden kur.
 do $$
 declare
   v_job_id bigint;
@@ -147,4 +145,4 @@ select cron.schedule(
 
 -- İlk dönem: Süper Lig 5-6-7-8. haftalar.
 -- Bu pencere içinde tamamlanan CL/Uluslar Ligi turları performansa dahil edilir.
--- 8. hafta tamamen bitince dönem kapanır; sonraki dönem yalnız 9. hafta fikstürü yüklüyse açılır.
+-- 8. hafta tamamen bitince ve 9. hafta fikstürü yüklüyse dönem devri yapılır.
