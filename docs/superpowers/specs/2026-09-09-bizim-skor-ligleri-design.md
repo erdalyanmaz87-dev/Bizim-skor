@@ -1,254 +1,186 @@
-# Bizim Skor Ligleri — Tasarım Dokümanı
+# Bizim Skor Ligleri — Güncel Tasarım Dokümanı
 
 ## Amaç
-Bizim Skor'a sezon ortasında katılan oyuncuların da sürdürülebilir şekilde rekabet içinde kalmasını sağlayan, mevcut haftalık ve turnuva sıralamalarını bozmadan çalışan tek bir ortak lig sistemi eklemek.
+Bizim Skor'a sezon ortasında katılan oyuncuların da sürdürülebilir şekilde rekabet içinde kalmasını sağlayan, mevcut Süper Lig / Şampiyonlar Ligi / Uluslar Ligi sıralamalarını değiştirmeden çalışan ortak lig sistemi.
 
-## Temel İlke
-Yeni sistemin adı **Bizim Skor Ligleri** olacak. Arayüzde kısa sekme adı **Ligim** olarak kullanılacak. Sistem Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi için ayrı ligler oluşturmayacak; tüm resmi tahmin turlarındaki performansları tek ortak lig sisteminde birleştirecek.
+## İsim ve Arayüz
+- Sistem adı: **Bizim Skor Ligleri**
+- Oyuncu detay alanı: **Ligim**
+- Beş kademe:
+  1. Şampiyonlar
+  2. Elit Lig
+  3. Altın Lig
+  4. Gümüş Lig
+  5. Bronz Lig
+- Yeni oyuncular Bronz Lig'den başlar.
 
-## Ligler
-Beş kademe bulunacak:
-1. Şampiyonlar Ligi
-2. Elit Lig
-3. Altın Lig
-4. Gümüş Lig
-5. Bronz Lig
+## İlk Yerleştirme — Kesin Kural
+İlk lig dağılımı yalnız aynı sezonun **Süper Lig 3. ve 4. haftaları** üzerinden yapılır.
 
-Yeni oyuncular Bronz Lig'den başlar.
+Her hafta ayrı ayrı 0–100 normalize edilir. Oyuncu haftalardan birini eksiksiz tahmin etmediyse o hafta **0** kabul edilir. İlk yerleştirme puanı:
+
+`(3. hafta normalize puanı + 4. hafta normalize puanı) / 2`
+
+İlk yerleştirmede eşitlik sırası:
+1. normalize başlangıç performansı,
+2. daha fazla **benzersiz** oyuncu davet eden,
+3. iki haftada daha fazla geçerli tur oynayan,
+4. daha fazla tam skor bilen,
+5. daha fazla ham puan alan,
+6. oyuncu ID.
+
+İlk yerleştirme puanı yalnız başlangıç ligi ve ilk görünür sıralama içindir. 5. hafta dönem performansı oluşmaya başladığında bu tarihsel başlangıç puanı taşınmaz.
 
 ## Dönem Yapısı
-- Her lig dönemi 4 hafta sürer.
-- Yükselme ve düşme sadece 4 haftalık dönem sonunda uygulanır.
-- Lig kapasiteleri ve yükselme/düşme kontenjanları dönem başında hesaplanır ve dönem boyunca sabit kalır.
-- Dönem içinde yeni oyuncular gelse bile mevcut dönemin yükselme/düşme kontenjanları değişmez.
-- Yeni dönem başında aktif oyuncu sayısına göre kapasiteler ve kontenjanlar yeniden hesaplanır.
+Bir lig dönemi takvimde sabit 28 gün değildir. **4 ardışık tamamlanmış Süper Lig haftası** bir dönemdir.
 
-## Aktif Oyuncu Kuralı
-Bir oyuncunun lig sistemine dahil olabilmesi için 4 haftalık dönem içinde en az **2 ayrı tahmin turuna** katılması gerekir.
+İlk dönem:
+- Süper Lig 5. hafta
+- 6. hafta
+- 7. hafta
+- 8. hafta
 
-Bir oyuncu yalnızca 1 turda tahmin yaptıysa:
-- mevcut haftalık/turnuva sıralamalarına katılır,
-- Bizim Skor Ligleri sıralamasına dahil edilmez,
-- arayüzde "Lig sistemine katılmak için 1 tahmin turu daha tamamla" mesajı gösterilir.
+İkinci dönem 9–12, üçüncü dönem 13–16 şeklinde devam eder.
 
-İkinci farklı tahmin turunu tamamladığında Bronz Lig sıralamasına girer.
+Şampiyonlar Ligi ve Uluslar Ligi turları dönem sayacını ilerletmez; ancak dönem zaman penceresi içinde tamamlanırlarsa ortak performansa dahil edilirler.
 
-## Ortak Performans Hesabı
-Genel sezon sıralamaları doğrudan kullanılmayacak. Her tahmin turu bağımsız değerlendirilir.
+Dönem ancak hedeflenen dört Süper Lig haftasının bütün fikstürlerinin ev/deplasman skorları doluysa kapanabilir. Bir sonraki Süper Lig haftasının fikstürü yüklenmeden mevcut dönem kapatılmaz.
 
-Örnek turlar:
-- Süper Lig 8. hafta
-- Şampiyonlar Ligi 2. hafta
-- Süper Lig 9. hafta
-- Uluslar Ligi turu
+## Dönem İçi Performans
+Her tamamlanmış resmi tahmin turu bağımsız değerlendirilir:
+- Süper Lig haftası,
+- Şampiyonlar Ligi turu,
+- Uluslar Ligi turu.
 
-Her turda oyuncunun o tura katılanlar arasındaki derecesi 0–100 arası normalize edilmiş performans puanına çevrilir.
+Oyuncunun o turda geçerli sayılması için o turun bütün maçlarına tahmin girmiş olması gerekir. Katılmadığı veya eksik bıraktığı dönem içi tur **0 puan yazmaz**; ortalamaya hiç girmez.
 
-Önerilen temel formül:
-- performans = 100 × (1 - (sıra - 1) / katılımcı_sayısı)
-- ilk sıra 100'e yakın değer alır,
-- orta sıralar yaklaşık 50 civarı değer alır,
-- alt sıralar daha düşük değer alır.
+Normalize formül:
 
-Lig dönemi performansı, oyuncunun dönem içinde katıldığı geçerli tahmin turlarındaki performans puanlarının ortalamasıdır.
+`100 × (katılımcı_sayısı - sıra) / (katılımcı_sayısı - 1)`
 
-Katılmadığı organizasyon veya tur oyuncuya 0 puan yazmaz.
+- 1. sıra = 100
+- son sıra = 0
+- katılımcı sayısı 2'den azsa tur lig hesabına girmez.
 
-## Eşitlik Kuralları
-Dönem performans puanı eşitse sırasıyla:
-1. daha fazla geçerli tahmin turuna katılan,
-2. daha fazla tam skor bilen,
-3. gerekirse mevcut sistemdeki giriş/tahmin zamanı önceliği
-öne alınır.
+Aynı turda ham puan + tam skor + doğru sonuç sayısı eşit olan oyuncular aynı `rank()` değerini ve aynı normalize puanı alır. İsim veya kayıt zamanı normalize tur puanını etkilemez.
+
+Dönem performansı, oyuncunun oynadığı geçerli turların normalize puanlarının ortalamasıdır.
+
+## Görünürlük ve 2 Tur Şartı
+Herkes kendi lig tablosunda görünür. Oyuncunun 0 veya 1 geçerli turu olsa bile:
+- lig adı,
+- lig içi sıra,
+- mevcut performans puanı
+arayüzde gösterilir.
+
+Ancak yükselme/düşme hareketine katılabilmek için dönem içinde en az **2 ayrı geçerli tahmin turu** tamamlamak gerekir.
+
+2 tur şartını tamamlamayan oyuncu dönem sonunda:
+- Şampiyonlar → Elit
+- Elit → Altın
+- Altın → Gümüş
+- Gümüş → Bronz
+- Bronz → Bronz
+şeklinde otomatik bir kademe düşer.
+
+Uygun olmayan oyuncu hiçbir durumda yalnız kontenjan doldurmak için yükseltilmez.
+
+## Dönem İçi Eşitlik
+Lig içi dönem performansı eşitse sırasıyla:
+1. daha fazla **benzersiz davet edilen oyuncu**,
+2. daha fazla geçerli tur,
+3. daha fazla tam skor,
+4. daha fazla ham puan,
+5. oyuncu ID
+kullanılır.
+
+Davet sayısı `player_invites` içindeki benzersiz `invited_name` sayısıdır; aynı davetli mükerrer satıra düşerse bir kez sayılır.
 
 ## Lig Kapasiteleri
-Aktif oyuncu sayısına göre dönem başında hedef dağılım:
-- Şampiyonlar Ligi: %10
-- Elit Lig: %15
-- Altın Lig: %20
-- Gümüş Lig: %25
-- Bronz Lig: kalan %30
+Dönem başındaki aktif oyuncu sayısına göre hedef dağılım:
+- Şampiyonlar: %10
+- Elit: %15
+- Altın: %20
+- Gümüş: %25
+- Bronz: kalan
 
-Yuvarlama toplam oyuncu sayısını kesin koruyacak şekilde yapılır.
+77 oyuncu için ilk dağılım:
+- 8 Şampiyonlar
+- 12 Elit
+- 15 Altın
+- 19 Gümüş
+- 23 Bronz
+
+Kapasiteler ve yükselme/düşme slotları dönem başında kilitlenir.
 
 ## Yükselme ve Düşme
-Her komşu lig sınırında karşılıklı kontenjan kullanılır. Böylece bir ligden kaç kişi çıkıyorsa üst ligden aynı sayıda kişi aşağı iner ve lig kapasitesi bozulmaz.
+Yükselme/düşme seçimi yalnız **uygun oyuncuların kendi aralarındaki eligible_rank** üzerinden yapılır. Tabloda üstte görünen fakat 2 tur şartını tamamlamayan oyuncular, uygun oyuncuların hareket sırasını bloke edemez.
 
-Örnek 63 aktif oyuncu:
-- Şampiyonlar: 6
-- Elit: 9
-- Altın: 13
-- Gümüş: 16
-- Bronz: 19
+Pasiflik nedeniyle normal kotadan fazla düşüş oluşursa alt ligden mümkün olduğu kadar ek uygun oyuncu yükseltilir. Ancak alt ligde yeterli uygun oyuncu yoksa, 2 tur kuralı kapasiteyi korumaktan daha önceliklidir; uygun olmayan oyuncu yükseltilmez.
 
-Örnek dönem sonu değişimi:
-- Şampiyonlar ↔ Elit: 2 kişi
-- Elit ↔ Altın: 3 kişi
-- Altın ↔ Gümüş: 4 kişi
-- Gümüş ↔ Bronz: 5 kişi
+## Otomatik Güncelleme
+Saatlik bakım işi:
+1. açık dönemi bulur,
+2. dönem penceresi içindeki tamamlanmış Süper Lig / CL / Uluslar Ligi turlarını keşfeder,
+3. yalnız bütün skorları dolu turları işler,
+4. `league_round_performance` kayıtlarını UPSERT ile günceller,
+5. lig üyelik ve sıralamalarını yeniler,
+6. hedef dört ardışık Süper Lig haftası tamamlandığında ve sonraki hafta fikstürü hazır olduğunda dönem devrini yapar.
 
-Şampiyonlar Ligi'nde yukarı çıkış yoktur; üst sıralar şampiyonluk statüsü taşır. Bronz Lig'de aşağı düşme yoktur.
+Aynı tur tekrar işlense bile mükerrer performans satırı oluşmaz.
 
-## Dönem İçinde Yeni Oyuncular
-- Yeni oyuncu Bronz Lig'den başlar.
-- En az 2 geçerli tahmin turunu tamamlayana kadar lig sıralamasına girmez.
-- Dönem son haftasında ikinci turunu tamamlamış olsa bile mevcut dönemin sabit yükselme kontenjanını değiştirmez.
-- Yeni dönem başladığında Bronz Lig'de devam eder.
+## Arayüz
+Ana sayfadaki lig özeti oyuncunun gerçek ligini ve sırasını her zaman gösterir. 2 tur şartı tamamlanmadıysa ayrıca kaç tur gerektiği belirtilir.
 
-İlk tam döneminde yüksek performans gösteren yeni oyuncular için ileride "hızlı yükselme" seçeneği değerlendirilebilir; ilk sürümde kapsam dışıdır.
+`Sıralamalar > Ligim` ekranında:
+- oyuncunun bulunduğu lig varsayılan açılır,
+- bütün lig oyuncuları görünür,
+- oyuncunun kendi satırı belirgin olur,
+- yükselme/düşme bölgeleri uygun oyuncular için gösterilir,
+- diğer ligler chip/kartlardan görüntülenebilir,
+- `Lig Kuralları` alanı güncel kuralları açıklar.
 
-## Arayüz Tasarımı
-Yeni bir ana menü açılmayacak. Oyunu menülerle boğmamak için sistem mevcut **Sıralamalar** ekranına entegre edilecek.
-
-### Ana Sayfa
-Mevcut "Benim Durumum" alanında küçük lig özeti gösterilecek:
-- Lig adı
-- Lig içi sıra
-- yükselme/düşme hattına uzaklık
-- dönem bitimine kalan hafta
-
-Örnek:
-- Altın Lig — 4/13
-- Yükselme hattına 1 sıra
-- Dönem bitimine 2 hafta
-
-Bu özet tıklanınca doğrudan Sıralamalar > Ligim ekranı açılır.
-
-### Sıralamalar > Ligim
-Yeni küçük sekme: **Ligim**
-
-Varsayılan görünümde sadece oyuncunun bulunduğu lig gösterilir. 60–100 kişilik uzun tek tablo yerine oyuncu kendi ligindeki rakiplerini görür.
-
-Lig tablosunda:
-- yükselme bölgesi açık yeşil,
-- düşme bölgesi açık kırmızı,
-- kullanıcının satırı belirgin çerçeve ile gösterilir.
-
-Üst bilgi:
-- lig adı,
-- oyuncu sayısı,
-- dönem kaçıncı haftada,
-- yükselme ve düşme kontenjanı.
-
-### Diğer Ligler
-Aynı ekranın altında küçük kartlar/chipler:
-- Şampiyonlar
-- Elit
-- Altın
-- Gümüş
-- Bronz
-
-Kullanıcı isterse başka bir lige basıp o lig sıralamasını görebilir. Ana deneyim kendi ligi üzerinde kalır.
-
-### Lig Kuralları
-Ligim ekranının sağ üstünde küçük **ⓘ Lig Kuralları** kontrolü bulunur. Basınca kısa bir alt panel/modal açılır.
-
-Gösterilecek kurallar:
-- Dönem 4 hafta sürer.
-- Lig sistemine katılmak için en az 2 ayrı tahmin turu gerekir.
-- Yeni oyuncular Bronz Lig'den başlar.
-- Yükselme/düşme kontenjanları dönem başında sabitlenir.
-- Süper Lig, CL ve Uluslar Ligi performansları tek ortak ligde değerlendirilir.
-- Katılmadığın tur sana 0 puan yazmaz.
-- Yükselme/düşme dönem sonunda uygulanır.
-
-## Veri Modeli — Öneri
-Yeni tabloların sorumlulukları ayrık tutulur:
-
+## Veri Modeli
 ### league_periods
-4 haftalık dönemleri saklar:
-- id
-- period_no
-- starts_at
-- ends_at
-- status
-- active_player_count
-- locked_capacities
-- locked_promotion_slots
-
-### league_memberships
-Bir oyuncunun dönem içindeki lig üyeliği:
-- period_id
-- player_id veya player_name mevcut sistem standardına göre
-- league_code
-- starting_league_code
-- is_eligible
-- valid_round_count
-- performance_score
-- rank_in_league
-- promotion_status
+Dönem, başlangıç/bitiş penceresi ve kilitli kapasite/slotlar.
 
 ### league_round_performance
-Her geçerli tahmin turundaki normalize performans:
 - period_id
-- player
+- player_id
 - competition
 - round_key
 - participant_count
 - rank
 - performance_score
 - exact_score_count
+- raw_points
+
+### league_memberships
+- period_id
+- player_id
+- league_code
+- starting_league_code
+- is_eligible
+- valid_round_count
+- performance_score
+- exact_score_count
+- raw_points
+- rank_in_league
+- promotion_status
 
 ### league_history
-Dönem kapanışındaki yükselme/düşme geçmişi:
-- player
-- period_id
-- from_league
-- to_league
-- reason
-- final_rank
-- final_performance_score
+Dönem kapanışındaki from/to league, sebep, final sıra ve final performans.
 
-## Veri Akışı
-1. Bir tahmin turu sonuçlandıktan sonra o turun katılımcı sıralaması alınır.
-2. Her katılımcı için normalize performans puanı hesaplanır.
-3. league_round_performance güncellenir.
-4. Oyuncu en az 2 farklı geçerli turu tamamladıysa lig için uygun hale gelir.
-5. Dönem içi lig sıralaması performans ortalamasına göre hesaplanır.
-6. Dönem sonunda kilitli kontenjanlara göre yükselme/düşme uygulanır.
-7. Yeni dönem üyelikleri bir önceki dönemin sonucu üzerinden açılır; yeni uygun oyuncular Bronz'dan eklenir.
+## İzolasyon
+Bizim Skor Ligleri mevcut:
+- Süper Lig sıralamasını,
+- Şampiyonlar Ligi sıralamasını,
+- Uluslar Ligi sıralamasını,
+- Arkadaş Liglerini,
+- canlı skor sistemini,
+- bildirimleri,
+- davet sisteminin mevcut davranışını
+rewrite etmez. Yalnız mevcut tahmin/sonuç verisini okur ve kendi `league_*` tablolarına yazar.
 
-## Hata ve Sınır Durumları
-- Katılımcı sayısı 1 ise performans 100 olarak ele alınmaz; bu tur lig hesabı için geçersiz sayılabilir.
-- Sonradan iptal edilen veya sonuçsuz kalan maçlar mevcut puanlama kaynağıyla aynı şekilde lig performansına yansır.
-- Aynı tahmin turu iki kez işlenirse idempotent anahtar ile mükerrer kayıt engellenir.
-- Dönem kapanışı bir kez uygulanır; tekrar çalıştırıldığında ikinci kez yükselme/düşme yapılmaz.
-- Oyuncu adı değişiklikleri mevcut oyuncu kimliği standardına bağlanır; mümkünse player_id kullanılır.
-
-## Test Stratejisi
-- 63, 69 ve 100 aktif oyuncuda kapasite toplamlarının oyuncu sayısını tam koruduğu test edilir.
-- Komşu liglerde yükselen/düşen sayıların karşılıklı eşit olduğu test edilir.
-- Dönem içinde yeni oyuncu eklendiğinde kilitli kontenjanların değişmediği test edilir.
-- 1 tur yapan oyuncunun uygun olmadığı, 2. turdan sonra Bronz'a girdiği test edilir.
-- Katılmadığı turun 0 puan yazmadığı test edilir.
-- Farklı organizasyonlardaki farklı katılımcı sayılarının yüzdelik normalize edildiği test edilir.
-- Dönem kapanışının idempotent olduğu test edilir.
-- UI'da sadece kendi liginin varsayılan açıldığı, diğer liglerin isteğe bağlı görüntülendiği test edilir.
-
-## İlk Sürüm Kapsamı
-Dahil:
-- 5 lig
-- 4 haftalık dönem
-- 2 tur aktiflik şartı
-- normalize performans hesabı
-- sabit dönem kontenjanları
-- yükselme/düşme
-- geçmiş kaydı
-- ana sayfa lig özeti
-- Sıralamalar > Ligim
-- diğer ligleri görüntüleme
-- lig kuralları
-
-İlk sürümde kapsam dışı:
-- hızlı yükselme bonusu
-- özel rozet/ödül sistemi
-- ayrı Lig Merkezi ana menüsü
-- lig bazlı push bildirimleri
-
-## Başarı Kriterleri
-- Sezon ortasında giren oyuncu en geç ikinci geçerli tahmin turundan sonra Bronz Lig'de görünür.
-- Oyuncunun 4 hafta boyunca yükselme/düşme hedefi değişmeyen net bir çizgiyle görünür.
-- Mevcut Süper Lig, CL ve Uluslar Ligi sıralamaları bozulmaz.
-- Yeni özellik ana menüyü kalabalıklaştırmaz.
-- Lig kapasiteleri dönem sonunda matematiksel olarak dengeli kalır.
-- Bir oyuncu katılmadığı organizasyon nedeniyle 0 puan cezası almaz.
+## Production Kuralı
+Feature branch'teki migrationlar production Supabase'e ayrıca açık onay verilmeden uygulanmaz. Production'a geçmeden önce SQL yürütme doğrulaması, UI regresyon kontrolü ve ilk 77 kişilik seed çıktısı tekrar kontrol edilir.
