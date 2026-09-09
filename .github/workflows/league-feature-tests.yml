@@ -1,0 +1,51 @@
+name: Bizim Skor League Feature Tests
+
+on:
+  push:
+    branches:
+      - feature/invite-growth-v1
+    paths:
+      - 'league-system-*.js'
+      - 'general-ranking-live-refresh.js'
+      - 'supabase/migrations/20260909190000_bizim_skor_leagues.sql'
+      - 'supabase/migrations/20260909193000_bizim_skor_league_rounds.sql'
+      - 'supabase/migrations/20260909200000_bizim_skor_league_memberships.sql'
+      - 'supabase/migrations/20260909204500_bizim_skor_league_initial_seed.sql'
+      - 'supabase/migrations/20260909205000_bizim_skor_league_inactivity_relegation.sql'
+      - 'supabase/migrations/20260909210000_bizim_skor_league_next_period.sql'
+      - 'supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql'
+      - 'supabase/migrations/20260909212000_bizim_skor_league_round_auto_refresh.sql'
+      - 'test/league-*.test.js'
+      - 'test/general-ranking-live-refresh-league.test.js'
+      - '.github/workflows/league-feature-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  league-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run league feature tests
+        run: >-
+          node --test
+          test/league-system-utils.test.js
+          test/league-system-ui.test.js
+          test/general-ranking-live-refresh-league.test.js
+          test/league-initial-normalized-seed.test.js
+          test/league-next-period-database-contract.test.js
+          test/league-period-automation-database-contract.test.js
+          test/league-round-auto-refresh-database-contract.test.js
+          test/league-round-tie-ranking.test.js
+          test/league-close-eligible-ranking.test.js
+          test/league-movement-plan.test.js
