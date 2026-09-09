@@ -6,6 +6,15 @@ test('69 kişi içinde ilk sırayı 100 performansa çevirir',()=>{
   assert.equal(League.normalizePerformance(1,69),100);
 });
 
+test('69 kişi içinde son sırayı 0 performansa çevirir',()=>{
+  assert.equal(League.normalizePerformance(69,69),0);
+});
+
+test('iki kişilik turda ilk 100 son 0 olur',()=>{
+  assert.equal(League.normalizePerformance(1,2),100);
+  assert.equal(League.normalizePerformance(2,2),0);
+});
+
 test('katılmadığı turu sıfır puan olarak üretmez',()=>{
   assert.equal(League.normalizePerformance(null,69),null);
 });
