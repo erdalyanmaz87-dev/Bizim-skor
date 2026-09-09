@@ -8,7 +8,7 @@ const sql=()=>fs.readFileSync(file,'utf8');
 
 test('açık dönem için tamamlanmış turları otomatik yenileyen fonksiyon vardır',()=>{
   const source=sql();
-  assert.match(source,/create or replace function public\.refresh_league_period_rounds\(p_period_id bigint\)/i);
+  assert.match(source,/create or replace function public\.refresh_league_period_rounds\(\s*p_period_id bigint\s*\)/i);
   assert.match(source,/public\.refresh_league_round/i);
   assert.match(source,/public\.refresh_league_memberships/i);
 });
@@ -32,7 +32,7 @@ test('yalnız dönem başladıktan sonra başlayan ve skorları tamamen dolu tur
 
 test('round key sezon ve hafta ile oluşturulur',()=>{
   const source=sql();
-  assert.match(source,/season\s*\|\|\s*':'\s*\|\|\s*week/i);
+  assert.match(source,/rec\.season\s*\|\|\s*':'\s*\|\|\s*rec\.week/i);
 });
 
 test('otomatik yenileme tarayıcı rollerine kapalıdır',()=>{
