@@ -63,7 +63,6 @@ begin
   left join prior pr on pr.player_id=a.player_id
   on conflict(period_id,player_id) do nothing;
 
-  -- İlk gerçek dönem turu geldiği anda tarihsel başlangıç puanı taşınmaz.
   if exists(select 1 from public.league_round_performance rp where rp.period_id=p_period_id) then
     with aggregates as (
       select
@@ -123,9 +122,8 @@ begin
     where id=p_period_id;
   end if;
 
-  -- Davet sayısı yalnız eşit normalize performansta devreye girer.
   with invites as (
-    select lower(i.inviter_name) as player_key,count(*)::integer as invite_count
+    select lower(i.inviter_name) as player_key,count(distinct lower(i.invited_name))::integer as invite_count
     from public.player_invites i
     group by lower(i.inviter_name)
   ), ordered as (
