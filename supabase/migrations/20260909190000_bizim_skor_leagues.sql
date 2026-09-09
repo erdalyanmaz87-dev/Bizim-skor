@@ -25,6 +25,7 @@ create table if not exists public.league_round_performance (
   rank integer not null check (rank >= 1),
   performance_score numeric(6,2) not null check (performance_score >= 0 and performance_score <= 100),
   exact_score_count integer not null default 0 check (exact_score_count >= 0),
+  raw_points bigint not null default 0 check (raw_points >= 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique(period_id, player_id, competition, round_key),
@@ -41,6 +42,7 @@ create table if not exists public.league_memberships (
   valid_round_count integer not null default 0 check (valid_round_count >= 0),
   performance_score numeric(6,2),
   exact_score_count integer not null default 0 check (exact_score_count >= 0),
+  raw_points bigint not null default 0 check (raw_points >= 0),
   rank_in_league integer,
   promotion_status text not null default 'none' check (promotion_status in ('none','promotion','relegation','championship')),
   created_at timestamptz not null default now(),
@@ -184,15 +186,7 @@ revoke all on public.league_periods from public,anon,authenticated;
 revoke all on public.league_round_performance from public,anon,authenticated;
 revoke all on public.league_memberships from public,anon,authenticated;
 revoke all on public.league_history from public,anon,authenticated;
-
-revoke execute on function public.league_normalized_performance(integer,integer) from public,anon,authenticated;
 revoke execute on function public.league_allocate_capacities(integer) from public,anon,authenticated;
 revoke execute on function public.league_promotion_slots(jsonb) from public,anon,authenticated;
 revoke execute on function public.get_current_league_period() from public,authenticated;
 grant execute on function public.get_current_league_period() to anon;
-
--- Geliştirme doğrulama örnekleri:
--- select public.league_normalized_performance(1,69);   -- 100.00
--- select public.league_normalized_performance(69,69); -- 0.00
--- select public.league_allocate_capacities(63);        -- 6 / 9 / 13 / 16 / 19
--- select public.league_promotion_slots(public.league_allocate_capacities(63)); -- 2 / 3 / 4 / 5
