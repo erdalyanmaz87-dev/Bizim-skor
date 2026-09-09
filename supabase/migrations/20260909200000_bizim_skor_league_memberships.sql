@@ -1,5 +1,5 @@
 -- Bizim Skor Ligleri: üyelik, uygunluk, lig içi sıralama ve sabit dönem kontenjanları.
--- Yeni oyuncular Bronz'dan başlar. 2 geçerli turdan önce sıralamaya dahil edilmez.
+-- Yeni oyuncular Bronz'dan başlar. Herkes sıralamada görünür; yükselme/düşme için en az 2 geçerli tur gerekir.
 
 create or replace function public.refresh_league_memberships(
   p_period_id bigint
@@ -25,7 +25,7 @@ begin
   if v_status is null then raise exception 'Lig dönemi bulunamadı'; end if;
   if v_status<>'open' then raise exception 'Kapalı lig dönemi yenilenemez'; end if;
 
-  -- Tur performansı bulunan herkes için üyelik satırı oluştur/güncelle.
+  -- Tur performansı bulunan yeni oyuncular için üyelik satırı oluştur.
   -- Önceki dönem geçmişi varsa oradaki son lig korunur; yeni oyuncu Bronz'dan başlar.
   with aggregates as (
     select
@@ -60,17 +60,43 @@ begin
     now()
   from aggregates a
   left join prior pr on pr.player_id=a.player_id
-  on conflict(period_id,player_id) do update
-    set is_eligible=excluded.is_eligible,
-        valid_round_count=excluded.valid_round_count,
-        performance_score=excluded.performance_score,
-        exact_score_count=excluded.exact_score_count,
-        updated_at=now();
+  on conflict(period_id,player_id) do nothing;
 
-  get diagnostics v_changed=row_count;
+  -- İlk gerçek dönem turu geldiği anda tarihsel başlangıç puanı taşınmaz.
+  -- Tüm üyelerin puanı yalnız bu dönemde oynadıkları turlardan yeniden kurulur.
+  if exists(select 1 from public.league_round_performance rp where rp.period_id=p_period_id) then
+    with aggregates as (
+      select
+        rp.player_id,
+        count(*)::integer as valid_round_count,
+        round(avg(rp.performance_score),2)::numeric(6,2) as performance_score,
+        sum(rp.exact_score_count)::integer as exact_score_count
+      from public.league_round_performance rp
+      where rp.period_id=p_period_id
+      group by rp.player_id
+    ), recalculated as (
+      select
+        m.id,
+        coalesce(a.valid_round_count,0)::integer as valid_round_count,
+        a.performance_score,
+        coalesce(a.exact_score_count,0)::integer as exact_score_count
+      from public.league_memberships m
+      left join aggregates a on a.player_id=m.player_id
+      where m.period_id=p_period_id
+    )
+    update public.league_memberships m
+    set is_eligible=(r.valid_round_count>=2),
+        valid_round_count=r.valid_round_count,
+        performance_score=r.performance_score,
+        exact_score_count=r.exact_score_count,
+        updated_at=now()
+    from recalculated r
+    where m.id=r.id;
+
+    get diagnostics v_changed=row_count;
+  end if;
 
   -- Kontenjanlar dönem başında gerçekten oyuna katılmış aktif oyuncu tabanına göre kilitlenir.
-  -- Sadece hesabı olup hiç tahmin yapmamış oyuncular başlangıç kapasitesini şişirmez.
   if coalesce(v_locked,'{}'::jsonb)='{}'::jsonb then
     with participants as (
       select distinct lower(p.player_name) as player_key from public.predictions p
@@ -95,7 +121,7 @@ begin
     where id=p_period_id;
   end if;
 
-  -- Uygun oyuncuları yalnızca mevcut ligleri içinde sırala.
+  -- Her oyuncu lig tablosunda görünür. Uygun olmayan oyuncu sıralanır fakat hareket bölgesine girmez.
   with ordered as (
     select
       m.id,
@@ -108,12 +134,13 @@ begin
       )::integer as league_rank,
       count(*) over(partition by m.league_code)::integer as league_size
     from public.league_memberships m
-    where m.period_id=p_period_id and m.is_eligible
+    where m.period_id=p_period_id
   ), statuses as (
     select
       o.id,o.league_rank,o.league_size,
       m.league_code,
       case
+        when not m.is_eligible then 'none'
         when m.league_code='champions' and o.league_rank=1 then 'championship'
         when m.league_code='champions'
           and o.league_rank > o.league_size-coalesce((v_slots->>'champions_elite')::integer,0) then 'relegation'
@@ -142,10 +169,6 @@ begin
       updated_at=now()
   from statuses s
   where m.id=s.id;
-
-  update public.league_memberships
-  set rank_in_league=null,promotion_status='none',updated_at=now()
-  where period_id=p_period_id and not is_eligible;
 
   return v_changed;
 end;
@@ -198,7 +221,7 @@ begin
     mm.rank_in_league,
     case when mm.league_code is null then 0::bigint else (
       select count(*) from public.league_memberships x
-      where x.period_id=cp.id and x.league_code=mm.league_code and x.is_eligible
+      where x.period_id=cp.id and x.league_code=mm.league_code
     ) end,
     coalesce(mm.promotion_status,'none')::text,
     cp.locked_promotion_slots
@@ -256,7 +279,6 @@ begin
   join public.players p on p.id=m.player_id
   where m.period_id=v_period_id
     and m.league_code=v_target_league
-    and m.is_eligible
   order by m.rank_in_league,p.name collate "tr-TR-x-icu";
 end;
 $$;
@@ -267,6 +289,6 @@ revoke execute on function public.get_league_table(text,text) from public,authen
 grant execute on function public.get_my_league_summary(text) to anon;
 grant execute on function public.get_league_table(text,text) to anon;
 
--- Geliştirme testi:
--- Dönem başında aktif ve en az bir tahmin yapmış oyuncular kilitlenir.
--- Dönem başladıktan sonra kayıt olan uygun Bronz oyuncuların eklenmesi locked_promotion_slots değerini değiştirmez.
+-- İlk açılışta tüm üyeler tarihsel normalize başlangıç sırasıyla görünür.
+-- İlk dönem turu işlendiğinde tarihsel puan temizlenir ve yeni dönem performansı sıfırdan hesaplanır.
+-- 2 geçerli tur şartı yalnız yükselme/düşme uygunluğunu etkiler; tablo görünürlüğünü etkilemez.
