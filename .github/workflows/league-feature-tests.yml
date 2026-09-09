@@ -10,6 +10,9 @@ on:
       - 'supabase/migrations/20260909190000_bizim_skor_leagues.sql'
       - 'supabase/migrations/20260909193000_bizim_skor_league_rounds.sql'
       - 'supabase/migrations/20260909200000_bizim_skor_league_memberships.sql'
+      - 'supabase/migrations/20260909200200_bizim_skor_league_counts_rpc.sql'
+      - 'supabase/migrations/20260909201500_bizim_skor_league_counts.sql'
+      - 'supabase/migrations/20260909203000_bizim_skor_league_period_close.sql'
       - 'supabase/migrations/20260909204500_bizim_skor_league_initial_seed.sql'
       - 'supabase/migrations/20260909205000_bizim_skor_league_inactivity_relegation.sql'
       - 'supabase/migrations/20260909210000_bizim_skor_league_next_period.sql'
@@ -50,3 +53,4 @@ jobs:
           test/league-close-eligible-ranking.test.js
           test/league-movement-plan.test.js
           test/league-counts-rpc.test.js
+          test/league-migration-ownership.test.js
