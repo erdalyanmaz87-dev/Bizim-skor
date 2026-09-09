@@ -54,6 +54,11 @@ test('hiç tamamlanmış turu olmayan katılımcı sıfır normalize puanla kal�
   assert.match(source,/coalesce\(h\.valid_round_count,0\)/i);
 });
 
+test('davet eşitlik kriteri benzersiz davet edilen oyuncu sayısını kullanır',()=>{
+  assert.match(seedSql(),/count\(distinct\s+lower\(i\.invited_name\)\)\s*::integer\s+as\s+invite_count/i);
+  assert.match(membershipsSql(),/count\(distinct\s+lower\(i\.invited_name\)\)\s*::integer\s+as\s+invite_count/i);
+});
+
 test('ilk seed eşitlik sırası performans davet tur tam skor ham puan ve oyuncu id şeklindedir',()=>{
   const source=seedSql();
   assert.match(source,/player_invites/i);
