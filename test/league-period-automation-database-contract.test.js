@@ -33,10 +33,11 @@ test('yalnız başlangıç haftasından itibaren dört ardışık Süper Lig haf
   assert.match(source,/count\(distinct\s+f\.week\)\s*=\s*4/i);
 });
 
-test('bir Süper Lig haftası ancak tüm fikstür sonuçları girildiyse tamamlanmış sayılır',()=>{
+test('bir Süper Lig haftası ancak tüm skorlar doluysa tamamlanmış sayılır',()=>{
   const source=sql();
   assert.match(source,/public\.fixtures/i);
   assert.match(source,/public\.results/i);
+  assert.match(source,/count\(distinct\s+r\.fixture_id\)\s+filter\s*\(where\s+r\.home_score\s+is\s+not\s+null\s+and\s+r\.away_score\s+is\s+not\s+null\)\s+as\s+result_count/i);
   assert.match(source,/result_count\s*=\s*fixture_count/i);
 });
 
