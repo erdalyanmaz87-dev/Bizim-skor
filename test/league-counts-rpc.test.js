@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 
-const file=path.join(__dirname,'../supabase/migrations/20260909200000_bizim_skor_league_memberships.sql');
+const file=path.join(__dirname,'../supabase/migrations/20260909200200_bizim_skor_league_counts_rpc.sql');
 const sql=()=>fs.readFileSync(file,'utf8');
 
 test('UI için get_league_counts RPC tanımlıdır',()=>{
