@@ -1,12 +1,14 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 
 function freshModule(){
   delete require.cache[require.resolve('../general-ranking-live-refresh')];
   return require('../general-ranking-live-refresh');
 }
 
-test('Ligim eklenirken mevcut results canlı aboneliği korunur',()=>{
+test('Arena eklenirken mevcut results canlı aboneliği korunur',()=>{
   const oldSb=global.sb;
   const oldRanking=global.BizimSkorOpportunityRanking;
   const oldFlag=global.__bizimSkorGeneralRankingRefresh;
@@ -42,7 +44,7 @@ test('Ligim eklenirken mevcut results canlı aboneliği korunur',()=>{
   }
 });
 
-test('Ligim oturumu yoksa ana sıralama mount akışını engellemez',()=>{
+test('Arena oturumu yoksa ana sıralama mount akışını engellemez',()=>{
   const oldSb=global.sb;
   const oldFlag=global.__bizimSkorGeneralRankingRefresh;
   const oldDoc=global.document;
@@ -58,4 +60,19 @@ test('Ligim oturumu yoksa ana sıralama mount akışını engellemez',()=>{
     global.__bizimSkorGeneralRankingRefresh=oldFlag;
     global.document=oldDoc;
   }
+});
+
+test('kayan menünün ilk öğesi Arena olarak eklenir ve ayrı Arena bölümü kullanır',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../general-ranking-live-refresh.js'),'utf8');
+  assert.match(source,/textContent='🏆 Arena'/);
+  assert.match(source,/tabs\.insertBefore\(arenaTab,tabs\.firstChild\)/);
+  assert.match(source,/arenaSection\.id='arena'/);
+  assert.match(source,/Bizim Skor Arena/);
+  assert.match(source,/Bizim Skor Ligleri/);
+});
+
+test('kişisel lig özeti Arena sekmesini açar',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../general-ranking-live-refresh.js'),'utf8');
+  assert.match(source,/\.tab\[data-tab="arena"\]/);
+  assert.doesNotMatch(source,/\.tab\[data-tab="general"\].*scrollIntoView/);
 });
