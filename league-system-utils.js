@@ -6,7 +6,7 @@
   function normalizePerformance(rank,participantCount){
     const r=Number(rank),n=Number(participantCount);
     if(!Number.isInteger(r)||!Number.isInteger(n)||r<1||n<2||r>n)return null;
-    return Math.round((100*(1-((r-1)/n)))*100)/100;
+    return Math.round((100*((n-r)/(n-1)))*100)/100;
   }
 
   function isLeagueEligible(validRoundCount){
