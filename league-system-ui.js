@@ -26,7 +26,7 @@
   function renderLeagueSummary(summary={}){
     if(!summary.is_eligible){
       const needed=Math.max(1,Number(summary.rounds_needed)||Math.max(1,2-(Number(summary.valid_round_count)||0)));
-      return `<div class="league-summary league-summary-pending"><div class="league-summary-title">🥉 Bizim Skor Ligleri</div><div class="league-summary-message">Lig sistemine katılmak için ${needed} tahmin turu daha tamamla</div><div class="league-summary-note">Yeni oyuncular Bronz Lig’den başlar.</div></div>`;
+      return `<div class="league-summary league-summary-pending"><div class="league-summary-title">🥉 Bizim Skor Ligleri</div><div class="league-summary-message">Lig sistemine katılmak için ${needed} tahmin turu daha tamamla</div><div class="league-summary-note">Dönem sonunda 2 tur şartı tamamlanmazsa bir alt lige düşersin. Bronz Lig’deysen Bronz’da kalırsın.</div></div>`;
     }
     const code=summary.league_code||'bronze';
     const rank=Number(summary.rank_in_league)||0;
@@ -55,7 +55,7 @@
   }
 
   function renderLeagueRules(){
-    return `<div class="league-rules"><h3>ⓘ Lig Kuralları</h3><p>Lig dönemi <b>4 hafta</b> sürer.</p><p>Lig sistemine katılmak için dönem içinde <b>en az 2 ayrı tahmin turu</b> tamamlamak gerekir.</p><p>Yeni oyuncular Bronz Lig’den başlar.</p><p>Yükselme ve düşme kontenjanları dönem başında belirlenir ve dönem boyunca değişmez.</p><p>Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi turlarındaki dereceler ortak performansa çevrilir.</p><p>Katılmadığın tur sana 0 puan yazmaz.</p></div>`;
+    return `<div class="league-rules"><h3>ⓘ Lig Kuralları</h3><p>Lig dönemi <b>4 hafta</b> sürer.</p><p>Lig sisteminde aktif kalmak için dönem içinde <b>en az 2 ayrı tahmin turu</b> tamamlamak gerekir.</p><p>2 tur şartını tamamlamayan oyuncu dönem sonunda <b>bir alt lige düşer</b>. Bronz Lig oyuncusu Bronz Lig’de kalır.</p><p>Yeni oyuncular Bronz Lig’den başlar.</p><p>Yükselme ve düşme kontenjanları dönem başında belirlenir ve dönem boyunca değişmez.</p><p>Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi turlarındaki dereceler ortak performansa çevrilir.</p><p>Katılmadığın tur sana 0 puan yazmaz; ancak dönem sonundaki 2 tur şartı ayrıca uygulanır.</p></div>`;
   }
 
   function renderOtherLeagueChips(counts={},currentLeague){
