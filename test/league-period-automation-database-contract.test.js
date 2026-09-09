@@ -20,7 +20,8 @@ test('bakım önce açık dönemde tamamlanan tüm yarışma turlarını yeniler
 
 test('dönem başlangıç Süper Lig sezon ve haftasına sabitlenir',()=>{
   const source=sql();
-  assert.match(source,/select\s+f\.season\s*,\s*f\.week[\s\S]*min\(f\.kickoff\)[\s\S]*>=\s*v_starts_at/i);
+  assert.match(source,/with\s+week_starts\s+as\s*\([\s\S]*select\s+f\.season\s*,\s*f\.week\s*,\s*min\(f\.kickoff\)\s+as\s+first_kickoff/i);
+  assert.match(source,/ws\.first_kickoff\s*>=\s*v_starts_at/i);
   assert.match(source,/v_start_week/i);
   assert.match(source,/v_start_season/i);
 });
@@ -36,7 +37,7 @@ test('bir Süper Lig haftası ancak tüm fikstür sonuçları girildiyse tamamla
   const source=sql();
   assert.match(source,/public\.fixtures/i);
   assert.match(source,/public\.results/i);
-  assert.match(source,/count\(distinct\s+r\.fixture_id\)\s*=\s*count\(distinct\s+f\.id\)/i);
+  assert.match(source,/result_count\s*=\s*fixture_count/i);
 });
 
 test('dönem 4 tamamlanmış Süper Lig haftasından önce kapanmaz',()=>{
@@ -45,10 +46,17 @@ test('dönem 4 tamamlanmış Süper Lig haftasından önce kapanmaz',()=>{
   assert.match(source,/return\s+false/i);
 });
 
+test('sonraki hafta yüklenmeden mevcut dönem kapatılmaz',()=>{
+  const source=sql();
+  assert.match(source,/v_next_week\s*:=\s*v_start_week\+4/i);
+  assert.match(source,/where\s+f\.season=v_start_season[\s\S]*f\.week=v_next_week/i);
+  assert.match(source,/if\s+v_next_start\s+is\s+null\s+then\s+return\s+false/i);
+  assert.ok(source.indexOf('if v_next_start is null') < source.indexOf('close_league_period(v_period_id)'));
+});
+
 test('4. ardışık Süper Lig haftası tamamlanınca dönem kapanır ve yenisi bir sonraki haftadan açılır',()=>{
   const source=sql();
   assert.match(source,/close_league_period\(v_period_id\)/i);
-  assert.match(source,/v_next_week\s*:=\s*v_start_week\+4/i);
   assert.match(source,/open_next_league_period/i);
   assert.doesNotMatch(source,/interval\s*'28 days'/i);
 });
