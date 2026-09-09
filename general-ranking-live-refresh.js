@@ -91,11 +91,26 @@
     }
   }
 
+  function scheduleLeagueMount(){
+    if(root.__bizimSkorLeagueRetryTimer||root.__bizimSkorLeagueMounted)return;
+    let attempts=0;
+    const attempt=async()=>{
+      attempts+=1;
+      const mounted=await mountLeagues();
+      if(mounted||attempts>=30){
+        if(root.__bizimSkorLeagueRetryTimer)root.clearInterval(root.__bizimSkorLeagueRetryTimer);
+        root.__bizimSkorLeagueRetryTimer=null;
+      }
+    };
+    setTimeout(attempt,700);
+    root.__bizimSkorLeagueRetryTimer=root.setInterval(attempt,2000);
+  }
+
   function mount(){
     if(root.document){
       const ready=()=>{
         removeLeakedNewlineText();
-        setTimeout(()=>mountLeagues(),700);
+        scheduleLeagueMount();
       };
       if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',ready,{once:true});
       else ready();
@@ -111,5 +126,5 @@
       ).subscribe();
     return true;
   }
-  return Object.freeze({mount,removeLeakedNewlineText,mountLeagues,ensureLeagueMountPoints});
+  return Object.freeze({mount,removeLeakedNewlineText,mountLeagues,ensureLeagueMountPoints,scheduleLeagueMount});
 });
