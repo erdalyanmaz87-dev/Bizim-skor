@@ -76,3 +76,14 @@ test('kişisel lig özeti Arena sekmesini açar',()=>{
   assert.match(source,/\.tab\[data-tab="arena"\]/);
   assert.doesNotMatch(source,/\.tab\[data-tab="general"\].*scrollIntoView/);
 });
+
+test('Arena terminolojisi kullanıcıya her yerde tutarlı görünür',()=>{
+  const uiSource=fs.readFileSync(path.join(__dirname,'../league-system-ui.js'),'utf8');
+  assert.match(uiSource,/Arena'ya Gir ›/);
+  assert.doesNotMatch(uiSource,/Ligimi Gör ›/);
+});
+
+test('Arena bölümü mevcut section sınıfı ile oluşturulur',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../general-ranking-live-refresh.js'),'utf8');
+  assert.match(source,/arenaSection\.className='section hide'/);
+});
