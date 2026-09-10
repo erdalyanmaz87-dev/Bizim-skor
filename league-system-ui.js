@@ -25,7 +25,7 @@
       statusText=`Yükselme/düşme için ${needed} tahmin turu daha tamamla`;
     }
 
-    return `<button type="button" class="league-summary league-summary-button${summary.is_eligible?'':' league-summary-pending'}" data-league-open="1"><span class="league-summary-title">${ICONS[code]||'🥉'} ${esc(label(code))}</span><strong class="league-summary-rank">${rank||'—'} / ${size||'—'}</strong><span class="league-summary-performance">Perf. ${esc(perf)}</span><span class="league-summary-status">${esc(statusText)}</span><span class="league-summary-action">Ligimi Gör ›</span></button>`;
+    return `<button type="button" class="league-summary league-summary-button${summary.is_eligible?'':' league-summary-pending'}" data-league-open="1"><span class="league-summary-title">${ICONS[code]||'🥉'} ${esc(label(code))}</span><strong class="league-summary-rank">${rank||'—'} / ${size||'—'}</strong><span class="league-summary-performance">Perf. ${esc(perf)}</span><span class="league-summary-status">${esc(statusText)}</span><span class="league-summary-action">Arena'ya Gir ›</span></button>`;
   }
 
   function rowClass(row){
