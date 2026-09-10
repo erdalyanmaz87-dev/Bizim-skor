@@ -6,6 +6,7 @@ on:
       - feature/invite-growth-v1
     paths:
       - 'league-system-*.js'
+      - 'arena-player-card.js'
       - 'general-ranking-live-refresh.js'
       - 'supabase/migrations/20260909190000_bizim_skor_leagues.sql'
       - 'supabase/migrations/20260909193000_bizim_skor_league_rounds.sql'
@@ -18,7 +19,9 @@ on:
       - 'supabase/migrations/20260909210750_bizim_skor_league_first_period_bootstrap.sql'
       - 'supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql'
       - 'supabase/migrations/20260910100000_bizim_skor_league_initial_preview.sql'
+      - 'supabase/migrations/20260910174500_arena_player_card_rpc.sql'
       - 'test/league-*.test.js'
+      - 'test/arena-player-card.test.js'
       - 'test/general-ranking-live-refresh-league.test.js'
       - '.github/workflows/league-feature-tests.yml'
   workflow_dispatch:
@@ -42,6 +45,7 @@ jobs:
       - name: Run league feature tests
         run: >-
           node --test
+          test/arena-player-card.test.js
           test/league-system-utils.test.js
           test/league-system-ui.test.js
           test/general-ranking-live-refresh-league.test.js
@@ -100,7 +104,8 @@ jobs:
             supabase/migrations/20260909210500_bizim_skor_league_round_auto_refresh.sql \
             supabase/migrations/20260909210750_bizim_skor_league_first_period_bootstrap.sql \
             supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql \
-            supabase/migrations/20260910100000_bizim_skor_league_initial_preview.sql
+            supabase/migrations/20260910100000_bizim_skor_league_initial_preview.sql \
+            supabase/migrations/20260910174500_arena_player_card_rpc.sql
           do
             echo "Applying $migration"
             psql -v ON_ERROR_STOP=1 -f "$migration"
@@ -108,4 +113,4 @@ jobs:
 
       - name: Verify key league functions exist
         run: |
-          psql -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_proc where pronamespace='public'::regnamespace and proname in ('initialize_first_league_period','bootstrap_first_league_period','maintain_league_periods','refresh_league_period_rounds','close_league_period','get_league_counts','get_league_initial_preview');" | grep -x '7'
+          psql -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_proc where pronamespace='public'::regnamespace and proname in ('initialize_first_league_period','bootstrap_first_league_period','maintain_league_periods','refresh_league_period_rounds','close_league_period','get_league_counts','get_league_initial_preview','get_arena_player_card');" | grep -x '8'
