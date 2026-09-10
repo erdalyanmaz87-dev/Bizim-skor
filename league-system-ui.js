@@ -8,7 +8,7 @@
 
   function esc(value){return String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
   function label(code){return LABELS[code]||'Bronz Lig'}
-  function renderArenaPending(){return '<div class="league-empty league-pending"><b>🏆 Arena dönemi hazırlanıyor.</b><br>İlk Arena dönemi Süper Lig 5. hafta ile başlayacak. Lig sıralamaları dönem sınırı kesinleştiğinde burada otomatik olarak açılacak.</div>'}
+  function renderArenaPending(){return '<div class="league-empty league-pending"><b>🏆 Arena dönemi hazırlanıyor.</b><br>Geçici başlangıç sıralaması henüz oluşturulamıyor.</div>'}
 
   function renderLeagueSummary(summary={}){
     const code=summary.league_code||'bronze';
@@ -27,6 +27,14 @@
     }
 
     return `<button type="button" class="league-summary league-summary-button${summary.is_eligible?'':' league-summary-pending'}" data-league-open="1"><span class="league-summary-title">${ICONS[code]||'🥉'} ${esc(label(code))}</span><strong class="league-summary-rank">${rank||'—'} / ${size||'—'}</strong><span class="league-summary-performance">Perf. ${esc(perf)}</span><span class="league-summary-status">${esc(statusText)}</span><span class="league-summary-action">Arena'ya Gir ›</span></button>`;
+  }
+
+  function renderPreviewSummary(summary={}){
+    const code=summary.league_code||'bronze';
+    const rank=Number(summary.rank_in_league)||0;
+    const size=Number(summary.league_size)||0;
+    const perf=summary.performance_score==null?'—':Number(summary.performance_score).toFixed(2);
+    return `<button type="button" class="league-summary league-summary-button league-summary-preview" data-league-open="1"><span class="league-summary-title">${ICONS[code]||'🥉'} ${esc(label(code))}</span><strong class="league-summary-rank">${rank||'—'} / ${size||'—'}</strong><span class="league-summary-performance">Perf. ${esc(perf)}</span><span class="league-summary-status">Geçici başlangıç sıralaması • 3. ve 4. hafta</span><span class="league-summary-action">Arena'ya Gir ›</span></button>`;
   }
 
   function rowClass(row){
@@ -59,8 +67,12 @@
     return `<div class="league-shell"><div class="league-header"><div><div class="league-eyebrow">Bizim Skor Ligleri</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><button type="button" class="league-rules-button" data-league-rules="1">ⓘ Kurallar</button></div>${renderLeagueTable(rows,{...summary,league_code:code})}${showEligibilityNote?`<div class="league-eligibility-note">Yükselme/düşme için ${Math.max(1,Number(summary.rounds_needed)||2)} tahmin turu daha tamamlamalısın.</div>`:''}${renderOtherLeagueChips(counts,code)}<div class="league-rules-host" hidden>${renderLeagueRules()}</div></div>`;
   }
 
+  function renderPreviewShell(code,rows=[],counts={}){
+    return `<div class="league-shell league-preview-shell"><div class="league-header"><div><div class="league-eyebrow">Geçici başlangıç sıralaması • 3. ve 4. hafta</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><span class="league-preview-badge">ÖNİZLEME</span></div>${renderLeagueTable(rows.map(row=>({...row,valid_round_count:'—'})),{league_code:code})}<div class="league-preview-note">5. hafta başladığında dönem puanları sıfırdan işlenir. 8. hafta sonunda yükselme/düşme belirlenir; 9. hafta yeni liglerle başlar.</div>${renderOtherLeagueChips(counts,code)}</div>`;
+  }
+
   function css(){
-    return `.league-summary{box-sizing:border-box;width:100%;border:1px solid #dbeafe;border-radius:14px;background:linear-gradient(135deg,#f8fafc,#eff6ff);padding:12px;text-align:left;color:#0f172a}.league-summary-button{display:grid;grid-template-columns:1fr auto;gap:5px 10px;cursor:pointer}.league-summary-title{font-weight:900}.league-summary-rank{font-size:18px}.league-summary-performance{font-size:12px;font-weight:800;color:#475569}.league-summary-status{font-size:12px;color:#166534}.league-summary-pending .league-summary-status{color:#92400e}.league-summary-action{font-size:12px;text-align:right;color:#1d4ed8;font-weight:800}.league-shell{border:1px solid #e2e8f0;border-radius:16px;background:#fff;padding:14px}.league-header{display:flex;justify-content:space-between;gap:10px;align-items:start}.league-header h2{margin:3px 0 12px}.league-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:900}.league-rules-button{padding:8px 10px;background:#f1f5f9;color:#334155;font-size:12px}.league-table-head,.league-row{display:grid;grid-template-columns:34px minmax(0,1fr) 58px 40px;gap:6px;align-items:center;padding:9px 8px}.league-table-head{font-size:11px;color:#64748b;font-weight:800;border-bottom:1px solid #e2e8f0}.league-row{border-bottom:1px solid #f1f5f9;font-size:13px}.league-promotion-zone{background:#ecfdf5}.league-relegation-zone{background:#fef2f2}.league-championship-zone{background:#fffbeb}.league-me{outline:2px solid #0f172a;outline-offset:-2px;border-radius:8px}.league-rank,.league-performance,.league-rounds{text-align:center;font-weight:800}.league-table-foot{padding:9px 8px;font-size:12px;color:#64748b}.league-eligibility-note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#fffbeb;color:#92400e;font-size:12px;font-weight:800}.league-other{margin-top:14px}.league-other-title{font-weight:900;margin-bottom:8px}.league-chips{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.league-chip{flex:0 0 auto;padding:9px 10px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155;display:flex;align-items:center;gap:5px}.league-chip small{background:#e2e8f0;border-radius:999px;padding:2px 5px}.league-chip-active{background:#0f172a;color:#fff}.league-chip-active small{background:#334155}.league-rules{padding:10px 2px}.league-rules p{font-size:13px;line-height:1.45}.league-empty{padding:18px;text-align:center;color:#64748b}.league-pending{line-height:1.55}.league-pending b{display:block;color:#0f172a;margin-bottom:5px}`;
+    return `.league-summary{box-sizing:border-box;width:100%;border:1px solid #dbeafe;border-radius:14px;background:linear-gradient(135deg,#f8fafc,#eff6ff);padding:12px;text-align:left;color:#0f172a}.league-summary-button{display:grid;grid-template-columns:1fr auto;gap:5px 10px;cursor:pointer}.league-summary-title{font-weight:900}.league-summary-rank{font-size:18px}.league-summary-performance{font-size:12px;font-weight:800;color:#475569}.league-summary-status{font-size:12px;color:#166534}.league-summary-pending .league-summary-status{color:#92400e}.league-summary-preview .league-summary-status{color:#92400e;font-weight:800}.league-summary-action{font-size:12px;text-align:right;color:#1d4ed8;font-weight:800}.league-shell{border:1px solid #e2e8f0;border-radius:16px;background:#fff;padding:14px}.league-header{display:flex;justify-content:space-between;gap:10px;align-items:start}.league-header h2{margin:3px 0 12px}.league-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:900}.league-rules-button{padding:8px 10px;background:#f1f5f9;color:#334155;font-size:12px}.league-table-head,.league-row{display:grid;grid-template-columns:34px minmax(0,1fr) 58px 40px;gap:6px;align-items:center;padding:9px 8px}.league-table-head{font-size:11px;color:#64748b;font-weight:800;border-bottom:1px solid #e2e8f0}.league-row{border-bottom:1px solid #f1f5f9;font-size:13px}.league-promotion-zone{background:#ecfdf5}.league-relegation-zone{background:#fef2f2}.league-championship-zone{background:#fffbeb}.league-me{outline:2px solid #0f172a;outline-offset:-2px;border-radius:8px}.league-rank,.league-performance,.league-rounds{text-align:center;font-weight:800}.league-table-foot{padding:9px 8px;font-size:12px;color:#64748b}.league-eligibility-note{margin-top:10px;padding:9px 10px;border-radius:10px;background:#fffbeb;color:#92400e;font-size:12px;font-weight:800}.league-other{margin-top:14px}.league-other-title{font-weight:900;margin-bottom:8px}.league-chips{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.league-chip{flex:0 0 auto;padding:9px 10px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155;display:flex;align-items:center;gap:5px}.league-chip small{background:#e2e8f0;border-radius:999px;padding:2px 5px}.league-chip-active{background:#0f172a;color:#fff}.league-chip-active small{background:#334155}.league-rules{padding:10px 2px}.league-rules p{font-size:13px;line-height:1.45}.league-empty{padding:18px;text-align:center;color:#64748b}.league-pending{line-height:1.55}.league-pending b{display:block;color:#0f172a;margin-bottom:5px}.league-preview-badge{font-size:10px;font-weight:900;padding:5px 7px;border-radius:999px;background:#fef3c7;color:#92400e}.league-preview-note{margin-top:10px;padding:10px;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-size:12px;line-height:1.45;font-weight:700}`;
   }
 
   async function mount(options={}){
@@ -77,8 +89,27 @@
     if(summaryResult.error)throw summaryResult.error;
     if(countResult.error)throw countResult.error;
     const summary=Array.isArray(summaryResult.data)?summaryResult.data[0]:summaryResult.data;
+
     if(!summary){
-      if(detailHost)detailHost.innerHTML=renderArenaPending();
+      const previewResult=await sb.rpc('get_league_initial_preview',{p_token:token});
+      if(previewResult.error)throw previewResult.error;
+      const preview=previewResult.data||[];
+      if(!preview.length){
+        if(detailHost)detailHost.innerHTML=renderArenaPending();
+        return true;
+      }
+      const counts={champions:0,elite:0,gold:0,silver:0,bronze:0};
+      preview.forEach(row=>{if(Object.hasOwn(counts,row.league_code))counts[row.league_code]+=1});
+      const me=preview.find(row=>row.is_me)||preview[0];
+      const ownCode=me.league_code||'bronze';
+      if(summaryHost)summaryHost.innerHTML=renderPreviewSummary({...me,rank_in_league:me.league_rank,league_size:counts[ownCode]});
+      if(!detailHost)return true;
+      function loadPreviewLeague(code){
+        const target=code||ownCode;
+        detailHost.innerHTML=renderPreviewShell(target,preview.filter(row=>row.league_code===target),counts);
+        detailHost.querySelectorAll?.('[data-league-code]').forEach(btn=>btn.addEventListener('click',()=>loadPreviewLeague(btn.dataset.leagueCode)));
+      }
+      loadPreviewLeague(ownCode);
       return true;
     }
 
@@ -106,5 +137,5 @@
     return true;
   }
 
-  return {esc,renderArenaPending,renderLeagueSummary,renderLeagueTable,renderLeagueRules,renderOtherLeagueChips,renderLeagueShell,css,mount};
+  return {esc,renderArenaPending,renderLeagueSummary,renderPreviewSummary,renderLeagueTable,renderLeagueRules,renderOtherLeagueChips,renderLeagueShell,renderPreviewShell,css,mount};
 });
