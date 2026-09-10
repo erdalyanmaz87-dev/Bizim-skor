@@ -52,3 +52,19 @@ test('oyuncu adını html olarak çalıştırmaz',()=>{
   assert.doesNotMatch(html,/<img/);
   assert.match(html,/&lt;img/);
 });
+
+test('Arena dönemi henüz açılmadıysa yükleniyor yerine hazırlık durumu gösterilir',()=>{
+  const html=UI.renderArenaPending();
+  assert.match(html,/Arena dönemi hazırlanıyor/);
+  assert.match(html,/5\. hafta/);
+  assert.doesNotMatch(html,/yükleniyor/i);
+});
+
+test('özet RPC veri döndürmezse Arena ekranında hazırlık durumu bırakılır',async()=>{
+  const detailHost={innerHTML:''};
+  const summaryHost={innerHTML:''};
+  const sb={rpc:async(name)=>name==='get_my_league_summary'?{data:null,error:null}:{data:[],error:null}};
+  const mounted=await UI.mount({sb,token:'test-token',summaryHost,detailHost});
+  assert.equal(mounted,true);
+  assert.match(detailHost.innerHTML,/Arena dönemi hazırlanıyor/);
+});
