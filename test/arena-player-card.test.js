@@ -28,11 +28,25 @@ test('iki tur şartını tamamlamayan oyuncu uyarılır',()=>{
   assert.match(html,/Gümüş Lig/);
 });
 
-test('geçici Arena kartı 3 ve 4. hafta başlangıç puanını açıklar',()=>{
-  const html=Card.renderPreviewCard({player_name:'Ayşe',league_code:'bronze',league_rank:5,league_size:18,performance_score:62.5});
+test('geçici Arena kartı 3 ve 4. hafta puanlarını, ortalamayı ve katılımı gösterir',()=>{
+  const html=Card.renderPreviewCard({player_name:'Ayşe',league_code:'bronze',league_rank:5,league_size:18,performance_score:62.5,week3_score:75,week4_score:50,valid_round_count:2,rounds_needed:0});
   assert.match(html,/Geçici başlangıç/);
-  assert.match(html,/3\. ve 4\. hafta/);
+  assert.match(html,/3\. Hafta/);
+  assert.match(html,/75\.00/);
+  assert.match(html,/4\. Hafta/);
+  assert.match(html,/50\.00/);
+  assert.match(html,/Başlangıç ortalaması/);
   assert.match(html,/62\.50/);
+  assert.match(html,/2 \/ 2/);
+  assert.match(html,/2 başlangıç haftası tamamlandı/);
+});
+
+test('geçici Arena kartı eksik başlangıç haftasını sıfır ve uyarı ile gösterir',()=>{
+  const html=Card.renderPreviewCard({player_name:'Ali',league_code:'silver',league_rank:8,league_size:15,performance_score:35,week3_score:70,week4_score:0,valid_round_count:1,rounds_needed:1});
+  assert.match(html,/70\.00/);
+  assert.match(html,/0\.00/);
+  assert.match(html,/1 \/ 2/);
+  assert.match(html,/1 başlangıç haftası eksik/);
 });
 
 test('oyuncu adı html olarak çalıştırılmaz',()=>{
