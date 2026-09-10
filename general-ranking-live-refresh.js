@@ -52,7 +52,7 @@
     if(!arenaSection){
       arenaSection=doc.createElement('section');
       arenaSection.id='arena';
-      arenaSection.className='hide';
+      arenaSection.className='section hide';
       tabs.parentNode.insertBefore(arenaSection,tabs.nextSibling);
     }
 
