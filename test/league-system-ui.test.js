@@ -4,94 +4,25 @@ const UI=require('../league-system-ui');
 
 test('uygun olmayan oyuncunun ligi sırası puanı görünür ve iki tur uyarısı gösterilir',()=>{
   const html=UI.renderLeagueSummary({is_eligible:false,valid_round_count:0,rounds_needed:2,league_code:'gold',rank_in_league:7,league_size:15,performance_score:42.86});
-  assert.match(html,/Altın Lig/);
-  assert.match(html,/7 \/ 15/);
-  assert.match(html,/42\.86/);
-  assert.match(html,/Yükselme\/düşme için 2 tahmin turu daha tamamla/);
+  assert.match(html,/Altın Lig/);assert.match(html,/7 \/ 15/);assert.match(html,/42\.86/);assert.match(html,/Yükselme\/düşme için 2 tahmin turu daha tamamla/);
 });
 
-test('iki tur uyarısı yalnız oyuncunun kendi liginde görünür',()=>{
-  const own=UI.renderLeagueShell({is_eligible:false,rounds_needed:2,league_code:'gold',own_league_code:'gold'},[],{});
-  const other=UI.renderLeagueShell({is_eligible:false,rounds_needed:2,league_code:'silver',own_league_code:'gold'},[],{});
-  assert.match(own,/league-eligibility-note/);
-  assert.doesNotMatch(other,/league-eligibility-note/);
-});
+test('iki tur uyarısı yalnız oyuncunun kendi liginde görünür',()=>{const own=UI.renderLeagueShell({is_eligible:false,rounds_needed:2,league_code:'gold',own_league_code:'gold'},[],{});const other=UI.renderLeagueShell({is_eligible:false,rounds_needed:2,league_code:'silver',own_league_code:'gold'},[],{});assert.match(own,/league-eligibility-note/);assert.doesNotMatch(other,/league-eligibility-note/)});
 
-test('kullanıcının ligi için yükselme ve düşme sınıflarını üretir',()=>{
-  const rows=[
-    {league_rank:1,player_name:'A',performance_score:92,valid_round_count:4,exact_score_count:8,promotion_status:'promotion',is_me:false},
-    {league_rank:4,player_name:'Erdal',performance_score:80,valid_round_count:4,exact_score_count:5,promotion_status:'none',is_me:true},
-    {league_rank:13,player_name:'B',performance_score:40,valid_round_count:2,exact_score_count:1,promotion_status:'relegation',is_me:false}
-  ];
-  const html=UI.renderLeagueTable(rows,{league_code:'gold'});
-  assert.match(html,/league-promotion-zone/);
-  assert.match(html,/league-relegation-zone/);
-  assert.match(html,/league-me/);
-});
+test('kullanıcının ligi için yükselme ve düşme sınıflarını üretir',()=>{const rows=[{league_rank:1,player_name:'A',performance_score:92,valid_round_count:4,exact_score_count:8,promotion_status:'promotion',is_me:false},{league_rank:4,player_name:'Erdal',performance_score:80,valid_round_count:4,exact_score_count:5,promotion_status:'none',is_me:true},{league_rank:13,player_name:'B',performance_score:40,valid_round_count:2,exact_score_count:1,promotion_status:'relegation',is_me:false}];const html=UI.renderLeagueTable(rows,{league_code:'gold'});assert.match(html,/league-promotion-zone/);assert.match(html,/league-relegation-zone/);assert.match(html,/league-me/)});
 
-test('kurallar 4 Süper Lig haftası, 2 tur ve pasiflik düşüşünü açıklar',()=>{
-  const html=UI.renderLeagueRules();
-  assert.match(html,/4 Süper Lig haftası/);
-  assert.match(html,/en az 2 ayrı tahmin turu/);
-  assert.match(html,/bir alt lige düşer/);
-  assert.match(html,/Bronz Lig oyuncusu Bronz Lig’de kalır/);
-});
+test('kurallar 4 Süper Lig haftası, 2 tur ve pasiflik düşüşünü açıklar',()=>{const html=UI.renderLeagueRules();assert.match(html,/4 Süper Lig haftası/);assert.match(html,/en az 2 ayrı tahmin turu/);assert.match(html,/bir alt lige düşer/);assert.match(html,/Bronz Lig oyuncusu Bronz Lig’de kalır/)});
 
-test('diğer ligleri kompakt seçenekler olarak gösterir',()=>{
-  const html=UI.renderOtherLeagueChips({champions:6,elite:9,gold:13,silver:16,bronze:19},'gold');
-  assert.match(html,/Şampiyonlar/);
-  assert.match(html,/Elit/);
-  assert.match(html,/Altın/);
-  assert.match(html,/Gümüş/);
-  assert.match(html,/Bronz/);
-  assert.match(html,/league-chip-active/);
-});
+test('diğer ligleri kompakt seçenekler olarak gösterir',()=>{const html=UI.renderOtherLeagueChips({champions:6,elite:9,gold:13,silver:16,bronze:19},'gold');assert.match(html,/Şampiyonlar/);assert.match(html,/Elit/);assert.match(html,/Altın/);assert.match(html,/Gümüş/);assert.match(html,/Bronz/);assert.match(html,/league-chip-active/)});
 
-test('oyuncu adını html olarak çalıştırmaz',()=>{
-  const html=UI.renderLeagueTable([{league_rank:1,player_name:'<img src=x onerror=alert(1)>',performance_score:100,valid_round_count:2,exact_score_count:2,promotion_status:'promotion',is_me:false}],{league_code:'bronze'});
-  assert.doesNotMatch(html,/<img/);
-  assert.match(html,/&lt;img/);
-});
+test('oyuncu adını html olarak çalıştırmaz',()=>{const html=UI.renderLeagueTable([{league_rank:1,player_name:'<img src=x onerror=alert(1)>',performance_score:100,valid_round_count:2,exact_score_count:2,promotion_status:'promotion',is_me:false}],{league_code:'bronze'});assert.doesNotMatch(html,/<img/);assert.match(html,/&lt;img/)});
 
-test('Arena dönemi henüz açılmadıysa seed de yoksa hazırlık durumu gösterilir',()=>{
-  const html=UI.renderArenaPending();
-  assert.match(html,/Arena dönemi hazırlanıyor/);
-  assert.doesNotMatch(html,/yükleniyor/i);
-});
+test('Arena dönemi henüz açılmadıysa seed de yoksa hazırlık durumu gösterilir',()=>{const html=UI.renderArenaPending();assert.match(html,/Arena dönemi hazırlanıyor/);assert.doesNotMatch(html,/yükleniyor/i)});
 
-test('gerçek dönem yoksa 3 ve 4. hafta geçici Arena sıralaması gösterilir',async()=>{
-  const detailHost={innerHTML:'',querySelector(){return null},querySelectorAll(){return[]}};
-  const summaryHost={innerHTML:''};
-  const calls=[];
-  const preview=[
-    {player_name:'Erdal',league_code:'gold',league_rank:2,performance_score:42.86,exact_score_count:1,raw_points:20,is_me:true},
-    {player_name:'Ali',league_code:'gold',league_rank:1,performance_score:50,exact_score_count:2,raw_points:24,is_me:false}
-  ];
-  const sb={rpc:async(name)=>{calls.push(name);if(name==='get_my_league_summary')return{data:null,error:null};if(name==='get_league_counts')return{data:[],error:null};if(name==='get_league_initial_preview')return{data:preview,error:null};return{data:[],error:null}}};
-  const mounted=await UI.mount({sb,token:'test-token',summaryHost,detailHost});
-  assert.equal(mounted,true);
-  assert.ok(calls.includes('get_league_initial_preview'));
-  assert.match(summaryHost.innerHTML,/Geçici/);
-  assert.match(summaryHost.innerHTML,/Altın Lig/);
-  assert.match(detailHost.innerHTML,/Ali/);
-  assert.match(detailHost.innerHTML,/Erdal/);
-  assert.doesNotMatch(detailHost.innerHTML,/Arena dönemi hazırlanıyor/);
-});
+test('gerçek dönem yoksa 3 ve 4. hafta geçici Arena sıralaması gösterilir',async()=>{const detailHost={innerHTML:'',querySelector(){return null},querySelectorAll(){return[]}};const summaryHost={innerHTML:''};const calls=[];const preview=[{player_name:'Erdal',league_code:'gold',league_rank:2,performance_score:42.86,exact_score_count:1,raw_points:20,is_me:true},{player_name:'Ali',league_code:'gold',league_rank:1,performance_score:50,exact_score_count:2,raw_points:24,is_me:false}];const sb={rpc:async(name)=>{calls.push(name);if(name==='get_my_league_summary')return{data:null,error:null};if(name==='get_league_counts')return{data:[],error:null};if(name==='get_league_initial_preview')return{data:preview,error:null};return{data:[],error:null}}};const mounted=await UI.mount({sb,token:'test-token',summaryHost,detailHost});assert.equal(mounted,true);assert.ok(calls.includes('get_league_initial_preview'));assert.match(summaryHost.innerHTML,/Geçici/);assert.match(summaryHost.innerHTML,/Altın Lig/);assert.match(detailHost.innerHTML,/Ali/);assert.match(detailHost.innerHTML,/Erdal/);assert.doesNotMatch(detailHost.innerHTML,/Arena dönemi hazırlanıyor/)});
 
-test('lig kontenjanlarından yükselme ve düşme hedeflerini dinamik hesaplar',()=>{
-  const counts={champions:6,elite:9,gold:12,silver:15,bronze:18};
-  assert.deepEqual(UI.movementTargets('champions',counts),{promotion:0,relegation:2});
-  assert.deepEqual(UI.movementTargets('elite',counts),{promotion:2,relegation:3});
-  assert.deepEqual(UI.movementTargets('gold',counts),{promotion:3,relegation:4});
-  assert.deepEqual(UI.movementTargets('silver',counts),{promotion:4,relegation:5});
-  assert.deepEqual(UI.movementTargets('bronze',counts),{promotion:5,relegation:0});
-});
+test('lig kontenjanlarından yükselme ve düşme hedeflerini dinamik hesaplar',()=>{const counts={champions:6,elite:9,gold:12,silver:15,bronze:18};assert.deepEqual(UI.movementTargets('champions',counts),{promotion:0,relegation:2});assert.deepEqual(UI.movementTargets('elite',counts),{promotion:2,relegation:3});assert.deepEqual(UI.movementTargets('gold',counts),{promotion:3,relegation:4});assert.deepEqual(UI.movementTargets('silver',counts),{promotion:4,relegation:5});assert.deepEqual(UI.movementTargets('bronze',counts),{promotion:5,relegation:0})});
 
-test('lig tablosunda yükselme ve düşme açıklaması ile sınır çizgileri görünür',()=>{
-  const rows=Array.from({length:12},(_,i)=>({league_rank:i+1,player_name:`P${i+1}`,performance_score:100-i,valid_round_count:2,promotion_status:'none',is_me:false}));
-  const html=UI.renderLeagueTable(rows,{league_code:'gold',movement_targets:{promotion:3,relegation:4}});
-  assert.match(html,/İlk 3 yükselir/);
-  assert.match(html,/Son 4 düşer/);
-  assert.match(html,/league-promotion-boundary/);
-  assert.match(html,/league-relegation-boundary/);
-});
+test('lig tablosunda yükselme ve düşme açıklaması ile sınır çizgileri görünür',()=>{const rows=Array.from({length:12},(_,i)=>({league_rank:i+1,player_name:`P${i+1}`,performance_score:100-i,valid_round_count:2,promotion_status:'none',is_me:false}));const html=UI.renderLeagueTable(rows,{league_code:'gold',movement_targets:{promotion:3,relegation:4}});assert.match(html,/İlk 3 yükselir/);assert.match(html,/Son 4 düşer/);assert.match(html,/league-promotion-boundary/);assert.match(html,/league-relegation-boundary/)});
+
+test('Diğer Ligler gerçek ve geçici Arena ekranında tablodan önce görünür',()=>{const counts={champions:6,elite:9,gold:12,silver:15,bronze:18};const rows=[{league_rank:1,player_name:'A',performance_score:80,valid_round_count:2,promotion_status:'none',is_me:false}];const live=UI.renderLeagueShell({league_code:'gold',own_league_code:'gold',is_eligible:true,locked_promotion_slots:null},rows,counts);const preview=UI.renderPreviewShell('gold',rows,counts);assert.ok(live.indexOf('league-other')<live.indexOf('league-table-wrap'));assert.ok(preview.indexOf('league-other')<preview.indexOf('league-table-wrap'))});
