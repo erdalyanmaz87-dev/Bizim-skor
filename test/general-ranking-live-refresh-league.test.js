@@ -62,10 +62,18 @@ test('Arena oturumu yoksa ana sıralama mount akışını engellemez',()=>{
   }
 });
 
-test('kayan menünün ilk öğesi Arena olarak eklenir ve ayrı Arena bölümü kullanır',()=>{
+test('Arena kayan sıralama menüsünün ilk kartıdır',()=>{
   const source=fs.readFileSync(path.join(__dirname,'../general-ranking-live-refresh.js'),'utf8');
-  assert.match(source,/textContent='🏆 Arena'/);
-  assert.match(source,/tabs\.insertBefore\(arenaTab,tabs\.firstChild\)/);
+  const menuSource=fs.readFileSync(path.join(__dirname,'../horizontal-menu.js'),'utf8');
+  assert.match(source,/querySelector\('\.bs-scroll-menu'\)/);
+  assert.match(source,/menuHost\.insertBefore\(arenaTab,menuHost\.firstChild\)/);
+  assert.match(menuSource,/ORDER=\['arena','championsRanking'/);
+  assert.match(menuSource,/arena:'Arena'/);
+  assert.match(menuSource,/arena:'🏆'/);
+});
+
+test('Arena ayrı bölüm kullanır',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../general-ranking-live-refresh.js'),'utf8');
   assert.match(source,/arenaSection\.id='arena'/);
   assert.match(source,/Bizim Skor Arena/);
   assert.match(source,/Bizim Skor Ligleri/);
