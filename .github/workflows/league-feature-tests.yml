@@ -17,6 +17,7 @@ on:
       - 'supabase/migrations/20260909210500_bizim_skor_league_round_auto_refresh.sql'
       - 'supabase/migrations/20260909210750_bizim_skor_league_first_period_bootstrap.sql'
       - 'supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql'
+      - 'supabase/migrations/20260910100000_bizim_skor_league_initial_preview.sql'
       - 'test/league-*.test.js'
       - 'test/general-ranking-live-refresh-league.test.js'
       - '.github/workflows/league-feature-tests.yml'
@@ -98,7 +99,8 @@ jobs:
             supabase/migrations/20260909210000_bizim_skor_league_next_period.sql \
             supabase/migrations/20260909210500_bizim_skor_league_round_auto_refresh.sql \
             supabase/migrations/20260909210750_bizim_skor_league_first_period_bootstrap.sql \
-            supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql
+            supabase/migrations/20260909211000_bizim_skor_league_period_automation.sql \
+            supabase/migrations/20260910100000_bizim_skor_league_initial_preview.sql
           do
             echo "Applying $migration"
             psql -v ON_ERROR_STOP=1 -f "$migration"
@@ -106,4 +108,4 @@ jobs:
 
       - name: Verify key league functions exist
         run: |
-          psql -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_proc where pronamespace='public'::regnamespace and proname in ('initialize_first_league_period','bootstrap_first_league_period','maintain_league_periods','refresh_league_period_rounds','close_league_period','get_league_counts');" | grep -x '6'
+          psql -v ON_ERROR_STOP=1 -Atc "select count(*) from pg_proc where pronamespace='public'::regnamespace and proname in ('initialize_first_league_period','bootstrap_first_league_period','maintain_league_periods','refresh_league_period_rounds','close_league_period','get_league_counts','get_league_initial_preview');" | grep -x '7'
