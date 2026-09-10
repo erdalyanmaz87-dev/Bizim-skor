@@ -53,18 +53,27 @@ test('oyuncu adını html olarak çalıştırmaz',()=>{
   assert.match(html,/&lt;img/);
 });
 
-test('Arena dönemi henüz açılmadıysa yükleniyor yerine hazırlık durumu gösterilir',()=>{
+test('Arena dönemi henüz açılmadıysa seed de yoksa hazırlık durumu gösterilir',()=>{
   const html=UI.renderArenaPending();
   assert.match(html,/Arena dönemi hazırlanıyor/);
-  assert.match(html,/5\. hafta/);
   assert.doesNotMatch(html,/yükleniyor/i);
 });
 
-test('özet RPC veri döndürmezse Arena ekranında hazırlık durumu bırakılır',async()=>{
-  const detailHost={innerHTML:''};
+test('gerçek dönem yoksa 3 ve 4. hafta geçici Arena sıralaması gösterilir',async()=>{
+  const detailHost={innerHTML:'',querySelector(){return null},querySelectorAll(){return[]}};
   const summaryHost={innerHTML:''};
-  const sb={rpc:async(name)=>name==='get_my_league_summary'?{data:null,error:null}:{data:[],error:null}};
+  const calls=[];
+  const preview=[
+    {player_name:'Erdal',league_code:'gold',league_rank:2,performance_score:42.86,exact_score_count:1,raw_points:20,is_me:true},
+    {player_name:'Ali',league_code:'gold',league_rank:1,performance_score:50,exact_score_count:2,raw_points:24,is_me:false}
+  ];
+  const sb={rpc:async(name)=>{calls.push(name);if(name==='get_my_league_summary')return{data:null,error:null};if(name==='get_league_counts')return{data:[],error:null};if(name==='get_league_initial_preview')return{data:preview,error:null};return{data:[],error:null}}};
   const mounted=await UI.mount({sb,token:'test-token',summaryHost,detailHost});
   assert.equal(mounted,true);
-  assert.match(detailHost.innerHTML,/Arena dönemi hazırlanıyor/);
+  assert.ok(calls.includes('get_league_initial_preview'));
+  assert.match(summaryHost.innerHTML,/Geçici/);
+  assert.match(summaryHost.innerHTML,/Altın Lig/);
+  assert.match(detailHost.innerHTML,/Ali/);
+  assert.match(detailHost.innerHTML,/Erdal/);
+  assert.doesNotMatch(detailHost.innerHTML,/Arena dönemi hazırlanıyor/);
 });
