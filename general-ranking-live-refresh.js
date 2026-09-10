@@ -38,15 +38,17 @@
     if(!doc)return{};
     const tabs=doc.querySelector('.tabs');
     if(!tabs)return{};
+    const menuHost=tabs.querySelector('.bs-scroll-menu')||tabs;
 
     let arenaTab=tabs.querySelector('.tab[data-tab="arena"]');
     if(!arenaTab){
       arenaTab=doc.createElement('button');
       arenaTab.className='tab arena-tab';
       arenaTab.dataset.tab='arena';
-      arenaTab.textContent='🏆 Arena';
-      tabs.insertBefore(arenaTab,tabs.firstChild);
     }
+    if(root.BizimSkorHorizontalMenu?.tabMarkup)arenaTab.innerHTML=root.BizimSkorHorizontalMenu.tabMarkup('arena');
+    else arenaTab.textContent='🏆 Arena';
+    if(menuHost.firstChild!==arenaTab)menuHost.insertBefore(arenaTab,menuHost.firstChild);
 
     let arenaSection=doc.getElementById('arena');
     if(!arenaSection){
