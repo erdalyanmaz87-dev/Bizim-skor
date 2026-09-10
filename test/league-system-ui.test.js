@@ -77,3 +77,21 @@ test('gerçek dönem yoksa 3 ve 4. hafta geçici Arena sıralaması gösterilir'
   assert.match(detailHost.innerHTML,/Erdal/);
   assert.doesNotMatch(detailHost.innerHTML,/Arena dönemi hazırlanıyor/);
 });
+
+test('lig kontenjanlarından yükselme ve düşme hedeflerini dinamik hesaplar',()=>{
+  const counts={champions:6,elite:9,gold:12,silver:15,bronze:18};
+  assert.deepEqual(UI.movementTargets('champions',counts),{promotion:0,relegation:2});
+  assert.deepEqual(UI.movementTargets('elite',counts),{promotion:2,relegation:3});
+  assert.deepEqual(UI.movementTargets('gold',counts),{promotion:3,relegation:4});
+  assert.deepEqual(UI.movementTargets('silver',counts),{promotion:4,relegation:5});
+  assert.deepEqual(UI.movementTargets('bronze',counts),{promotion:5,relegation:0});
+});
+
+test('lig tablosunda yükselme ve düşme açıklaması ile sınır çizgileri görünür',()=>{
+  const rows=Array.from({length:12},(_,i)=>({league_rank:i+1,player_name:`P${i+1}`,performance_score:100-i,valid_round_count:2,promotion_status:'none',is_me:false}));
+  const html=UI.renderLeagueTable(rows,{league_code:'gold',movement_targets:{promotion:3,relegation:4}});
+  assert.match(html,/İlk 3 yükselir/);
+  assert.match(html,/Son 4 düşer/);
+  assert.match(html,/league-promotion-boundary/);
+  assert.match(html,/league-relegation-boundary/);
+});
