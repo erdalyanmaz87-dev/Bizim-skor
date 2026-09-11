@@ -12,10 +12,11 @@ test('mount composes isolated player and admin support modules',async()=>{
     BizimSkorSupportPlayerUI:{createPlayerSupportUI:opts=>({refresh:async()=>{calls.push(['playerRefresh',opts.controller.kind])}})},BizimSkorSupportAdminUI:{createAdminSupportUI:opts=>({refreshButton:async()=>{calls.push(['adminRefresh',opts.adminApi.kind])}})}};
   const result=await createSupportBootstrap(root).mount();
   assert.equal(result.mounted,true);
+  assert.equal(result.mode,'player');
   assert.deepEqual(calls,[['playerApi','tok'],['adminApi','tok'],['playerController','playerApi'],['adminController','adminApi'],['playerRefresh','playerController'],['adminRefresh','adminApi']]);
 });
 
-test('mount is inert without an authenticated token',async()=>{
+test('mount reports missing anonymous transport when logged out support cannot initialize',async()=>{
   const root={document:{},localStorage:{getItem:()=>''},sb:{rpc:async()=>({})}};
-  assert.deepEqual(await createSupportBootstrap(root).mount(),{mounted:false,reason:'no-session'});
+  assert.deepEqual(await createSupportBootstrap(root).mount(),{mounted:false,reason:'no-anonymous-transport'});
 });
