@@ -6,7 +6,7 @@
       if(event.target?.closest?.('#openSupportInbox')){
         root.setTimeout?.(()=>app()?.openDetail?.('supportPlayer',{title:'Bize Ulaşın',onClose:()=>doc.getElementById('supportPlayerModal')?.classList.add('hide')}),0);return;
       }
-      if(event.target?.closest?.('#openSupportAdmin')||event.target?.closest?.('#bsAdminInboxCard')){
+      if(event.target?.closest?.('#openSupportAdmin')){
         root.setTimeout?.(()=>app()?.openDetail?.('supportAdmin',{title:'Gelen Kutusu',onClose:()=>doc.getElementById('supportAdminModal')?.classList.add('hide')}),0);return;
       }
       if(event.target?.closest?.('[data-support-close]')&&app()?.snapshot?.().detailId==='supportPlayer'){root.setTimeout?.(()=>app()?.back?.(),0);return}
