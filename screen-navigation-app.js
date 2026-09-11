@@ -1,6 +1,9 @@
 (function(root,factory){
-  const api=factory(root?.BizimSkorScreenNavigation,root?.BizimSkorScreenNavigationUI,root);
-  if(typeof module==='object'&&module.exports)module.exports=api;
+  const common=typeof module==='object'&&module.exports;
+  const core=root?.BizimSkorScreenNavigation||(common?require('./screen-navigation.js'):null);
+  const view=root?.BizimSkorScreenNavigationUI||(common?require('./screen-navigation-ui.js'):null);
+  const api=factory(core,view,root);
+  if(common)module.exports=api;
   else{root.BizimSkorScreenNavigationApp=api;api.autoMount?.()}
 })(typeof globalThis!=='undefined'?globalThis:this,function(nav,ui,root){
   const PRIMARY_IDS=new Set(['pred','arena','championsRanking','nationsRanking','general','weeklyRankings','resultsWeek','footballCenter','friendLeagues','history','rules','chat','championsPred','nationsPred']);
