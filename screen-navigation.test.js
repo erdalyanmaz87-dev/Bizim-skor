@@ -1,5 +1,8 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const navigation=require('./screen-navigation.js');
+globalThis.BizimSkorScreenNavigation=navigation;
+globalThis.BizimSkorScreenNavigationUI=require('./screen-navigation-ui.js');
 const {
   createNavigationState,
   pushScreen,
@@ -8,7 +11,7 @@ const {
   rememberScroll,
   canonicalScreenId,
   missingRegisteredScreens
-}=require('./screen-navigation.js');
+}=navigation;
 
 test('nested back returns to the real previous screen',()=>{
   let state=createNavigationState();
@@ -49,7 +52,7 @@ test('prediction, support and detail screens are registered too',()=>{
 });
 
 test('screen shell helper renders back header and content mount',()=>{
-  const {screenShellMarkup,screenTitle}=require('./screen-navigation-ui.js');
+  const {screenShellMarkup,screenTitle}=globalThis.BizimSkorScreenNavigationUI;
   const html=screenShellMarkup({id:'general',title:'Süper Lig Genel Sıralaması'});
   assert.match(html,/data-screen-back/);
   assert.match(html,/Süper Lig Genel Sıralaması/);
