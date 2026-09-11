@@ -47,3 +47,12 @@ test('prediction, support and detail screens are registered too',()=>{
   const extraIds=['pred','championsPred','nationsPred','playerProfile','supportPlayer','supportAdmin'];
   assert.deepEqual(missingRegisteredScreens(extraIds),[]);
 });
+
+test('screen shell helper renders back header and content mount',()=>{
+  const {screenShellMarkup,screenTitle}=require('./screen-navigation-ui.js');
+  const html=screenShellMarkup({id:'general',title:'Süper Lig Genel Sıralaması'});
+  assert.match(html,/data-screen-back/);
+  assert.match(html,/Süper Lig Genel Sıralaması/);
+  assert.match(html,/bs-screen-content/);
+  assert.equal(screenTitle({id:'rules'}),'Kurallar');
+});
