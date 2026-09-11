@@ -14,3 +14,16 @@ test('support dependency order is unique and bootstrap is last',()=>{
 test('support entry owns only its dedicated stylesheet',()=>{
   assert.equal(entry.styleHref(),'support-inbox.css');
 });
+
+test('support remount cleanup removes stale player admin and modal nodes',()=>{
+  const removed=[];
+  const nodes={
+    openSupportInbox:{remove:()=>removed.push('player')},
+    openSupportAdmin:{remove:()=>removed.push('admin')},
+    supportPlayerModal:{remove:()=>removed.push('playerModal')},
+    supportAdminModal:{remove:()=>removed.push('adminModal')}
+  };
+  const doc={getElementById:id=>nodes[id]||null};
+  entry.cleanupUi(doc);
+  assert.deepEqual(removed,['player','admin','playerModal','adminModal']);
+});
