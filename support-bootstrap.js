@@ -18,32 +18,29 @@ function createSupportBootstrap(root=globalThis){
       return{mounted:true,mode:'player',playerUI,adminUI};
     }
 
-    if(!root?.sb?.auth?.getSession||!root?.sb?.auth?.signInAnonymously||!root?.sb?.functions?.invoke)return{mounted:false,reason:'no-anonymous-transport'};
-    let anonymousUserId='';
-    async function ensureAnonymousSession(){
-      const current=await root.sb.auth.getSession();
-      if(current?.error)throw current.error;
-      let session=current?.data?.session||null;
-      if(session?.user?.is_anonymous===true){anonymousUserId=String(session.user.id||'');return session}
-      if(session?.user)throw new Error('Anonim destek oturumu açılamadı');
-      const created=await root.sb.auth.signInAnonymously();
-      if(created?.error)throw created.error;
-      session=created?.data?.session||null;
-      if(!session?.user?.id)throw new Error('Anonim destek oturumu açılamadı');
-      anonymousUserId=String(session.user.id);
-      return session;
+    if(!root?.sb?.functions?.invoke||!root?.localStorage?.getItem||!root?.localStorage?.setItem||!root?.crypto?.getRandomValues)return{mounted:false,reason:'no-guest-transport'};
+    const guestKey='bizimSkorSupportGuestToken';
+    function getGuestToken(){return String(root.localStorage.getItem(guestKey)||'')}
+    async function ensureGuestToken(){
+      const existing=getGuestToken();
+      if(existing)return existing;
+      const bytes=new Uint8Array(32);
+      root.crypto.getRandomValues(bytes);
+      const value=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+      root.localStorage.setItem(guestKey,value);
+      return value;
     }
     const getGuestName=()=>String(doc?.getElementById?.('supportGuestName')?.value||doc?.getElementById?.('loginName')?.value||'').trim();
-    const anonymousApi=root.BizimSkorSupportApi.createAnonymousSupportApi({
-      getUserId:()=>anonymousUserId,
+    const guestApi=root.BizimSkorSupportApi.createGuestSupportApi({
+      getGuestToken,
       getGuestName,
-      ensureSession:ensureAnonymousSession,
+      ensureGuestToken,
       invoke:(name,options)=>root.sb.functions.invoke(name,options)
     });
-    const playerController=root.BizimSkorSupportPlayerController.createPlayerSupportController({api:anonymousApi,validate:root.BizimSkorSupportInbox.validateSupportMessage,isUnread:root.BizimSkorSupportInbox.hasUnreadAdminReply});
+    const playerController=root.BizimSkorSupportPlayerController.createPlayerSupportController({api:guestApi,validate:root.BizimSkorSupportInbox.validateSupportMessage,isUnread:root.BizimSkorSupportInbox.hasUnreadAdminReply});
     const playerUI=root.BizimSkorSupportPlayerUI.createPlayerSupportUI({doc,view:root.BizimSkorSupportPlayerView,controller:playerController,placement:root.BizimSkorSupportPlacement,isUnread:root.BizimSkorSupportInbox.hasUnreadAdminReply,lazy:true,anonymous:true});
     await playerUI.refresh();
-    return{mounted:true,mode:'anonymous',playerUI};
+    return{mounted:true,mode:'guest',playerUI};
   }
   return Object.freeze({mount});
 }
