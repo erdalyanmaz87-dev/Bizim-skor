@@ -27,10 +27,12 @@ test('missing token is rejected before rpc',async()=>{
   assert.equal(calls,0);
 });
 
-test('admin api checks admin state with same injected token',async()=>{
+test('admin api uses p_token for admin check and p_admin_token for admin actions',async()=>{
   const names=[];
   const api=createAdminSupportApi({getToken:()=> 'adm',rpc:async(name,args)=>{names.push({name,args});return{data:name==='is_support_admin'?true:[],error:null}}});
   assert.equal(await api.isAdmin(),true);
+  assert.equal(names[0].name,'is_support_admin');
+  assert.deepEqual(names[0].args,{p_token:'adm'});
   await api.list('new');
   assert.equal(names[1].name,'list_support_requests');
   assert.equal(names[1].args.p_admin_token,'adm');
