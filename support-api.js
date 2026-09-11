@@ -37,12 +37,13 @@ function createAnonymousSupportApi({getUserId,getGuestName,invoke,ensureSession}
   });
 }
 function createAdminSupportApi({getToken,rpc}={}){
-  const call=createCaller({getToken,rpc,tokenField:'p_admin_token'});
+  const adminCall=createCaller({getToken,rpc,tokenField:'p_admin_token'});
+  const authCall=createCaller({getToken,rpc,tokenField:'p_token'});
   return Object.freeze({
-    isAdmin:()=>call('is_support_admin'),
-    list:status=>call('list_support_requests',{p_status:status??null}),
-    reply:(id,reply)=>call('reply_support_request',{p_request_id:id,p_reply:reply}),
-    resolve:id=>call('resolve_support_request',{p_request_id:id})
+    isAdmin:()=>authCall('is_support_admin'),
+    list:status=>adminCall('list_support_requests',{p_status:status??null}),
+    reply:(id,reply)=>adminCall('reply_support_request',{p_request_id:id,p_reply:reply}),
+    resolve:id=>adminCall('resolve_support_request',{p_request_id:id})
   });
 }
 if(typeof module==='object'&&module.exports)module.exports={createPlayerSupportApi,createAnonymousSupportApi,createAdminSupportApi};
