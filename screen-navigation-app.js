@@ -27,7 +27,7 @@
     }
     function renderScreen(screen){
       const section=doc.getElementById?.(resolveSectionId(screen.id));if(!section)return false;
-      rememberCurrentScroll();restoreMoved();
+      restoreMoved();
       const layer=ensureLayer(doc),marker=createPlaceholder(doc,section);layer.innerHTML=view.screenShellMarkup(screen);const content=layer.querySelector?.('[data-screen-content]');if(!content)return false;
       section.classList?.remove?.('hide');content.appendChild(section);layer.classList.remove('hide');active={section,marker,content,layer};
       content.scrollTop=Number(screen.scrollY)||0;
@@ -37,14 +37,13 @@
     function open(id,context=null){
       const screenId=normalizeTargetId(id);if(!shouldNavigateTab(screenId))return false;
       if(navigation.currentScreen(state).id===screenId&&active)return true;
-      rememberCurrentScroll();state=navigation.pushScreen(state,{id:screenId,title:titleFor(screenId),context});
+      rememberCurrentScroll();restoreMoved();state=navigation.pushScreen(state,{id:screenId,title:titleFor(screenId),context});
       return renderScreen(navigation.currentScreen(state));
     }
     function back(){
-      rememberCurrentScroll();
-      state=navigation.popScreen(state);const target=navigation.currentScreen(state);
+      rememberCurrentScroll();restoreMoved();state=navigation.popScreen(state);const target=navigation.currentScreen(state);
       if(target.id==='home'){
-        restoreMoved();const layer=ensureLayer(doc);layer.classList.add('hide');layer.innerHTML='';
+        const layer=ensureLayer(doc);layer.classList.add('hide');layer.innerHTML='';
         runtimeWin?.scrollTo?.({top:Number(target.scrollY)||0,behavior:'auto'});return true;
       }
       return renderScreen(target);
