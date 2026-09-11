@@ -3,19 +3,20 @@ const assert=require('node:assert/strict');
 const {createSupportBootstrap}=require('./support-bootstrap.js');
 const {findPlayerActionHost}=require('./support-placement.js');
 
-test('guest support mounts without player session and uses a persistent guest token',async()=>{
-  const store={};
+test('guest support creates an anonymous auth session and mounts only player support',async()=>{
   const calls=[];
   const root={
     document:{},
-    crypto:{randomUUID:()=> 'guest-uuid'},
-    localStorage:{
-      getItem:key=>store[key]||'',
-      setItem:(key,value)=>{store[key]=String(value)}
+    localStorage:{getItem:()=>''},
+    sb:{
+      rpc:async()=>({data:[],error:null}),
+      auth:{
+        getSession:async()=>({data:{session:null},error:null}),
+        signInAnonymously:async()=>({data:{session:{user:{id:'anon-1',is_anonymous:true}}},error:null})
+      }
     },
-    sb:{rpc:async()=>({data:[],error:null})},
     BizimSkorSupportApi:{
-      createGuestSupportApi:opts=>{calls.push(['guestApi',opts.getGuestToken()]);return{kind:'guestApi'}},
+      createAnonymousSupportApi:opts=>{calls.push(['anonApi',opts.getUserId()]);return{kind:'anonApi'}},
       createPlayerSupportApi:()=>{throw new Error('player api should not be used')},
       createAdminSupportApi:()=>{throw new Error('admin api should not be used')}
     },
@@ -25,13 +26,12 @@ test('guest support mounts without player session and uses a persistent guest to
     BizimSkorSupportAdminController:{createSupportAdminController:()=>({})},
     BizimSkorSupportPlayerView:{},BizimSkorSupportAdminView:{},BizimSkorSupportPlacement:{},BizimSkorSupportAdminPlacement:{},
     BizimSkorSupportPlayerUI:{createPlayerSupportUI:opts=>({refresh:async()=>{calls.push(['refresh',opts.controller.kind])}})},
-    BizimSkorSupportAdminUI:{createAdminSupportUI:()=>({refreshButton:async()=>{}})}
+    BizimSkorSupportAdminUI:{createAdminSupportUI:()=>({refreshButton:async()=>{throw new Error('admin ui should not mount')}})}
   };
   const result=await createSupportBootstrap(root).mount();
   assert.equal(result.mounted,true);
-  assert.equal(result.mode,'guest');
-  assert.equal(store.bizimSkorSupportGuestToken,'guest-uuid');
-  assert.deepEqual(calls,[['guestApi','guest-uuid'],['refresh','guestApi']]);
+  assert.equal(result.mode,'anonymous');
+  assert.deepEqual(calls,[['anonApi','anon-1'],['refresh','anonApi']]);
 });
 
 test('support placement falls back to login area for guests',()=>{
