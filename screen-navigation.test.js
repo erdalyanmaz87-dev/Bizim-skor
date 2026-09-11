@@ -65,3 +65,16 @@ test('tab adapter keeps home as root and maps every child target',()=>{
   assert.equal(resolveSectionId('live'),'weeklyRankings');
   ['arena','championsRanking','nationsRanking','general','resultsWeek','footballCenter','friendLeagues','history','rules','chat','pred'].forEach(id=>assert.equal(shouldNavigateTab(id),true,id));
 });
+
+test('browser history helpers mark only Bizim Skor navigation states',()=>{
+  const {makeHistoryState,isNavigationHistoryState}=require('./screen-navigation-app.js');
+  const root=makeHistoryState({id:'home'},1,{other:'keep'});
+  const child=makeHistoryState({id:'general'},2);
+  assert.equal(root.other,'keep');
+  assert.equal(root.screenId,'home');
+  assert.equal(root.screenDepth,1);
+  assert.equal(isNavigationHistoryState(root),true);
+  assert.equal(child.screenDepth,2);
+  assert.equal(isNavigationHistoryState({screenDepth:2}),false);
+  assert.equal(isNavigationHistoryState(null),false);
+});
