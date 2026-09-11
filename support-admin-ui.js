@@ -6,10 +6,11 @@ function createAdminSupportUI({doc,view,controller,adminApi,placement,makeElemen
   const make=typeof makeElement==='function'?makeElement:html=>defaultMakeElement(doc,html);let overlay=null;
   function bindButton(button){if(!button||button._supportBound)return button;button._supportBound=true;button.addEventListener('click',()=>open('new').catch(()=>{}));return button}
   async function refreshButton(){
-    const allowed=await adminApi.isAdmin(),existing=doc.getElementById?.('openSupportAdmin');
+    const allowed=await adminApi.isAdmin();let existing=doc.getElementById?.('openSupportAdmin');
     if(!allowed){existing?.remove?.();return{admin:false,rows:[]}}
+    if(!existing){const initial=make(view.inboxButton(0));if(initial){bindButton(initial);placement.insertAdminSupportButton(doc,initial);existing=initial}}
     const state=await controller.load('new'),fresh=make(view.inboxButton(state.rows.length));
-    if(existing){existing.innerHTML=fresh?.innerHTML??existing.innerHTML;bindButton(existing)}else if(fresh){bindButton(fresh);placement.insertAdminSupportButton(doc,fresh)}
+    if(existing){existing.innerHTML=fresh?.innerHTML??existing.innerHTML;bindButton(existing)}
     return{admin:true,...state};
   }
   function ensureOverlay(){
