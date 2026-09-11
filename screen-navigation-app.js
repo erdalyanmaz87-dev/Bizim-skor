@@ -19,7 +19,7 @@
   function ensureStyle(doc){if(!doc||doc.querySelector?.('link[data-bs-screen-nav]'))return;const link=doc.createElement('link');link.rel='stylesheet';link.href='screen-navigation.css';link.dataset.bsScreenNav='1';doc.head.appendChild(link)}
   function createNavigationApp({doc,win,navigation=nav,view=ui}={}){
     if(!doc||!navigation||!view)throw new Error('screen navigation dependencies required');
-    const runtimeWin=win||globalThis;let state=navigation.createNavigationState(),active=null,detail=null,mounted=false;
+    const runtimeWin=win||globalThis;let state=navigation.createNavigationState(),active=null,detail=null,mounted=false,suppressNextPop=false;
     const historyApi=runtimeWin?.history;
     function depth(){return state?.stack?.length||1}
     function rememberCurrentScroll(){const current=navigation.currentScreen(state),scroll=active?(active.content?.scrollTop||0):(current.id==='home'?(runtimeWin?.scrollY||runtimeWin?.pageYOffset||0):0);state=navigation.rememberScroll(state,scroll)}
@@ -32,7 +32,7 @@
     function closeDetailOnly(){const closing=detail;detail=null;try{closing?.onClose?.()}catch(error){console.warn('screen detail close',error)}return true}
     function popInternal(){const current=navigation.currentScreen(state);if(detail&&current.id===detail.id){closeDetailOnly();state=navigation.popScreen(state);const target=navigation.currentScreen(state);if(active){active.content.scrollTop=Number(target.scrollY)||0;return true}return target.id==='home'?hideLayerForHome():renderScreen(target)}rememberCurrentScroll();restoreMoved();state=navigation.popScreen(state);const target=navigation.currentScreen(state);return target.id==='home'?hideLayerForHome():renderScreen(target)}
     function back(){if(depth()<=1)return hideLayerForHome();if(!canLeaveCurrent())return false;if(historyApi?.back&&isNavigationHistoryState(historyApi.state)){historyApi.back();return true}return popInternal()}
-    function onPopState(event){if(depth()<=1)return hideLayerForHome();if(!canLeaveCurrent()){historyApi?.go?.(1);return false}popInternal();return isNavigationHistoryState(event?.state)||navigation.currentScreen(state).id==='home'}
+    function onPopState(event){if(suppressNextPop){suppressNextPop=false;return true}if(depth()<=1)return hideLayerForHome();if(!canLeaveCurrent()){suppressNextPop=true;historyApi?.go?.(1);return false}popInternal();return isNavigationHistoryState(event?.state)||navigation.currentScreen(state).id==='home'}
     function onDocumentClick(event){const tab=event.target?.closest?.('.tab[data-tab]');if(!tab)return;const id=tab.dataset?.tab;if(!shouldNavigateTab(id))return;runtimeWin?.setTimeout?.(()=>open(id),0)}
     function mount(){if(mounted)return true;mounted=true;ensureStyle(doc);doc.addEventListener?.('click',onDocumentClick);runtimeWin?.addEventListener?.('popstate',onPopState);if(historyApi?.replaceState){const rootScreen=navigation.currentScreen(state);historyApi.replaceState(makeHistoryState(rootScreen,1,historyApi.state),'')}return true}
     function snapshot(){return{state,activeId:active?.section?.id||null,detailId:detail?.id||null}}
