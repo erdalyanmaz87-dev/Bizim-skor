@@ -14,6 +14,7 @@
   function titleFor(id){return nav?.screenDefinition?.(id)?.title||ui?.screenTitle?.({id})||String(id||'')}
   function makeHistoryState(screen,depth,base={}){return{...(base||{}),bizimSkorScreen:true,screenId:String(screen?.id||'home'),screenDepth:Math.max(1,Number(depth)||1)}}
   function isNavigationHistoryState(value){return value?.bizimSkorScreen===true&&Number(value?.screenDepth)>=1}
+  function hasInputChanges(section){return Array.from(section?.querySelectorAll?.('input:not(:disabled)')||[]).some(input=>String(input?.value??'')!==String(input?.defaultValue??''))}
   function createPlaceholder(doc,section){const marker=doc.createComment?.(`screen:${section.id}`);section.parentNode?.insertBefore?.(marker,section);return marker}
   function ensureLayer(doc){let layer=doc.getElementById?.('bsScreenLayer');if(layer)return layer;layer=doc.createElement('div');layer.id='bsScreenLayer';layer.className='bs-screen-layer hide';doc.body.appendChild(layer);return layer}
   function ensureStyle(doc){if(!doc||doc.querySelector?.('link[data-bs-screen-nav]'))return;const link=doc.createElement('link');link.rel='stylesheet';link.href='screen-navigation.css';link.dataset.bsScreenNav='1';doc.head.appendChild(link)}
@@ -23,7 +24,7 @@
     const historyApi=runtimeWin?.history;
     function depth(){return state?.stack?.length||1}
     function rememberCurrentScroll(){const current=navigation.currentScreen(state),scroll=active?(active.content?.scrollTop||0):(current.id==='home'?(runtimeWin?.scrollY||runtimeWin?.pageYOffset||0):0);state=navigation.rememberScroll(state,scroll)}
-    function canLeaveCurrent(){const current=navigation.currentScreen(state);if(!GUARDED_IDS.has(current.id))return true;const dirty=root?.BizimSkorHeaderUI?.hasUnsavedPredictionChanges?.(doc)===true;if(!dirty)return true;const ask=runtimeWin?.confirm?.bind(runtimeWin);return ask?ask('Kaydedilmemiş tahmin değişikliklerin var. Bu ekrandan çıkarsan değişiklikler kaybolacak. Devam etmek istiyor musun?'):false}
+    function canLeaveCurrent(){const current=navigation.currentScreen(state);if(!GUARDED_IDS.has(current.id))return true;const section=doc.getElementById?.(resolveSectionId(current.id));const dirty=root?.BizimSkorHeaderUI?.hasUnsavedPredictionChanges?.(doc)===true||hasInputChanges(section);if(!dirty)return true;const ask=runtimeWin?.confirm?.bind(runtimeWin);return ask?ask('Kaydedilmemiş tahmin değişikliklerin var. Bu ekrandan çıkarsan değişiklikler kaybolacak. Devam etmek istiyor musun?'):false}
     function restoreMoved(){if(!active)return;const{section,marker}=active;marker?.parentNode?.insertBefore?.(section,marker);marker?.remove?.();active=null}
     function renderScreen(screen){const section=doc.getElementById?.(resolveSectionId(screen.id));if(!section)return false;restoreMoved();const layer=ensureLayer(doc),marker=createPlaceholder(doc,section);layer.innerHTML=view.screenShellMarkup(screen);const content=layer.querySelector?.('[data-screen-content]');if(!content)return false;section.classList?.remove?.('hide');content.appendChild(section);layer.classList.remove('hide');active={section,marker,content,layer};content.scrollTop=Number(screen.scrollY)||0;layer.querySelector?.('[data-screen-back]')?.addEventListener?.('click',()=>back());return true}
     function hideLayerForHome(){restoreMoved();const layer=ensureLayer(doc);layer.classList.add('hide');layer.innerHTML='';doc.querySelector?.('.tab[data-tab="home"]')?.click?.();runtimeWin?.scrollTo?.({top:Number(navigation.currentScreen(state).scrollY)||0,behavior:'auto'});return true}
@@ -39,5 +40,5 @@
     return Object.freeze({open,openDetail,back,popInternal,mount,snapshot,onDocumentClick,onPopState,restoreMoved,canLeaveCurrent});
   }
   function autoMount(){if(typeof document==='undefined'||root?.BizimSkorScreenNavigationRuntime)return root?.BizimSkorScreenNavigationRuntime||null;const run=()=>{if(root.BizimSkorScreenNavigationRuntime)return root.BizimSkorScreenNavigationRuntime;const app=createNavigationApp({doc:document,win:root,navigation:nav,view:ui});app.mount();root.BizimSkorScreenNavigationRuntime=app;return app};if(document.readyState==='complete')root.setTimeout?.(run,80);else root.addEventListener?.('load',()=>root.setTimeout?.(run,80),{once:true});return null}
-  return Object.freeze({PRIMARY_IDS,GUARDED_IDS,normalizeTargetId,shouldNavigateTab,resolveSectionId,titleFor,makeHistoryState,isNavigationHistoryState,ensureStyle,createNavigationApp,autoMount});
+  return Object.freeze({PRIMARY_IDS,GUARDED_IDS,normalizeTargetId,shouldNavigateTab,resolveSectionId,titleFor,makeHistoryState,isNavigationHistoryState,hasInputChanges,ensureStyle,createNavigationApp,autoMount});
 });
