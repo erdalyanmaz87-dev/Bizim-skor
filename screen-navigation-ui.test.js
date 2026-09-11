@@ -7,9 +7,10 @@ test('screen title comes from registry or explicit title',()=>{
   assert.equal(screenTitle({id:'general',title:'Özel Başlık'}),'Özel Başlık');
 });
 
-test('screen shell contains one back action and content host',()=>{
+test('screen shell contains one back action, balanced spacer and content host',()=>{
   const html=screenShellMarkup({id:'general'});
   assert.match(html,/data-screen-back/);
+  assert.match(html,/bs-screen-spacer/);
   assert.match(html,/data-screen-content/);
   assert.match(html,/Süper Lig Genel Sıralaması/);
 });
