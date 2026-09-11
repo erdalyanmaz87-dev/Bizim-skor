@@ -1,12 +1,19 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 const {missingRegisteredScreens,SCREEN_REGISTRY}=require('./screen-navigation.js');
-const {orderMenuTabs}=require('./horizontal-menu.js');
 
-test('navigation registry covers every horizontal menu screen',()=>{
-  const menuIds=['arena','championsRanking','nationsRanking','general','weeklyRankings','resultsWeek','footballCenter','friendLeagues','history','rules','chat'];
-  const ordered=orderMenuTabs(menuIds);
-  assert.deepEqual(missingRegisteredScreens(ordered),[]);
+function realHorizontalMenuIds(){
+  const source=fs.readFileSync(path.join(__dirname,'horizontal-menu.js'),'utf8');
+  const match=source.match(/const ORDER=\[([^\]]+)\]/);
+  assert.ok(match,'horizontal menu ORDER list not found');
+  return [...match[1].matchAll(/'([^']+)'/g)].map(x=>x[1]);
+}
+
+test('navigation registry covers every real horizontal menu screen',()=>{
+  const menuIds=realHorizontalMenuIds();
+  assert.deepEqual(missingRegisteredScreens(menuIds),[]);
 });
 
 test('navigation registry covers prediction, support and detail screens',()=>{
