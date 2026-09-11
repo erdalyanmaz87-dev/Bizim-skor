@@ -1,8 +1,8 @@
 (function(root,factory){
-  const api=factory(root?.BizimSkorScreenNavigation,root?.BizimSkorScreenNavigationUI);
+  const api=factory(root?.BizimSkorScreenNavigation,root?.BizimSkorScreenNavigationUI,root);
   if(typeof module==='object'&&module.exports)module.exports=api;
-  else root.BizimSkorScreenNavigationApp=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(nav,ui){
+  else{root.BizimSkorScreenNavigationApp=api;api.autoMount?.()}
+})(typeof globalThis!=='undefined'?globalThis:this,function(nav,ui,root){
   const PRIMARY_IDS=new Set(['pred','arena','championsRanking','nationsRanking','general','weeklyRankings','resultsWeek','footballCenter','friendLeagues','history','rules','chat','championsPred','nationsPred']);
   const GUARDED_IDS=new Set(['pred','championsPred','nationsPred']);
   function normalizeTargetId(id){return nav?.canonicalScreenId?.(id)||String(id||'')}
@@ -34,5 +34,6 @@
     function snapshot(){return{state,activeId:active?.section?.id||null,detailId:detail?.id||null}}
     return Object.freeze({open,openDetail,back,popInternal,mount,snapshot,onDocumentClick,onPopState,restoreMoved,canLeaveCurrent});
   }
-  return Object.freeze({PRIMARY_IDS,GUARDED_IDS,normalizeTargetId,shouldNavigateTab,resolveSectionId,titleFor,makeHistoryState,isNavigationHistoryState,createNavigationApp});
+  function autoMount(){if(typeof document==='undefined'||root?.BizimSkorScreenNavigationRuntime)return root?.BizimSkorScreenNavigationRuntime||null;const run=()=>{if(root.BizimSkorScreenNavigationRuntime)return root.BizimSkorScreenNavigationRuntime;const app=createNavigationApp({doc:document,win:root,navigation:nav,view:ui});app.mount();root.BizimSkorScreenNavigationRuntime=app;return app};if(document.readyState==='complete')root.setTimeout?.(run,80);else root.addEventListener?.('load',()=>root.setTimeout?.(run,80),{once:true});return null}
+  return Object.freeze({PRIMARY_IDS,GUARDED_IDS,normalizeTargetId,shouldNavigateTab,resolveSectionId,titleFor,makeHistoryState,isNavigationHistoryState,createNavigationApp,autoMount});
 });
