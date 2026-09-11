@@ -1,7 +1,9 @@
 function findPlayerActionHost(doc){
   const update=doc?.getElementById?.('updateProfile');
-  if(!update?.parentElement)return null;
-  return{host:update.parentElement,before:update.nextSibling||null};
+  if(update?.parentElement)return{host:update.parentElement,before:update.nextSibling||null};
+  const forgot=doc?.getElementById?.('openPinReset');
+  if(forgot?.parentElement)return{host:forgot.parentElement,before:forgot.nextSibling||null};
+  return null;
 }
 function insertPlayerSupportButton(doc,button){
   const target=findPlayerActionHost(doc);
