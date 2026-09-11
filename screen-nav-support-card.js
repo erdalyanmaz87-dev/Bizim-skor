@@ -11,7 +11,10 @@
     wrap.appendChild(card);return true;
   }
   function mount(doc=typeof document!=='undefined'?document:null){
-    if(!doc)return false;const sync=()=>addCard(doc);sync();root.setTimeout?.(sync,1200);root.setTimeout?.(sync,3000);root.addEventListener?.('bizimskor:session-ready',()=>root.setTimeout?.(sync,200));return true;
+    if(!doc||doc.__bsInboxCardWatch)return false;doc.__bsInboxCardWatch=true;
+    const sync=()=>addCard(doc);sync();root.setTimeout?.(sync,1200);root.setTimeout?.(sync,3000);root.addEventListener?.('bizimskor:session-ready',()=>root.setTimeout?.(sync,200));
+    if(typeof MutationObserver!=='undefined')new MutationObserver(()=>sync()).observe(doc.body,{childList:true,subtree:true});
+    return true;
   }
   const api=Object.freeze({addCard,mount});
   if(typeof module==='object'&&module.exports)module.exports=api;else{root.BizimSkorScreenNavSupportCard=api;api.mount()}
