@@ -13,6 +13,7 @@
   function isNavigationHistoryState(value){return value?.bizimSkorScreen===true&&Number(value?.screenDepth)>=1}
   function createPlaceholder(doc,section){const marker=doc.createComment?.(`screen:${section.id}`);section.parentNode?.insertBefore?.(marker,section);return marker}
   function ensureLayer(doc){let layer=doc.getElementById?.('bsScreenLayer');if(layer)return layer;layer=doc.createElement('div');layer.id='bsScreenLayer';layer.className='bs-screen-layer hide';doc.body.appendChild(layer);return layer}
+  function ensureStyle(doc){if(!doc||doc.querySelector?.('link[data-bs-screen-nav]'))return;const link=doc.createElement('link');link.rel='stylesheet';link.href='screen-navigation.css';link.dataset.bsScreenNav='1';doc.head.appendChild(link)}
   function createNavigationApp({doc,win,navigation=nav,view=ui}={}){
     if(!doc||!navigation||!view)throw new Error('screen navigation dependencies required');
     const runtimeWin=win||globalThis;let state=navigation.createNavigationState(),active=null,detail=null,mounted=false;
@@ -30,10 +31,10 @@
     function back(){if(depth()<=1)return hideLayerForHome();if(!canLeaveCurrent())return false;if(historyApi?.back&&isNavigationHistoryState(historyApi.state)){historyApi.back();return true}return popInternal()}
     function onPopState(event){if(depth()<=1)return hideLayerForHome();if(!canLeaveCurrent()){historyApi?.go?.(1);return false}popInternal();return isNavigationHistoryState(event?.state)||navigation.currentScreen(state).id==='home'}
     function onDocumentClick(event){const tab=event.target?.closest?.('.tab[data-tab]');if(!tab)return;const id=tab.dataset?.tab;if(!shouldNavigateTab(id))return;runtimeWin?.setTimeout?.(()=>open(id),0)}
-    function mount(){if(mounted)return true;mounted=true;doc.addEventListener?.('click',onDocumentClick);runtimeWin?.addEventListener?.('popstate',onPopState);if(historyApi?.replaceState){const rootScreen=navigation.currentScreen(state);historyApi.replaceState(makeHistoryState(rootScreen,1,historyApi.state),'')}return true}
+    function mount(){if(mounted)return true;mounted=true;ensureStyle(doc);doc.addEventListener?.('click',onDocumentClick);runtimeWin?.addEventListener?.('popstate',onPopState);if(historyApi?.replaceState){const rootScreen=navigation.currentScreen(state);historyApi.replaceState(makeHistoryState(rootScreen,1,historyApi.state),'')}return true}
     function snapshot(){return{state,activeId:active?.section?.id||null,detailId:detail?.id||null}}
     return Object.freeze({open,openDetail,back,popInternal,mount,snapshot,onDocumentClick,onPopState,restoreMoved,canLeaveCurrent});
   }
   function autoMount(){if(typeof document==='undefined'||root?.BizimSkorScreenNavigationRuntime)return root?.BizimSkorScreenNavigationRuntime||null;const run=()=>{if(root.BizimSkorScreenNavigationRuntime)return root.BizimSkorScreenNavigationRuntime;const app=createNavigationApp({doc:document,win:root,navigation:nav,view:ui});app.mount();root.BizimSkorScreenNavigationRuntime=app;return app};if(document.readyState==='complete')root.setTimeout?.(run,80);else root.addEventListener?.('load',()=>root.setTimeout?.(run,80),{once:true});return null}
-  return Object.freeze({PRIMARY_IDS,GUARDED_IDS,normalizeTargetId,shouldNavigateTab,resolveSectionId,titleFor,makeHistoryState,isNavigationHistoryState,createNavigationApp,autoMount});
+  return Object.freeze({PRIMARY_IDS,GUARDED_IDS,normalizeTargetId,shouldNavigateTab,resolveSectionId,titleFor,makeHistoryState,isNavigationHistoryState,ensureStyle,createNavigationApp,autoMount});
 });
