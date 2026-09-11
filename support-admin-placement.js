@@ -5,14 +5,13 @@ function findAdminSupportHost(doc){
   if(daily?.parentElement)return{host:daily.parentElement,before:daily};
   return null;
 }
-function insertAdminSupportButton(doc,container){
-  if(!doc||!container)return false;
-  if(doc.getElementById?.('supportAdminMount'))return true;
+function insertAdminSupportButton(doc,button){
+  if(!doc||!button)return false;
+  if(doc.getElementById?.('openSupportAdmin'))return true;
   const target=findAdminSupportHost(doc);
   if(!target)return false;
-  container.id='supportAdminMount';
-  if(target.after?.insertAdjacentElement){target.after.insertAdjacentElement('afterend',container);return true;}
-  target.host.insertBefore(container,target.before||null);
+  if(target.after?.insertAdjacentElement){target.after.insertAdjacentElement('afterend',button);return true;}
+  target.host.insertBefore(button,target.before||null);
   return true;
 }
 if(typeof module==='object'&&module.exports)module.exports={findAdminSupportHost,insertAdminSupportButton};
