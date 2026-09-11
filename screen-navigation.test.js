@@ -56,3 +56,12 @@ test('screen shell helper renders back header and content mount',()=>{
   assert.match(html,/bs-screen-content/);
   assert.equal(screenTitle({id:'rules'}),'Kurallar');
 });
+
+test('tab adapter keeps home as root and maps every child target',()=>{
+  const {shouldNavigateTab,resolveSectionId}=require('./screen-navigation-app.js');
+  assert.equal(shouldNavigateTab('home'),false);
+  assert.equal(shouldNavigateTab('general'),true);
+  assert.equal(shouldNavigateTab('live'),true);
+  assert.equal(resolveSectionId('live'),'weeklyRankings');
+  ['arena','championsRanking','nationsRanking','general','resultsWeek','footballCenter','friendLeagues','history','rules','chat','pred'].forEach(id=>assert.equal(shouldNavigateTab(id),true,id));
+});
