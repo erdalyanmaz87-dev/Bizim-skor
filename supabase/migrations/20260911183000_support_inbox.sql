@@ -47,7 +47,7 @@ $$;
 
 revoke all on function public.support_session_player_id(text) from public, anon, authenticated;
 
-create or replace function public.is_support_admin(p_token text)
+create or replace function public.is_support_admin(p_admin_token text)
 returns boolean
 language sql
 security definer
@@ -56,7 +56,7 @@ as $$
   select exists(
     select 1
     from public.support_admins a
-    where a.player_id=public.support_session_player_id(p_token)
+    where a.player_id=public.support_session_player_id(p_admin_token)
   )
 $$;
 
