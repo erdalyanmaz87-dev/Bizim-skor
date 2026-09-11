@@ -1,18 +1,15 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {screenTitle,shouldNavigateFromTab,historyStateFor}=require('./screen-navigation-ui.js');
+const {screenTitle,screenShellMarkup}=require('./screen-navigation-ui.js');
 
-test('screen title comes from registry with explicit title override',()=>{
-  assert.equal(screenTitle('general'),'Süper Lig Genel Sıralaması');
-  assert.equal(screenTitle('general','Özel Başlık'),'Özel Başlık');
+test('screen title comes from registry or explicit title',()=>{
+  assert.equal(screenTitle({id:'general'}),'Süper Lig Genel Sıralaması');
+  assert.equal(screenTitle({id:'general',title:'Özel Başlık'}),'Özel Başlık');
 });
 
-test('home is root and does not open as a child screen',()=>{
-  assert.equal(shouldNavigateFromTab('home'),false);
-  assert.equal(shouldNavigateFromTab('general'),true);
-  assert.equal(shouldNavigateFromTab('weeklyRankings'),true);
-});
-
-test('history state identifies Bizim Skor navigation entries',()=>{
-  assert.deepEqual(historyStateFor('general',2),{bizimSkorScreen:true,id:'general',depth:2});
+test('screen shell contains one back action and content host',()=>{
+  const html=screenShellMarkup({id:'general'});
+  assert.match(html,/data-screen-back/);
+  assert.match(html,/data-screen-content/);
+  assert.match(html,/Süper Lig Genel Sıralaması/);
 });
