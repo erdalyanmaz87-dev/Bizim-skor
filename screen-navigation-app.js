@@ -17,7 +17,11 @@
     const runtimeWin=win||globalThis;let state=navigation.createNavigationState(),active=null,mounted=false;
     const historyApi=runtimeWin?.history;
     function depth(){return state?.stack?.length||1}
-    function rememberCurrentScroll(){if(!active)return;state=navigation.rememberScroll(state,active.content?.scrollTop||0)}
+    function rememberCurrentScroll(){
+      const current=navigation.currentScreen(state);
+      const scroll=active?(active.content?.scrollTop||0):(current.id==='home'?(runtimeWin?.scrollY||runtimeWin?.pageYOffset||0):0);
+      state=navigation.rememberScroll(state,scroll);
+    }
     function restoreMoved(){if(!active)return;const{section,marker}=active;marker?.parentNode?.insertBefore?.(section,marker);marker?.remove?.();active=null}
     function renderScreen(screen){
       const section=doc.getElementById?.(resolveSectionId(screen.id));if(!section)return false;
@@ -31,25 +35,11 @@
       rememberCurrentScroll();restoreMoved();state=navigation.pushScreen(state,{id:screenId,title:titleFor(screenId),context});const screen=navigation.currentScreen(state);const rendered=renderScreen(screen);
       if(rendered&&historyMode==='push'&&historyApi?.pushState)historyApi.pushState(makeHistoryState(screen,depth()),'');return rendered;
     }
-    function popInternal(){
-      rememberCurrentScroll();restoreMoved();state=navigation.popScreen(state);const target=navigation.currentScreen(state);return target.id==='home'?hideLayerForHome():renderScreen(target);
-    }
-    function back(){
-      if(depth()<=1)return hideLayerForHome();
-      if(historyApi?.back&&isNavigationHistoryState(historyApi.state)){historyApi.back();return true}
-      return popInternal();
-    }
-    function onPopState(event){
-      if(depth()<=1)return hideLayerForHome();
-      popInternal();
-      return isNavigationHistoryState(event?.state)||navigation.currentScreen(state).id==='home';
-    }
+    function popInternal(){rememberCurrentScroll();restoreMoved();state=navigation.popScreen(state);const target=navigation.currentScreen(state);return target.id==='home'?hideLayerForHome():renderScreen(target)}
+    function back(){if(depth()<=1)return hideLayerForHome();if(historyApi?.back&&isNavigationHistoryState(historyApi.state)){historyApi.back();return true}return popInternal()}
+    function onPopState(event){if(depth()<=1)return hideLayerForHome();popInternal();return isNavigationHistoryState(event?.state)||navigation.currentScreen(state).id==='home'}
     function onDocumentClick(event){const tab=event.target?.closest?.('.tab[data-tab]');if(!tab)return;const id=tab.dataset?.tab;if(!shouldNavigateTab(id))return;runtimeWin?.setTimeout?.(()=>open(id),0)}
-    function mount(){
-      if(mounted)return true;mounted=true;doc.addEventListener?.('click',onDocumentClick);runtimeWin?.addEventListener?.('popstate',onPopState);
-      if(historyApi?.replaceState){const rootScreen=navigation.currentScreen(state);historyApi.replaceState(makeHistoryState(rootScreen,1,historyApi.state),'')}
-      return true;
-    }
+    function mount(){if(mounted)return true;mounted=true;doc.addEventListener?.('click',onDocumentClick);runtimeWin?.addEventListener?.('popstate',onPopState);if(historyApi?.replaceState){const rootScreen=navigation.currentScreen(state);historyApi.replaceState(makeHistoryState(rootScreen,1,historyApi.state),'')}return true}
     function snapshot(){return{state,activeId:active?.section?.id||null}}
     return Object.freeze({open,back,popInternal,mount,snapshot,onDocumentClick,onPopState,restoreMoved});
   }
