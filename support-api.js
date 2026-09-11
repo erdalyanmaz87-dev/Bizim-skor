@@ -16,10 +16,15 @@ function createPlayerSupportApi({getToken,rpc}={}){
     markSeen:id=>call('mark_support_reply_seen',{p_request_id:id})
   });
 }
-function createAnonymousSupportApi({getUserId,getGuestName,invoke}={}){
+function createAnonymousSupportApi({getUserId,getGuestName,invoke,ensureSession}={}){
   if(typeof getUserId!=='function'||typeof getGuestName!=='function'||typeof invoke!=='function')throw new Error('anonymous support transport required');
-  async function call(action,body={}){
+  async function ready(){
+    if(String(getUserId()||''))return;
+    if(typeof ensureSession==='function')await ensureSession();
     if(!String(getUserId()||''))throw new Error('Anonim oturum gerekli');
+  }
+  async function call(action,body={}){
+    await ready();
     const result=await invoke('support-inbox',{body:{action,...body}});
     if(result?.error)throw new Error(result.error.message||String(result.error));
     if(result?.data?.ok===false)throw new Error(result.data.error||'Destek işlemi başarısız');
