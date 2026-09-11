@@ -5,7 +5,9 @@ const {
   pushScreen,
   popScreen,
   currentScreen,
-  rememberScroll
+  rememberScroll,
+  canonicalScreenId,
+  missingRegisteredScreens
 }=require('./screen-navigation.js');
 
 test('nested back returns to the real previous screen',()=>{
@@ -33,4 +35,15 @@ test('popping root keeps home as the root screen',()=>{
   let state=createNavigationState();
   state=popScreen(state);
   assert.equal(currentScreen(state).id,'home');
+});
+
+test('all visible horizontal menu screens are registered',()=>{
+  const menuIds=['arena','championsRanking','nationsRanking','general','live','resultsWeek','footballCenter','friendLeagues','history','rules','chat'];
+  assert.deepEqual(missingRegisteredScreens(menuIds),[]);
+  assert.equal(canonicalScreenId('live'),'weeklyRankings');
+});
+
+test('prediction, support and detail screens are registered too',()=>{
+  const extraIds=['pred','championsPred','nationsPred','playerProfile','supportPlayer','supportAdmin'];
+  assert.deepEqual(missingRegisteredScreens(extraIds),[]);
 });
