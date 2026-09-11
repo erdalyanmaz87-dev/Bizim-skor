@@ -16,7 +16,7 @@ test('mount composes isolated player and admin support modules',async()=>{
   assert.deepEqual(calls,[['playerApi','tok'],['adminApi','tok'],['playerController','playerApi'],['adminController','adminApi'],['playerRefresh','playerController'],['adminRefresh','adminApi']]);
 });
 
-test('mount reports missing anonymous transport when logged out support cannot initialize',async()=>{
+test('mount reports missing guest transport when logged out support cannot initialize',async()=>{
   const root={document:{},localStorage:{getItem:()=>''},sb:{rpc:async()=>({})}};
-  assert.deepEqual(await createSupportBootstrap(root).mount(),{mounted:false,reason:'no-anonymous-transport'});
+  assert.deepEqual(await createSupportBootstrap(root).mount(),{mounted:false,reason:'no-guest-transport'});
 });
