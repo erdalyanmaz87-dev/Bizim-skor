@@ -38,7 +38,7 @@ function createSupportBootstrap(root=globalThis){
       invoke:(name,options)=>root.sb.functions.invoke(name,options)
     });
     const playerController=root.BizimSkorSupportPlayerController.createPlayerSupportController({api:guestApi,validate:root.BizimSkorSupportInbox.validateSupportMessage,isUnread:root.BizimSkorSupportInbox.hasUnreadAdminReply});
-    const playerUI=root.BizimSkorSupportPlayerUI.createPlayerSupportUI({doc,view:root.BizimSkorSupportPlayerView,controller:playerController,placement:root.BizimSkorSupportPlacement,isUnread:root.BizimSkorSupportInbox.hasUnreadAdminReply,lazy:true,anonymous:true});
+    const playerUI=root.BizimSkorSupportPlayerUI.createPlayerSupportUI({doc,view:root.BizimSkorSupportPlayerView,controller:playerController,placement:root.BizimSkorSupportPlacement,isUnread:root.BizimSkorSupportInbox.hasUnreadAdminReply,lazy:!getGuestToken(),anonymous:true});
     await playerUI.refresh();
     return{mounted:true,mode:'guest',playerUI};
   }
