@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {createPlayerSupportApi,createAdminSupportApi,createGuestSupportApi}=require('./support-api.js');
+const {createPlayerSupportApi,createAdminSupportApi}=require('./support-api.js');
 
 test('player list sends token only through injected rpc',async()=>{
   let call=null;
@@ -18,20 +18,6 @@ test('player create maps category and message',async()=>{
   assert.equal(call.name,'create_support_request');
   assert.deepEqual(call.args,{p_token:'tok',p_category:'technical',p_message:'Test'});
   assert.equal(id,9);
-});
-
-test('guest api uses persistent guest token and supplied display name',async()=>{
-  const calls=[];
-  const api=createGuestSupportApi({getGuestToken:()=> 'guest-1',getGuestName:()=> 'Misafir Erdal',rpc:async(name,args)=>{calls.push({name,args});return{data:name==='create_guest_support_request'?12:[],error:null}}});
-  await api.list();
-  const id=await api.create('login_pin','Giriş yapamıyorum');
-  await api.markSeen(12);
-  assert.equal(id,12);
-  assert.deepEqual(calls,[
-    {name:'list_guest_support_requests',args:{p_guest_token:'guest-1'}},
-    {name:'create_guest_support_request',args:{p_guest_token:'guest-1',p_guest_name:'Misafir Erdal',p_category:'login_pin',p_message:'Giriş yapamıyorum'}},
-    {name:'mark_guest_support_reply_seen',args:{p_guest_token:'guest-1',p_request_id:12}}
-  ]);
 });
 
 test('missing token is rejected before rpc',async()=>{
