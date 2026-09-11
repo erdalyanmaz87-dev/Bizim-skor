@@ -17,6 +17,12 @@ test('mount composes isolated player and admin support modules',async()=>{
 });
 
 test('mount reports missing guest transport when logged out support cannot initialize',async()=>{
-  const root={document:{},localStorage:{getItem:()=>''},sb:{rpc:async()=>({})}};
+  const root={
+    document:{},localStorage:{getItem:()=>''},sb:{rpc:async()=>({})},
+    BizimSkorSupportApi:{},BizimSkorSupportInbox:{},BizimSkorSupportAdmin:{},
+    BizimSkorSupportPlayerController:{},BizimSkorSupportAdminController:{},
+    BizimSkorSupportPlayerView:{},BizimSkorSupportAdminView:{},BizimSkorSupportPlacement:{},BizimSkorSupportAdminPlacement:{},
+    BizimSkorSupportPlayerUI:{},BizimSkorSupportAdminUI:{}
+  };
   assert.deepEqual(await createSupportBootstrap(root).mount(),{mounted:false,reason:'no-guest-transport'});
 });
