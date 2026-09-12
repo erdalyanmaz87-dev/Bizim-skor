@@ -8,6 +8,12 @@ on:
       - 'league-system-*.js'
       - 'arena-player-card.js'
       - 'general-ranking-live-refresh.js'
+      - 'champions-league-ui.js'
+      - 'home-prediction-priority.js'
+      - 'opportunity-match-*.js'
+      - 'match-statistics-ui.js'
+      - 'test/champions-week2-contract.test.js'
+      - 'supabase/migrations/20260913003000_champions_league_week2.sql'
       - 'supabase/migrations/20260909190000_bizim_skor_leagues.sql'
       - 'supabase/migrations/20260909193000_bizim_skor_league_rounds.sql'
       - 'supabase/migrations/20260909200000_bizim_skor_league_memberships.sql'
@@ -45,6 +51,7 @@ jobs:
       - name: Run league feature tests
         run: >-
           node --test
+          test/champions-week2-contract.test.js
           test/arena-player-card.test.js
           test/league-system-utils.test.js
           test/league-system-ui.test.js
