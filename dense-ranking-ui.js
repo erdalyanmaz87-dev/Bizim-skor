@@ -1,7 +1,28 @@
 (function(){
   window.addEventListener('DOMContentLoaded',()=>{
+    window.playerInviteCount=window.playerInviteCount||new Map();
+    const baseLoadActivePlayers=loadActivePlayers;
+    loadActivePlayers=async function(){
+      await baseLoadActivePlayers();
+      const token=localStorage.getItem('bizimSkorFriendToken');
+      if(!token){window.playerInviteCount=new Map();return}
+      try{
+        const q=await sb.rpc('get_invite_leaderboard',{p_token:token,p_period:'season'});
+        if(q.error)throw q.error;
+        window.playerInviteCount=new Map((q.data||[]).map(row=>[normalizePlayerName(row.player_name),Number(row.invite_count||0)]));
+      }catch(error){
+        console.warn('invite ranking tie-break unavailable',error);
+        window.playerInviteCount=new Map();
+      }
+    };
+
     function denseRows(rows){
-      return BizimSkorHistory.buildWeeklyRanking((rows||[]).map(row=>({...row,points:row.pts,createdAt:window.playerCreatedAt?.get(normalizePlayerName(row.name))})));
+      return BizimSkorHistory.buildWeeklyRanking((rows||[]).map(row=>({
+        ...row,
+        points:row.pts,
+        inviteCount:window.playerInviteCount?.get(normalizePlayerName(row.name))||0,
+        createdAt:window.playerCreatedAt?.get(normalizePlayerName(row.name))
+      })));
     }
 
     renderScoreTable=function(targetId,ps,rs){
