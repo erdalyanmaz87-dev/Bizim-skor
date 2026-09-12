@@ -19,7 +19,7 @@ test('Champions League week 2 opportunity match is Manchester City - PSG',()=>{
   const ui=read('opportunity-match-ui.js');
   const utils=read('opportunity-match-utils.js');
   assert.match(ui,/CL_HOME='Manchester City',CL_AWAY='PSG'/);
-  assert.match(utils,/CHAMPIONS_WEEK=2/);
+  assert.match(utils,/CHAMPIONS_FIXTURE_ID=33,CHAMPIONS_WEEK=2/);
 });
 
 test('Champions League prediction UI exposes robot and statistics actions',()=>{
@@ -28,4 +28,13 @@ test('Champions League prediction UI exposes robot and statistics actions',()=>{
   assert.match(champions,/Maç İstatistikleri/);
   assert.match(champions,/get_champions_robot_predictions/);
   assert.match(champions,/get_champions_match_statistics/);
+});
+
+test('app shell loads opportunity multiplier before opportunity UI',()=>{
+  const index=read('index.html');
+  const utils=index.indexOf('opportunity-match-utils.js');
+  const ui=index.indexOf('opportunity-match-ui.js');
+  assert.ok(utils>=0,'opportunity-match-utils.js must be loaded');
+  assert.ok(ui>=0,'opportunity-match-ui.js must be loaded');
+  assert.ok(utils<ui,'opportunity utils must load before opportunity UI');
 });
