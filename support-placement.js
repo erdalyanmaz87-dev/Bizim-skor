@@ -1,4 +1,10 @@
+function isHidden(node){return !!node?.classList?.contains?.('hide')}
 function findPlayerActionHost(doc){
+  const newPlayer=doc?.getElementById?.('newPlayer');
+  if(newPlayer&&!isHidden(newPlayer)){
+    const login=doc?.getElementById?.('loginPlayer');
+    if(login?.parentElement)return{host:login.parentElement,before:login.nextSibling||null};
+  }
   const update=doc?.getElementById?.('updateProfile');
   if(update?.parentElement)return{host:update.parentElement,before:update.nextSibling||null};
   const forgot=doc?.getElementById?.('openPinReset');
