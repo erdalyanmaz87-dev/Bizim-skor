@@ -7,4 +7,7 @@ assert(source.includes('Bugun Gelen')||source.includes('Bugün Gelen'));
 assert(source.includes('Tahmin Yapmayan'));
 assert(source.includes('Hatirlatma')||source.includes('Hatırlatma'));
 assert(source.includes('api.autoMount()'));
+assert(source.includes("openDetail?.('adminStatistics'"));
+assert(source.includes("detailId==='adminStatistics'"));
+assert(source.includes('back?.()'));
 console.log('admin dashboard contract: ok');
