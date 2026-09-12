@@ -5,21 +5,34 @@ const Card=require('../arena-player-card');
 test('Arena oyuncu kartı canlı dönem özetini ve tur detaylarını gösterir',()=>{
   const html=Card.renderPlayerCard({
     player_name:'Erdal',league_code:'gold',league_rank:2,league_size:12,
-    performance_score:85,valid_round_count:4,is_eligible:true,promotion_status:'promotion',
+    performance_score:90,valid_round_count:1,is_eligible:false,promotion_status:'none',
     rounds:[
-      {competition:'super_lig',round_key:'2026/27:5',performance_score:90,rank:2,participant_count:21},
-      {competition:'champions_league',round_key:'2026/27:1',performance_score:80,rank:5,participant_count:30}
+      {competition:'super_lig',round_key:'2026/27:5',performance_score:90,rank:2,participant_count:21}
     ]
   });
   assert.match(html,/Erdal/);
   assert.match(html,/Altın Lig/);
   assert.match(html,/2 \/ 12/);
-  assert.match(html,/85\.00/);
-  assert.match(html,/Yükselme hattında/);
-  assert.match(html,/Süper Lig 5\. Hafta/);
-  assert.match(html,/Şampiyonlar Ligi 1\. Tur/);
+  assert.match(html,/Ortalama Arena Puanı/);
+  assert.match(html,/5\. Hafta/);
   assert.match(html,/90\.00/);
-  assert.match(html,/80\.00/);
+  assert.match(html,/1 \/ 2/);
+});
+
+test('canlı dönem kartı 5-8 hafta kutularını ortalama puanı ve tek katılım kutusunu gösterir',()=>{
+  const html=Card.renderPlayerCard({
+    player_name:'Erdal',league_code:'gold',league_rank:3,league_size:12,
+    performance_score:75,valid_round_count:1,is_eligible:false,rounds_needed:1,
+    rounds:[{competition:'super_lig',round_key:'2026\/27:5',performance_score:75,rank:4,participant_count:60}]
+  });
+  assert.match(html,/Ortalama Arena Puanı/);
+  assert.match(html,/5\. Hafta/);
+  assert.match(html,/75\.00/);
+  assert.match(html,/6\. Hafta[\s\S]*—/);
+  assert.match(html,/7\. Hafta[\s\S]*—/);
+  assert.match(html,/8\. Hafta[\s\S]*—/);
+  assert.match(html,/Katılım Durumu[\s\S]*1 \/ 2/);
+  assert.doesNotMatch(html,/3\. Hafta|4\. Hafta|Geçerli tur/);
 });
 
 test('iki tur şartını tamamlamayan oyuncu uyarılır',()=>{
