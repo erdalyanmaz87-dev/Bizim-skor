@@ -2,6 +2,8 @@ function isHidden(node){return !!node?.classList?.contains?.('hide')}
 function findPlayerActionHost(doc){
   const newPlayer=doc?.getElementById?.('newPlayer');
   if(newPlayer&&!isHidden(newPlayer)){
+    const help=doc?.getElementById?.('loginHelpActions');
+    if(help)return{host:help,before:doc.getElementById('openPinReset')||null};
     const login=doc?.getElementById?.('loginPlayer');
     if(login?.parentElement)return{host:login.parentElement,before:login.nextSibling||null};
   }

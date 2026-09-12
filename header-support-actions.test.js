@@ -7,3 +7,10 @@ test('modern header exposes support actions for logged in players',()=>{
   assert.match(html,/id="bsHeaderSupport"/);
   assert.match(html,/📩 Bize Ulaşın/);
 });
+
+test('guest header exposes support beside login',()=>{
+  const html=buildHeaderMarkup('');
+  assert.match(html,/id="bsHeaderSupport"/);
+  assert.match(html,/bs-header-guest-actions/);
+  assert.match(html,/Giriş Yap/);
+});

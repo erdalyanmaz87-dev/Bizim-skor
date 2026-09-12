@@ -81,7 +81,9 @@ window.addEventListener('load',()=>setTimeout(()=>{
 <label>Oyuncu adın</label><input id="loginName" autocomplete="username" placeholder="Oyuncu adını yaz">
 <label style="margin-top:8px">4 haneli PIN</label><input id="loginPin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="••••">
 <button id="loginPlayer" class="full p" style="margin-top:10px">Giriş Yap</button>
-<button id="openPinReset" type="button" class="full" style="background:transparent;color:#2563eb;padding:8px">Şifremi Unuttum</button>
+<div id="loginHelpActions">
+<button id="openPinReset" type="button">Şifremi Unuttum</button>
+</div>
 <div id="pinResetMount" class="hide"><form id="pinResetForm" style="margin-top:8px;padding-top:12px;border-top:1px solid #e5e7eb"><label for="resetName">Oyuncu adın</label><input id="resetName" maxlength="40" autocomplete="username" placeholder="Oyuncu adını yaz"><label for="resetPin" style="margin-top:8px">Yeni 4 haneli şifre</label><input id="resetPin" maxlength="4" inputmode="numeric" type="password" autocomplete="new-password" placeholder="••••"><label for="resetPin2" style="margin-top:8px">Yeni şifre tekrar</label><input id="resetPin2" maxlength="4" inputmode="numeric" type="password" autocomplete="new-password" placeholder="••••"><button id="submitPinReset" type="submit" class="full p" style="margin-top:10px">Şifremi Yenile</button><div id="pinResetStatus" class="small" role="status" aria-live="polite"></div></form></div>
 <p class="small">Mevcut 23 oyuncudan biriysen ve henüz PIN belirlemediysen, adını yazıp Giriş Yap'a bas. Sistem ilk girişte 4 haneli PIN belirlemeni isteyecek.</p>
 </div>
