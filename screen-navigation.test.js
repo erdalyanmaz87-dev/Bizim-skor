@@ -46,9 +46,18 @@ test('all visible horizontal menu screens are registered',()=>{
   assert.equal(canonicalScreenId('live'),'weeklyRankings');
 });
 
-test('prediction, support and detail screens are registered too',()=>{
-  const extraIds=['pred','championsPred','nationsPred','playerProfile','supportPlayer','supportAdmin'];
+test('prediction, support, admin statistics and detail screens are registered too',()=>{
+  const extraIds=['pred','championsPred','nationsPred','playerProfile','supportPlayer','supportAdmin','adminStatistics'];
   assert.deepEqual(missingRegisteredScreens(extraIds),[]);
+});
+
+test('admin statistics behaves like a detail screen so back returns to its opener',()=>{
+  let state=createNavigationState();
+  state=pushScreen(state,{id:'general'});
+  state=pushScreen(state,{id:'adminStatistics'});
+  assert.equal(currentScreen(state).id,'adminStatistics');
+  state=popScreen(state);
+  assert.equal(currentScreen(state).id,'general');
 });
 
 test('screen shell helper renders back header and content mount',()=>{
