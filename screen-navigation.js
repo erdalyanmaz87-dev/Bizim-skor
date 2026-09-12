@@ -18,7 +18,8 @@ const SCREEN_REGISTRY=Object.freeze({
   nationsPred:{title:'UEFA Uluslar Ligi Tahminleri'},
   playerProfile:{title:'Oyuncu Profili',detail:true},
   supportPlayer:{title:'Bize Ulaşın',detail:true},
-  supportAdmin:{title:'Gelen Kutusu',adminOnly:true,detail:true}
+  supportAdmin:{title:'Gelen Kutusu',adminOnly:true,detail:true},
+  adminStatistics:{title:'Yönetici İstatistikleri',adminOnly:true,detail:true}
 });
 function canonicalScreenId(id){const key=String(id||'home');return SCREEN_REGISTRY[key]?.aliasOf||key}
 function screenDefinition(id){return SCREEN_REGISTRY[canonicalScreenId(id)]||null}
