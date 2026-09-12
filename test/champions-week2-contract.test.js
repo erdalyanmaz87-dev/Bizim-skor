@@ -8,7 +8,7 @@ const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 test('Champions League active prediction week is week 2 everywhere',()=>{
   const champions=read('champions-league-ui.js');
   const priority=read('home-prediction-priority.js');
-  assert.match(champions,/const season='2026\/27',week=2;/);
+  assert.match(champions,/const season='2026\/27',week=2(?:,|;)/);
   assert.match(champions,/Şampiyonlar Ligi • 2\. Hafta/);
   assert.match(priority,/week:2/);
   assert.match(priority,/p_week:2/);
