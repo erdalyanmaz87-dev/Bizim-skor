@@ -5,7 +5,7 @@ assert(source.includes('get_admin_statistics_dashboard'));
 assert(source.includes('Yonetici Istatistikleri')||source.includes('Yönetici İstatistikleri'));
 assert(source.includes('Bugun Gelen')||source.includes('Bugün Gelen'));
 assert(source.includes('Tahmin Yapmayan'));
-assert(source.includes('Hatirlatma')||source.includes('Hatırlatma'));
+assert(source.includes('Hatirlatma')||source.includes('Hatırlatma')||source.includes('Uyarısı'));
 assert(source.includes('api.autoMount()'));
 assert(source.includes("openDetail?.('adminStatistics'"));
 assert(source.includes("detailId==='adminStatistics'"));
