@@ -10,3 +10,4 @@ function start(){if(started)return;started=true;exposeCore();loadAll().catch(e=>
 function mount(){if(typeof document==='undefined')return;const delayed=()=>setTimeout(start,700);if(document.readyState==='complete')delayed();else root.addEventListener('load',delayed,{once:true});setTimeout(()=>{if(!started)start()},6500)}
 return Object.freeze({scriptOrder,loadAll,exposeCore,mount,start});
 });
+// player museum integration branch
