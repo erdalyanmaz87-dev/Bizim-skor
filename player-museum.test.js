@@ -1,0 +1,11 @@
+const assert=require('assert');
+const museum=require('./player-museum.js');
+const sample={player_name:'Oyuncu',trophy_cabinet:{gold:2,silver:1,bronze:3,arena_championships:1},weekly_achievements:[{competition:'Süper Lig',week:5,rank:1}],arena_achievements:[{season_no:1,weeks:'5–8. Haftalar',rank:1,is_final:true}],general_rankings:[{competition:'Süper Lig',rank:4}]};
+assert.equal(museum.medal(1),'🥇');
+assert.equal(museum.medal(2),'🥈');
+assert.equal(museum.medal(3),'🥉');
+assert(museum.renderMuseum(sample).includes('Kupa Dolabı'));
+assert(museum.renderMuseum(sample).includes('1. Sezon (5–8. Haftalar)'));
+assert(museum.renderMuseum(sample).includes('Arena Şampiyonluğu'));
+assert(museum.renderMuseum(sample).includes('Genel Sıralama'));
+console.log('player-museum ok');
