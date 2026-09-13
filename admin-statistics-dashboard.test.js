@@ -29,4 +29,25 @@ assert(html.includes('bs-admin-stats-list compact'),'isim listeleri kompakt olma
 assert(html.includes('data-admin-stats-toggle'),'uzun listelerde tümünü göster düğmesi olmalı');
 assert(source.includes('bs-admin-stats-columns'),'isimler çok sütunlu görünmeli');
 assert(source.includes('Tümünü Göster')&&source.includes('Daralt'),'liste açılıp daraltılabilmeli');
+assert(html.includes('data-admin-player="Ayşe"'),'oyuncu isimleri tıklanabilir olmalı');
+const card=dashboard.renderPlayerCard({
+ name:'Ayşe',
+ prediction:{saved:9,total:9,completed:true},
+ superWeek:{rank:2,points:18},
+ superGeneral:{rank:5,points:61},
+ arena:{league:'Altın Lig',rank:3,points:72.5},
+ champions:{rank:4,points:38},
+ nations:{rank:null,points:null}
+});
+assert(card.includes('Ayşe'));
+assert(card.includes('Güncel Hafta')&&card.includes('9/9'));
+assert(card.includes('Süper Lig Haftalık')&&card.includes('2.')&&card.includes('18 puan'));
+assert(card.includes('Süper Lig Genel')&&card.includes('5.')&&card.includes('61 puan'));
+assert(card.includes('Altın Lig')&&card.includes('Arena')&&card.includes('72.50 puan'));
+assert(card.includes('Şampiyonlar Ligi Genel')&&card.includes('38 puan'));
+assert(card.includes('Uluslar Ligi Genel')&&card.includes('Katılmadı'));
+assert(source.includes('get_player_public_profile_v2'));
+assert(source.includes('get_arena_player_card'));
+assert(source.includes('get_champions_league_ranking'));
+assert(source.includes('get_nations_league_ranking'));
 console.log('admin dashboard contract: ok');
