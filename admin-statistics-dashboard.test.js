@@ -8,7 +8,7 @@ assert(source.includes('Tahmin Yapmayan'));
 assert(source.includes('Hatirlatma')||source.includes('Hatırlatma')||source.includes('Uyarısı'));
 assert(source.includes('api.autoMount()'));
 assert(source.includes("openDetail?.('adminStatistics'"));
-assert(source.includes("detailId==='adminStatistics'"));
+assert(/detailId\s*===\s*'adminStatistics'/.test(source));
 assert(source.includes('back?.()'));
 const sample={
  summary:{total_players:4,active_today:3},
@@ -30,6 +30,7 @@ assert(html.includes('data-admin-stats-toggle'),'uzun listelerde tümünü göst
 assert(source.includes('bs-admin-stats-columns'),'isimler çok sütunlu görünmeli');
 assert(source.includes('Tümünü Göster')&&source.includes('Daralt'),'liste açılıp daraltılabilmeli');
 assert(html.includes('data-admin-player="Ayşe"'),'oyuncu isimleri tıklanabilir olmalı');
+assert(/doc\.addEventListener\(\s*'click'[\s\S]*?\[data-admin-player\]/.test(source),'oyuncu kartı dokunması navigasyon katmanından bağımsız olarak belge düzeyinde dinlenmeli');
 const card=dashboard.renderPlayerCard({
  name:'Ayşe',
  prediction:{saved:9,total:9,completed:true},
