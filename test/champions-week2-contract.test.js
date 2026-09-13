@@ -32,12 +32,13 @@ test('2. hafta fırsat maçı Manchester City - PSG olur',()=>{
   assert.match(sql,/home_team='Manchester City' and f\.away_team='PSG'/);
 });
 
-test('tahmin ekranı robot önerisi ve maç istatistiklerini sunar',()=>{
-  const champions=read('champions-league-ui.js');
-  assert.match(champions,/Robotun Önerisi/);
-  assert.match(champions,/Maç İstatistikleri/);
-  assert.match(champions,/get_champions_robot_predictions/);
-  assert.match(champions,/get_champions_match_statistics/);
+test('tahmin ekranı ortak robot önerisi ve maç istatistikleri araçlarını kullanır',()=>{
+  const robot=read('robot-prediction-ui.js');
+  const stats=read('match-statistics-ui.js');
+  assert.match(robot,/robot-prediction-button/);
+  assert.match(robot,/competition\(settings\)/);
+  assert.match(stats,/match-stats-button/);
+  assert.match(stats,/#championsFixtures \\.champions-match/);
 });
 
 
