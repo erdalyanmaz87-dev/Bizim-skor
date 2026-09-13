@@ -1,0 +1,1 @@
+const fs=require('fs');const s=fs.readFileSync('player-museum.js','utf8');if(!s.includes('bs-profile-title-row'))throw Error('missing title row');console.log('ok');
