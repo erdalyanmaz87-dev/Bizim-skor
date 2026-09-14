@@ -105,6 +105,15 @@ html[data-theme="dark"] .league-eligibility-note,
 html[data-theme="dark"] .league-preview-badge{background:#422006!important;color:#fde68a!important;border-color:#92400e!important}
 html[data-theme="dark"] .league-preview-note{background:#10233e!important;color:#bfdbfe!important}
 
+/* Arena movement clarity: stale status classes must not hide the real rank zones */
+html[data-theme="dark"] .league-promotion-zone.league-relegation-zone{background:#052e16!important;color:#dcfce7!important}
+html[data-theme="dark"] .league-row.league-relegation-zone:has(~ .league-relegation-boundary):not(.league-promotion-zone){background:#111827!important;color:#e5e7eb!important}
+html[data-theme="dark"] .league-relegation-boundary,
+html[data-theme="dark"] .league-relegation-boundary~.league-row{background:#450a0a!important;color:#fee2e2!important}
+html[data-theme="dark"] .league-promotion-zone .league-player::after{content:"  ↑ Yükselir";display:inline-block;margin-left:6px;padding:2px 6px;border:1px solid #22c55e;border-radius:999px;background:#14532d;color:#dcfce7;font-size:9px;font-weight:900;vertical-align:middle}
+html[data-theme="dark"] .league-relegation-boundary .league-player::after,
+html[data-theme="dark"] .league-relegation-boundary~.league-row .league-player::after{content:"  ↓ Düşer";display:inline-block;margin-left:6px;padding:2px 6px;border:1px solid #ef4444;border-radius:999px;background:#7f1d1d;color:#fee2e2;font-size:9px;font-weight:900;vertical-align:middle}
+
 /* Dark-mode readability: player profile */
 html[data-theme="dark"] .bs-player-profile-link{color:#93c5fd!important}
 html[data-theme="dark"] .bs-profile-head span,
