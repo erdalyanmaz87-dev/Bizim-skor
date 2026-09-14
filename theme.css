@@ -70,5 +70,70 @@ html[data-theme="dark"] .bs-admin-stats-grid>b,
 html[data-theme="dark"] .bs-admin-stats-list>div{background:#111827!important;color:#e5e7eb!important;border-color:#334155!important}
 html[data-theme="dark"] .support-reply{background:#10233e!important;border-color:#1d4ed8!important}
 html[data-theme="dark"] .bs-connection-error{background:#450a0a;color:#fecaca;border-color:#991b1b}
+
+/* Dark-mode readability: screen navigation */
+html[data-theme="dark"] .bs-screen-back{background:#1e293b!important;color:#f8fafc!important;border-color:#475569!important}
+html[data-theme="dark"] .bs-screen-header{border-color:#334155!important}
+
+/* Dark-mode readability: Arena */
+html[data-theme="dark"] .league-summary,
+html[data-theme="dark"] .league-shell{background:#111827!important;color:#e5e7eb!important;border-color:#334155!important}
+html[data-theme="dark"] .league-summary-performance,
+html[data-theme="dark"] .league-eyebrow,
+html[data-theme="dark"] .league-table-head,
+html[data-theme="dark"] .league-table-foot,
+html[data-theme="dark"] .league-empty{color:#94a3b8!important}
+html[data-theme="dark"] .league-summary-status{color:#86efac!important}
+html[data-theme="dark"] .league-summary-pending .league-summary-status,
+html[data-theme="dark"] .league-summary-preview .league-summary-status{color:#fcd34d!important}
+html[data-theme="dark"] .league-summary-action{color:#93c5fd!important}
+html[data-theme="dark"] .league-movement-info{background:#172033!important;color:#cbd5e1!important;border-color:#334155!important}
+html[data-theme="dark"] .league-table-head,
+html[data-theme="dark"] .league-row{border-color:#334155!important;color:#e5e7eb!important}
+html[data-theme="dark"] .league-row{background:#111827!important}
+html[data-theme="dark"] .league-promotion-zone{background:#052e16!important;color:#dcfce7!important}
+html[data-theme="dark"] .league-relegation-zone{background:#450a0a!important;color:#fee2e2!important}
+html[data-theme="dark"] .league-championship-zone{background:#422006!important;color:#fef3c7!important}
+html[data-theme="dark"] .league-me{outline-color:#60a5fa!important}
+html[data-theme="dark"] .league-chip{background:#172033!important;color:#e5e7eb!important;border-color:#475569!important}
+html[data-theme="dark"] .league-chip small{background:#334155!important;color:#e2e8f0!important}
+html[data-theme="dark"] .league-chip-active{background:#1d4ed8!important;color:#fff!important;border-color:#60a5fa!important}
+html[data-theme="dark"] .league-rules-button{background:#1e293b!important;color:#e5e7eb!important;border-color:#475569!important}
+html[data-theme="dark"] .league-rules{color:#e5e7eb!important}
+html[data-theme="dark"] .league-pending b{color:#f8fafc!important}
+html[data-theme="dark"] .league-eligibility-note,
+html[data-theme="dark"] .league-preview-badge{background:#422006!important;color:#fde68a!important;border-color:#92400e!important}
+html[data-theme="dark"] .league-preview-note{background:#10233e!important;color:#bfdbfe!important}
+
+/* Dark-mode readability: player profile */
+html[data-theme="dark"] .bs-player-profile-link{color:#93c5fd!important}
+html[data-theme="dark"] .bs-profile-head span,
+html[data-theme="dark"] .bs-profile-stats span,
+html[data-theme="dark"] .bs-profile-stats small,
+html[data-theme="dark"] .bs-profile-note{color:#94a3b8!important}
+html[data-theme="dark"] .bs-profile-stats>div{background:#172033!important;color:#f8fafc!important;border-color:#334155!important}
+html[data-theme="dark"] .bs-profile-head button{background:#1e293b!important;color:#f8fafc!important;border:1px solid #475569!important}
+html[data-theme="dark"] .bs-profile-form{background:#10233e!important;color:#dbeafe!important}
+html[data-theme="dark"] .bs-profile-match{border-color:#334155!important;color:#e5e7eb!important}
+html[data-theme="dark"] .bs-profile-match p{color:#cbd5e1!important}
+
+/* Dark-mode readability: museum */
+html[data-theme="dark"] .bs-museum-head span,
+html[data-theme="dark"] .bs-museum-cabinet span,
+html[data-theme="dark"] .bs-museum-row small{color:#94a3b8!important}
+html[data-theme="dark"] .bs-museum-head button{background:#1e293b!important;color:#f8fafc!important;border:1px solid #475569!important}
+html[data-theme="dark"] .bs-museum-section{background:#111827!important;color:#e5e7eb!important;border-color:#334155!important}
+html[data-theme="dark"] .bs-museum-cabinet div{background:#172033!important;color:#f8fafc!important}
+html[data-theme="dark"] .bs-museum-row{border-color:#334155!important;color:#e5e7eb!important}
+html[data-theme="dark"] .bs-profile-museum-open{background:#422006!important;color:#fed7aa!important;border-color:#9a3412!important}
+
+/* Dark-mode readability: support and login helpers */
+html[data-theme="dark"] .support-contact-button,
+html[data-theme="dark"] #loginHelpActions>button{background:#10233e!important;color:#bfdbfe!important;border-color:#2563eb!important}
+html[data-theme="dark"] .support-head>button,
+html[data-theme="dark"] .support-admin-filters button{background:#1e293b!important;color:#e5e7eb!important;border-color:#475569!important}
+html[data-theme="dark"] .support-admin-filters button.active{background:#1d4ed8!important;color:#fff!important;border-color:#60a5fa!important}
+html[data-theme="dark"] .support-admin-actions button:last-child{background:#052e16!important;color:#bbf7d0!important;border-color:#166534!important}
+
 @media(max-width:430px){.bs-theme-toggle{grid-template-columns:1fr 32px 1fr;gap:3px;padding:6px 4px}.bs-theme-choice{font-size:10px}.bs-theme-track{width:32px;height:20px}.bs-theme-thumb{width:14px;height:14px}.bs-theme-toggle[aria-checked="true"] .bs-theme-thumb{transform:translateX(12px)}}
 @media(prefers-reduced-motion:reduce){body,.bs-theme-thumb{transition:none}}
