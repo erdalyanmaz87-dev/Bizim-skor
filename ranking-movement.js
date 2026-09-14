@@ -1,5 +1,5 @@
 (function(root,factory){
-  const api=factory();
+  const api=factory(root);
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.BizimSkorRankingMovement=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
