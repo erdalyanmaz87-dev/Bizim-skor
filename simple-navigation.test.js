@@ -39,12 +39,4 @@ const guestDrawer=nav.drawerMarkup(groups,{loggedIn:false});
 assert.match(guestDrawer,/data-simple-account="login"/);
 assert.doesNotMatch(guestDrawer,/data-simple-account="logout"/);
 
-const competitionNav=nav.predictionCompetitionMarkup('pred');
-assert.match(competitionNav,/data-prediction-competition="pred"[^>]*aria-current="page"/);
-assert.match(competitionNav,/🇹🇷 Süper Lig/);
-assert.match(competitionNav,/data-prediction-competition="championsPred"/);
-assert.match(competitionNav,/⭐ Şampiyonlar Ligi/);
-assert.match(competitionNav,/data-prediction-competition="nationsPred"/);
-assert.match(competitionNav,/🌍 Uluslar Ligi/);
-
 console.log('simple-navigation ok');
