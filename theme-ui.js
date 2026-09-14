@@ -44,18 +44,32 @@
     if(!host.querySelector('#bsThemeToggle'))renderToggle(host,storage,doc);
     return true;
   }
+  function ensureExtraStyles(doc){
+    if(!doc||doc.getElementById('bsThemeHeaderMenuStyles'))return;
+    const style=doc.createElement('style');style.id='bsThemeHeaderMenuStyles';style.textContent='.bs-theme-header-host{display:flex!important;align-items:center!important;margin-right:4px!important}.bs-theme-header-host .bs-theme-toggle{transform:scale(.78);transform-origin:right center;margin:0!important}body.bs-simple-nav-ready #openAdminStatistics,body.bs-simple-nav-ready #openSupportAdmin{display:none!important}.bs-simple-admin-group{border-top:2px solid #dbeafe!important;margin-top:8px;padding-top:14px!important}.bs-simple-admin-group h3{color:#1d4ed8!important}@media(max-width:430px){.bs-theme-header-host .bs-theme-toggle{transform:scale(.66)}}';doc.head.appendChild(style)
+  }
+  function ensureAdminMenu(doc){
+    if(!doc?.getElementById('openSupportAdmin'))return false;
+    const content=doc.querySelector('#bsSimpleNavDrawer .bs-simple-content');
+    if(!content||doc.getElementById('bsSimpleAdminMenu'))return false;
+    const section=doc.createElement('section');section.id='bsSimpleAdminMenu';section.className='bs-simple-group bs-simple-admin-group';section.innerHTML='<h3>Yönetici</h3><button type="button" class="bs-simple-row" data-admin-menu="summary"><span aria-hidden="true">📊</span><b>Yönetici Özeti</b><span class="bs-simple-chevron" aria-hidden="true">›</span></button><button type="button" class="bs-simple-row" data-admin-menu="inbox"><span aria-hidden="true">📥</span><b>Gelen Kutusu</b><span class="bs-simple-chevron" aria-hidden="true">›</span></button>';content.appendChild(section);
+    section.querySelector('[data-admin-menu="summary"]')?.addEventListener('click',()=>{doc.getElementById('openAdminStatistics')?.click();doc.querySelector('#bsSimpleNavDrawer [data-simple-close]')?.click()});
+    section.querySelector('[data-admin-menu="inbox"]')?.addEventListener('click',()=>{doc.getElementById('openSupportAdmin')?.click();doc.querySelector('#bsSimpleNavDrawer [data-simple-close]')?.click()});
+    return true;
+  }
   function mount(doc=typeof document!=='undefined'?document:null,storage=root?.localStorage){
     if(!doc)return false;
-    applyTheme(readTheme(storage),doc);
-    if(ensureHeaderHost(doc,storage))return true;
+    applyTheme(readTheme(storage),doc);ensureExtraStyles(doc);
+    const headerReady=ensureHeaderHost(doc,storage);
     const host=doc.getElementById?.('conn');
-    if(host){host.className='bs-theme-host';renderToggle(host,storage,doc)}
+    if(!headerReady&&host){host.className='bs-theme-host';renderToggle(host,storage,doc)}
+    ensureAdminMenu(doc);
     if(!observerStarted&&doc.body&&typeof MutationObserver==='function'){
       observerStarted=true;
-      new MutationObserver(()=>ensureHeaderHost(doc,storage)).observe(doc.body,{childList:true,subtree:true});
+      new MutationObserver(()=>{ensureHeaderHost(doc,storage);ensureAdminMenu(doc)}).observe(doc.body,{childList:true,subtree:true});
     }
     if(!waitingForDocument&&doc.addEventListener){waitingForDocument=true;doc.addEventListener('DOMContentLoaded',()=>{waitingForDocument=false;mount(doc,storage)},{once:true})}
-    return !!host;
+    return headerReady||!!host;
   }
   function showConnectionError(message,doc=typeof document!=='undefined'?document:null){
     if(!doc)return false;
@@ -64,5 +78,5 @@
     error.textContent='Bağlantı hatası: '+String(message||'Bilinmeyen hata');
     return true;
   }
-  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,mount,showConnectionError});
+  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,ensureAdminMenu,mount,showConnectionError});
 });
