@@ -1,5 +1,5 @@
 (function(root,factory){
-  const api=factory(root);
+  const api=factory();
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.BizimSkorRankingMovement=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
@@ -21,7 +21,7 @@
   function read(key){return readFrom(root.localStorage,key)}
   function write(key,state){return writeTo(root.localStorage,key,state)}
   function track(key,rows,revision){const state=nextState(read(key),rows,revision);write(key,state);return state}
-  function trackWithSeed(key,rows,revision,seed,storage=root.localStorage){const previous=readFrom(storage,key)||seed||null;const state=nextState(previous,rows,revision);writeTo(storage,key,state);return state}
+  function trackWithSeed(key,rows,revision,seed,storage=root.localStorage){const stored=readFrom(storage,key),currentRevision=String(revision??fingerprint(rows));const previous=stored?.revision===currentRevision?stored:(seed||stored||null);const state=nextState(previous,rows,currentRevision);writeTo(storage,key,state);return state}
   function movementFor(state,name){return state?.movement?.[normalizeName(name)]||null}
   function badge(movement){if(!movement||!movement.amount)return'';const up=movement.direction==='up',arrow=up?'▲':'▼',cls=up?'bs-rank-up':'bs-rank-down';return ` <span class="bs-rank-move ${cls}" title="Önceki maç sonucuna göre ${movement.amount} sıra ${up?'yükseldi':'geriledi'}">${arrow} ${movement.amount}</span>`}
   function rankHtml(rank,movement,medal=''){return `${medal}${rank}${badge(movement)}`}
