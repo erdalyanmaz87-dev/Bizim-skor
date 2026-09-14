@@ -16,7 +16,7 @@
       return`weekly:${board}:${title.toLocaleLowerCase('tr-TR')}`;
     }
     if(kind==='friend'){
-      const league=String(root.document?.getElementById('friendLeagueSelect')?.value||'current');
+      const league=String(host?.dataset?.rankingContext||'current');
       return`friend:${league}`;
     }
     if(kind==='arena'){

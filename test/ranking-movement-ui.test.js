@@ -19,10 +19,9 @@ test('oyundaki genel haftalık kupa ve arkadaş ligi sıralamalarını kapsar',(
 });
 
 test('arkadaş ligi anlık görüntülerini seçilen lige göre ayırır',()=>{
-  global.document.getElementById=id=>id==='friendLeagueSelect'?{value:'lig-1'}:null;
-  const first=ui.contextKey({id:'friendLeagueRanking'},'friend');
-  global.document.getElementById=id=>id==='friendLeagueSelect'?{value:'lig-2'}:null;
-  const second=ui.contextKey({id:'friendLeagueRanking'},'friend');
+  global.document.getElementById=()=>null;
+  const first=ui.contextKey({id:'friendLeagueRanking',dataset:{rankingContext:'lig-1'}},'friend');
+  const second=ui.contextKey({id:'friendLeagueRanking',dataset:{rankingContext:'lig-2'}},'friend');
   assert.notEqual(first,second);
 });
 
