@@ -1,0 +1,74 @@
+:root{color-scheme:light}
+html[data-theme="dark"]{color-scheme:dark;background:#020617}
+body{transition:background-color .2s ease,color .2s ease}
+.bs-theme-host{display:flex;align-items:center;min-width:0;min-height:48px;box-sizing:border-box;margin:0}
+.bs-theme-toggle{display:grid;grid-template-columns:auto 38px auto;align-items:center;justify-content:center;gap:7px;width:100%;min-height:48px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#475569;cursor:pointer}
+.bs-theme-choice{font-size:12px;font-weight:800;white-space:nowrap;opacity:.55}.bs-theme-choice.is-active{color:#0f172a;opacity:1}
+.bs-theme-track{position:relative;width:38px;height:22px;border-radius:999px;background:#cbd5e1;box-shadow:inset 0 0 0 1px rgba(15,23,42,.12)}
+.bs-theme-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.35);transition:transform .2s ease}
+#bsConnectionShareRow .bs-theme-host{padding:0!important}
+html[data-theme="dark"] .bs-theme-track{background:#2563eb}
+html[data-theme="dark"] .bs-theme-thumb{transform:translateX(16px)}
+.bs-connection-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;border-radius:12px;background:#fee2e2;color:#991b1b;font-size:13px;font-weight:800}
+
+html[data-theme="dark"] body{background:#020617;color:#e5e7eb}
+html[data-theme="dark"] .c,
+html[data-theme="dark"] .tab:not(.active):not(.champions-tab),
+html[data-theme="dark"] .bs-share-menu,
+html[data-theme="dark"] .bs-profile-card,
+html[data-theme="dark"] .bs-museum-card,
+html[data-theme="dark"] .bs-admin-player-card,
+html[data-theme="dark"] .support-panel,
+html[data-theme="dark"] .support-admin-panel,
+html[data-theme="dark"] .support-card,
+html[data-theme="dark"] .support-admin-card{background:#111827!important;color:#e5e7eb!important;border-color:#334155!important;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+html[data-theme="dark"] .daily-card{background:linear-gradient(135deg,#0f253d,#111827)!important;border-color:#1d4ed8!important}
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select{background:#0f172a!important;color:#f8fafc!important;border-color:#475569!important}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder{color:#94a3b8}
+html[data-theme="dark"] button:not(.p):not(.active):not(.champions-tab):not(.bs-share-game):not(.danger):not(.bs-theme-toggle){background:#1e293b;color:#e5e7eb;border-color:#475569}
+html[data-theme="dark"] .bs-theme-toggle{background:#111827;color:#94a3b8;border-color:#475569}
+html[data-theme="dark"] .bs-theme-choice.is-active{color:#f8fafc}
+html[data-theme="dark"] .small,
+html[data-theme="dark"] .history-pred,
+html[data-theme="dark"] .msgtime,
+html[data-theme="dark"] .sponsor,
+html[data-theme="dark"] .bs-league-title{color:#94a3b8!important}
+html[data-theme="dark"] a{color:#93c5fd}
+html[data-theme="dark"] th,
+html[data-theme="dark"] td,
+html[data-theme="dark"] .m,
+html[data-theme="dark"] .pc,
+html[data-theme="dark"] .msg,
+html[data-theme="dark"] .result-row,
+html[data-theme="dark"] .history-match,
+html[data-theme="dark"] .friend-member{border-color:#334155!important}
+html[data-theme="dark"] .history-stat,
+html[data-theme="dark"] .bs-home-stat{background:#172033!important;color:#f8fafc!important;border-color:#475569!important}
+html[data-theme="dark"] .bs-home-stat span{color:#cbd5e1!important}
+html[data-theme="dark"] .history-stat b,
+html[data-theme="dark"] .history-mark{color:#f8fafc}
+html[data-theme="dark"] .ok,
+html[data-theme="dark"] .saved{background:#0d2b22!important;color:#bbf7d0!important;border-color:#166534!important}
+html[data-theme="dark"] .friend-note,
+html[data-theme="dark"] .friend-invite-card{background:linear-gradient(180deg,#10233e,#111827)!important;color:#bfdbfe!important;border-color:#2563eb!important}
+html[data-theme="dark"] .bs-header-account button,
+html[data-theme="dark"] .bs-header-home{background:#1e293b!important;color:#f8fafc!important;border-color:#475569!important}
+html[data-theme="dark"] .bs-header-museum{background:#422006!important;color:#fed7aa!important;border-color:#9a3412!important}
+html[data-theme="dark"] .bs-scroll-shell:before{background:linear-gradient(90deg,rgba(2,6,23,.96),rgba(2,6,23,0))!important}
+html[data-theme="dark"] .bs-scroll-shell:after{background:linear-gradient(270deg,rgba(2,6,23,.96),rgba(2,6,23,0))!important}
+html[data-theme="dark"] .bs-scroll-menu>.tab:not([data-tab="arena"]):not([data-tab="championsRanking"]):not([data-tab="nationsRanking"]){background:#111827!important;color:#e5e7eb!important;border-color:#334155!important}
+html[data-theme="dark"] .bs-share-menu button{background:#1e293b!important;color:#e5e7eb!important}
+html[data-theme="dark"] #personalRanks>[style*="background:"]{background:#172033!important;color:#f8fafc!important}
+html[data-theme="dark"] .bs-screen-layer,
+html[data-theme="dark"] .bs-screen-shell,
+html[data-theme="dark"] .bs-admin-stats-modal{background:#020617!important;color:#e5e7eb!important}
+html[data-theme="dark"] .bs-admin-stats-modal header,
+html[data-theme="dark"] .bs-admin-stats-grid>b,
+html[data-theme="dark"] .bs-admin-stats-list>div{background:#111827!important;color:#e5e7eb!important;border-color:#334155!important}
+html[data-theme="dark"] .support-reply{background:#10233e!important;border-color:#1d4ed8!important}
+html[data-theme="dark"] .bs-connection-error{background:#450a0a;color:#fecaca;border-color:#991b1b}
+@media(max-width:430px){.bs-theme-toggle{grid-template-columns:1fr 32px 1fr;gap:3px;padding:6px 4px}.bs-theme-choice{font-size:10px}.bs-theme-track{width:32px;height:20px}.bs-theme-thumb{width:14px;height:14px}.bs-theme-toggle[aria-checked="true"] .bs-theme-thumb{transform:translateX(12px)}}
+@media(prefers-reduced-motion:reduce){body,.bs-theme-thumb{transition:none}}
