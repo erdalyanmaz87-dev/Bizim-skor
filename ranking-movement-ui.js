@@ -11,7 +11,8 @@
     if(kind==='general')return'general';
     if(kind==='weekly'){
       const title=text(root.document?.getElementById('weeklyRankingTitle'))||'weekly';
-      return'weekly:'+title.toLocaleLowerCase('tr-TR');
+      const board=String(host?.id||'weekly');
+      return`weekly:${board}:${title.toLocaleLowerCase('tr-TR')}`;
     }
     if(kind==='arena'){
       const heading=text(host.closest?.('.league-shell')?.querySelector('h2'))||'arena';
