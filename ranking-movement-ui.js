@@ -7,12 +7,17 @@
 
   function text(node){return String(node?.textContent||'').trim()}
   function number(value){const m=String(value??'').match(/-?\d+(?:[.,]\d+)?/);return m?Number(m[0].replace(',','.')):0}
+  function rankingTargets(){return[['generalBoard','general'],['weeklyRankingBoard','weekly'],['championsRankingBoard','champions'],['championsWeeklyRankingBoard','weekly'],['nationsRankingBoard','nations'],['nationsWeeklyRankingBoard','weekly'],['friendLeagueRanking','friend']]}
   function contextKey(host,kind){
     if(kind==='general')return'general';
     if(kind==='weekly'){
       const title=text(root.document?.getElementById('weeklyRankingTitle'))||'weekly';
       const board=String(host?.id||'weekly');
       return`weekly:${board}:${title.toLocaleLowerCase('tr-TR')}`;
+    }
+    if(kind==='friend'){
+      const league=String(root.document?.getElementById('friendLeagueSelect')?.value||'current');
+      return`friend:${league}`;
     }
     if(kind==='arena'){
       const heading=text(host.closest?.('.league-shell')?.querySelector('h2'))||'arena';
@@ -59,13 +64,7 @@
   function scan(doc=root.document){
     if(!doc)return false;
     let changed=false;
-    const known=[
-      ['generalBoard','general'],
-      ['weeklyRankingBoard','weekly'],
-      ['championsWeeklyRankingBoard','weekly'],
-      ['nationsWeeklyRankingBoard','weekly']
-    ];
-    known.forEach(([id,kind])=>{const host=doc.getElementById(id);if(host)changed=apply(host,kind)||changed});
+    rankingTargets().forEach(([id,kind])=>{const host=doc.getElementById(id);if(host)changed=apply(host,kind)||changed});
     doc.querySelectorAll?.('#leagueSystemPanel .league-table-wrap').forEach(host=>{changed=apply(host,'arena')||changed});
     return changed;
   }
@@ -85,5 +84,5 @@
     return true;
   }
 
-  return Object.freeze({number,tableRows,arenaRows,contextKey,apply,scan,mount});
+  return Object.freeze({number,tableRows,arenaRows,rankingTargets,contextKey,apply,scan,mount});
 });

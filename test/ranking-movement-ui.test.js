@@ -10,3 +10,18 @@ test('farklı turnuvaların haftalık sıralama anlık görüntülerini birbirin
   const nationsKey=ui.contextKey({id:'nationsWeeklyRankingBoard'},'weekly');
   assert.equal(new Set([superKey,championsKey,nationsKey]).size,3);
 });
+
+test('oyundaki genel haftalık kupa ve arkadaş ligi sıralamalarını kapsar',()=>{
+  assert.deepEqual(ui.rankingTargets().map(([id])=>id),[
+    'generalBoard','weeklyRankingBoard','championsRankingBoard','championsWeeklyRankingBoard',
+    'nationsRankingBoard','nationsWeeklyRankingBoard','friendLeagueRanking'
+  ]);
+});
+
+test('arkadaş ligi anlık görüntülerini seçilen lige göre ayırır',()=>{
+  global.document.getElementById=id=>id==='friendLeagueSelect'?{value:'lig-1'}:null;
+  const first=ui.contextKey({id:'friendLeagueRanking'},'friend');
+  global.document.getElementById=id=>id==='friendLeagueSelect'?{value:'lig-2'}:null;
+  const second=ui.contextKey({id:'friendLeagueRanking'},'friend');
+  assert.notEqual(first,second);
+});
