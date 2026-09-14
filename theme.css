@@ -135,5 +135,42 @@ html[data-theme="dark"] .support-admin-filters button{background:#1e293b!importa
 html[data-theme="dark"] .support-admin-filters button.active{background:#1d4ed8!important;color:#fff!important;border-color:#60a5fa!important}
 html[data-theme="dark"] .support-admin-actions button:last-child{background:#052e16!important;color:#bbf7d0!important;border-color:#166534!important}
 
+/* Dark-mode readability: daily matches */
+html[data-theme="dark"] .daily-match,
+html[data-theme="dark"] .live-match{border-color:#334155!important}
+html[data-theme="dark"] .daily-match b,
+html[data-theme="dark"] .live-exact-ticker{color:#93c5fd!important}
+html[data-theme="dark"] .live-status{color:#fca5a5!important}
+html[data-theme="dark"] .savedrow,
+html[data-theme="dark"] .friend-owner{border-color:#334155!important}
+
+/* Dark-mode readability: match statistics */
+html[data-theme="dark"] .match-stats-modal{background:#0f172a!important;color:#f8fafc!important}
+html[data-theme="dark"] .match-stats-head{background:linear-gradient(135deg,#172554,#111827)!important;color:#f8fafc!important;border:1px solid #334155!important}
+html[data-theme="dark"] .match-stats-section{background:#111827!important;color:#e5e7eb!important;border-color:#334155!important}
+html[data-theme="dark"] .match-stats-standing article{background:#172033!important;color:#f8fafc!important}
+html[data-theme="dark"] .match-stats-standing article>span:not(.match-stats-form),
+html[data-theme="dark"] .match-stats-result time,
+html[data-theme="dark"] .match-stats-muted,
+html[data-theme="dark"] .match-stats-updated{color:#94a3b8!important}
+html[data-theme="dark"] .match-stats-result{border-color:#334155!important;color:#e5e7eb!important}
+html[data-theme="dark"] .match-stats-button{background:#10233e!important;color:#bfdbfe!important;border-color:#2563eb!important}
+html[data-theme="dark"] .match-stats-back{background:#1e293b!important;color:#f8fafc!important;border-top:1px solid #334155!important}
+
+/* Dark-mode readability: SkorBot */
+html[data-theme="dark"] .robot-prediction-button,
+html[data-theme="dark"] .robot-prediction-all{background:#052e16!important;color:#bbf7d0!important;border-color:#166534!important}
+html[data-theme="dark"] .robot-prediction-rule{background:#172033!important;color:#cbd5e1!important;border:1px solid #334155!important}
+html[data-theme="dark"] .robot-prediction-rule b{color:#86efac!important}
+
+/* Dark-mode readability: football center */
+html[data-theme="dark"] .football-center-updated,
+html[data-theme="dark"] .football-center-empty{color:#94a3b8!important}
+html[data-theme="dark"] .football-center-error{background:#450a0a!important;color:#fecaca!important;border:1px solid #991b1b!important}
+html[data-theme="dark"] .football-center-pills button,
+html[data-theme="dark"] .football-center-categories button{border:1px solid #475569!important}
+html[data-theme="dark"] .football-center-pills button.active,
+html[data-theme="dark"] .football-center-categories button.active{background:#1d4ed8!important;color:#fff!important;border-color:#60a5fa!important}
+
 @media(max-width:430px){.bs-theme-toggle{grid-template-columns:1fr 32px 1fr;gap:3px;padding:6px 4px}.bs-theme-choice{font-size:10px}.bs-theme-track{width:32px;height:20px}.bs-theme-thumb{width:14px;height:14px}.bs-theme-toggle[aria-checked="true"] .bs-theme-thumb{transform:translateX(12px)}}
 @media(prefers-reduced-motion:reduce){body,.bs-theme-thumb{transition:none}}
