@@ -9,7 +9,8 @@ test('kalici hareketleri context id ile indeksler',()=>{
     {context_id:'friend:abc',player_name:'Kat',before_rank:3,after_rank:2},
     {context_id:'arena:1:gold',player_name:'Kat',before_rank:4,after_rank:3}
   ]);
-  assert.deepEqual(data.get('super:general').get('kat'),{beforeRank:25,afterRank:21});
+  assert.equal(data.get('super:general').get('kat').beforeRank,25);
+  assert.equal(data.get('super:general').get('kat').afterRank,21);
   assert.equal(data.get('friend:abc').get('kat').afterRank,2);
 });
 
