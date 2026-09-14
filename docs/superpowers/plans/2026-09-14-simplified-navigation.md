@@ -1,6 +1,6 @@
 # Simplified Navigation Implementation Plan
 
-**Goal:** Replace the crowded visible horizontal menu with a four-item mobile bottom bar and grouped side drawer without changing existing screen-routing behavior.
+**Goal:** Replace the crowded visible horizontal menu with a four-item mobile bottom bar, live prediction progress, and grouped side drawer without changing existing screen-routing behavior.
 
 **Architecture:** Add a standalone UMD navigation module after `horizontal-menu.js`. The module renders the new controls, proxies existing tab/header actions, observes active/unread state, and injects scoped responsive styles. Existing feature modules remain unchanged.
 
@@ -16,7 +16,7 @@
 
 1. Add failing tests for item groups, aliases, bottom-bar state, and accessible markup.
 2. Run the focused test and confirm it fails because the module is absent.
-3. Implement pure navigation helpers and rendering/mount behavior.
+3. Implement pure navigation helpers, prediction progress, feature panels, and rendering/mount behavior.
 4. Run the focused test and confirm it passes.
 
 ### Task 2: Load the navigation layer

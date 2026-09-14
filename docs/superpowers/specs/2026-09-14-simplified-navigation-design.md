@@ -6,9 +6,10 @@ Mobil ekranda yatay menü kalabalığını kaldırıp oyunun ana işlerini her a
 
 ## Arayüz
 
-- Alt sabit çubuk: **Ana Sayfa**, **Tahmin Yap**, **Sıralamalar**, **Menü**.
-- Sıralamalar düğmesi soldan açılan paneli doğrudan sıralama grubunda açar.
+- Alt sabit çubuk: **Ana Sayfa**, **Tahmin Yap**, **Tahmin Durumu**, **Menü**.
+- Tahmin Durumu düğmesi aktif turların tamamlanma yüzdesini yeşil bir ilerleme halkasında gösterir. Dokunulduğunda mevcut turnuva kartları, tamamlandı/yapılmadı bilgileri ve sayaçları ayrı bir panelde açılır.
 - Menü düğmesi paneli baştan açar. Panel; Sıralamalar, Futbol, Sosyal, Hesabım ve Bilgi başlıkları altında gruplanır.
+- Ayın Davet Şampiyonu ve davet sıralaması ana sayfadan kaldırılarak Menü içindeki Sosyal grubundan açılır.
 - Üst bölümde logo, oyuncu adı ve bildirim simgesi kalır. Güncelleme, müze, destek ve çıkış işlemleri menü paneline taşınır.
 - Açık/koyu mod anahtarı mevcut yerinde kalır.
 
