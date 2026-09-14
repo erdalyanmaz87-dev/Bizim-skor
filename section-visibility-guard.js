@@ -4,16 +4,19 @@ function hide(id){byId(id)?.classList.add('hide')}
 function show(id){byId(id)?.classList.remove('hide')}
 function hideAllPredictionScreens(){hide('pred');hide('nationsPred');hide('championsPred')}
 function hideRankings(){hide('nationsRanking');hide('championsRanking')}
-function openSuperPrediction(){hideRankings();hide('nationsPred');hide('championsPred');show('pred')}
-function openNationsPrediction(){hideRankings();hide('pred');hide('championsPred');show('nationsPred')}
-function openChampionsPrediction(){hideRankings();hide('pred');hide('nationsPred');show('championsPred')}
+function openHome(){hideAllPredictionScreens();hideRankings();show('home')}
+function openSuperPrediction(){hide('home');hideRankings();hide('nationsPred');hide('championsPred');show('pred')}
+function openNationsPrediction(){hide('home');hideRankings();hide('pred');hide('championsPred');show('nationsPred')}
+function openChampionsPrediction(){hide('home');hideRankings();hide('pred');hide('nationsPred');show('championsPred')}
 function openWeeklyRankings(){
+  hide('home');
   hideAllPredictionScreens();
   hideRankings();
   show('weeklyRankings');
   setTimeout(()=>root.BizimSkorWeeklyRankingStrip?.setCompetition?.('super_lig',false),0);
 }
 function openRanking(tab){
+  hide('home');
   hideAllPredictionScreens();
   if(tab==='weeklyRankings'){openWeeklyRankings();return}
   if(tab==='nationsRanking'){hide('championsRanking');hide('general');hide('weeklyRankings');show('nationsRanking');setTimeout(()=>root.BizimSkorNationsUI?.loadRanking?.(),0);return}
@@ -25,12 +28,13 @@ function mount(){
   document.addEventListener('click',event=>{
     if(event.target?.closest?.('[data-bs-card]'))return;
     const tab=event.target?.closest?.('.tab')?.dataset?.tab;
+    if(tab==='home'){openHome();return}
     if(tab==='pred'){openSuperPrediction();return}
     if(tab==='weeklyRankings'||tab==='general'||tab==='nationsRanking'||tab==='championsRanking'){openRanking(tab);return}
   },true);
   root.addEventListener?.('bizimskor:nations-prediction-opened',()=>setTimeout(openNationsPrediction,0));
   root.addEventListener?.('bizimskor:champions-prediction-opened',()=>setTimeout(openChampionsPrediction,0));
 }
-root.BizimSkorSectionVisibilityGuard=Object.freeze({mount,openSuperPrediction,openNationsPrediction,openChampionsPrediction,openWeeklyRankings,openRanking});
+root.BizimSkorSectionVisibilityGuard=Object.freeze({mount,openHome,openSuperPrediction,openNationsPrediction,openChampionsPrediction,openWeeklyRankings,openRanking});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })(typeof globalThis!=='undefined'?globalThis:this);
