@@ -44,9 +44,10 @@
     if(!host.querySelector('#bsThemeToggle'))renderToggle(host,storage,doc);
     return true;
   }
+  function adminLegacyHideCss(){return '#openAdminStatistics,#openSupportAdmin{display:none!important}'}
   function ensureExtraStyles(doc){
     if(!doc||doc.getElementById('bsThemeHeaderMenuStyles'))return;
-    const style=doc.createElement('style');style.id='bsThemeHeaderMenuStyles';style.textContent='.bs-theme-header-host{display:flex!important;align-items:center!important;margin-right:4px!important}.bs-theme-header-host .bs-theme-toggle{transform:scale(.78);transform-origin:right center;margin:0!important}body.bs-simple-nav-ready #openAdminStatistics,body.bs-simple-nav-ready #openSupportAdmin{display:none!important}.bs-simple-admin-group{border-top:2px solid #dbeafe!important;margin-top:8px;padding-top:14px!important}.bs-simple-admin-group h3{color:#1d4ed8!important}@media(max-width:430px){.bs-theme-header-host .bs-theme-toggle{transform:scale(.66)}}';doc.head.appendChild(style)
+    const style=doc.createElement('style');style.id='bsThemeHeaderMenuStyles';style.textContent='.bs-theme-header-host{display:flex!important;align-items:center!important;margin-right:4px!important}.bs-theme-header-host .bs-theme-toggle{transform:scale(.78);transform-origin:right center;margin:0!important}'+adminLegacyHideCss()+'.bs-simple-admin-group{border-top:2px solid #dbeafe!important;margin-top:8px;padding-top:14px!important}.bs-simple-admin-group h3{color:#1d4ed8!important}@media(max-width:430px){.bs-theme-header-host .bs-theme-toggle{transform:scale(.66)}}';doc.head.appendChild(style)
   }
   function ensureAdminMenu(doc){
     if(!doc?.getElementById('openSupportAdmin'))return false;
@@ -84,5 +85,5 @@
     error.textContent='Bağlantı hatası: '+String(message||'Bilinmeyen hata');
     return true;
   }
-  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,ensureAdminMenu,ensurePredictionCompetitionScript,mount,showConnectionError});
+  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,adminLegacyHideCss,ensureAdminMenu,ensurePredictionCompetitionScript,mount,showConnectionError});
 });
