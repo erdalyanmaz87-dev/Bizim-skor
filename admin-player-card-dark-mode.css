@@ -1,0 +1,13 @@
+/* Yönetici oyuncu durum kartı: koyu tema okunabilirlik düzeltmesi */
+html[data-theme="dark"] .bs-admin-player-backdrop{background:rgba(2,6,23,.55)!important}
+html[data-theme="dark"] .bs-admin-player-card{background:#111827!important;color:#f8fafc!important;border:1px solid #334155!important;box-shadow:0 -18px 48px rgba(0,0,0,.42)!important}
+html[data-theme="dark"] .bs-admin-player-head>div>span{color:#94a3b8!important}
+html[data-theme="dark"] .bs-admin-player-head h2{color:#fff!important}
+html[data-theme="dark"] .bs-admin-player-head button{background:#1e293b!important;color:#f8fafc!important;border:1px solid #334155!important}
+html[data-theme="dark"] .bs-admin-player-prediction{background:#172033!important;color:#f8fafc!important;border:1px solid #334155!important}
+html[data-theme="dark"] .bs-admin-player-prediction span{color:#cbd5e1!important;font-weight:700}
+html[data-theme="dark"] .bs-admin-player-prediction b{color:#f8fafc!important}
+html[data-theme="dark"] .bs-admin-player-grid>div{background:#f8fafc!important;color:#0f172a!important;border-color:#cbd5e1!important;box-shadow:0 2px 8px rgba(15,23,42,.12)}
+html[data-theme="dark"] .bs-admin-player-grid span,
+html[data-theme="dark"] .bs-admin-player-grid small{color:#475569!important;opacity:1!important}
+html[data-theme="dark"] .bs-admin-player-grid b{color:#0f172a!important;font-weight:900}
