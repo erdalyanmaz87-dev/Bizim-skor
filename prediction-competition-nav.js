@@ -31,6 +31,7 @@
   }
   function ensureNav(doc=typeof document!=='undefined'?document:null,requested){
     if(!doc)return false;
+    if(doc.body?.classList?.contains?.('bs-simple-nav-ready')){doc.getElementById('bsPredictionCompetitionNav')?.remove?.();return false}
     ensureStyles(doc);
     const active=requested||visibleCompetition(doc),target=doc.getElementById(active)||doc.getElementById('pred');
     if(!target)return false;
