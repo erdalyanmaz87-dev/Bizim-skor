@@ -2,7 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 
 global.document={getElementById:id=>id==='weeklyRankingTitle'?{textContent:'🏆 2. Hafta Sıralaması'}:null};
-const ui=require('./ranking-movement-ui.js');
+const ui=require('../ranking-movement-ui.js');
 
 test('farklı turnuvaların haftalık sıralama anlık görüntülerini birbirinden ayırır',()=>{
   const superKey=ui.contextKey({id:'weeklyRankingBoard'},'weekly');
@@ -24,4 +24,14 @@ test('arkadaş ligi anlık görüntülerini seçilen lige göre ayırır',()=>{
   global.document.getElementById=id=>id==='friendLeagueSelect'?{value:'lig-2'}:null;
   const second=ui.contextKey({id:'friendLeagueRanking'},'friend');
   assert.notEqual(first,second);
+});
+
+test('aynı hareket rozeti zaten görünüyorsa DOMu yeniden değiştirmez',()=>{
+  let removed=0,inserted=0;
+  const existing={textContent:'▲ 2',classList:{contains:name=>name==='bs-rank-up'},remove:()=>removed++};
+  const rankNode={querySelector:()=>existing,insertAdjacentHTML:()=>inserted++};
+  const changed=ui.reconcileBadge(rankNode,{direction:'up',amount:2},{badge:()=>'<span>▲ 2</span>'});
+  assert.equal(changed,false);
+  assert.equal(removed,0);
+  assert.equal(inserted,0);
 });

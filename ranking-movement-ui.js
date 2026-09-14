@@ -46,6 +46,14 @@
     })).filter(row=>row.name&&row.rankNode);
   }
 
+  function reconcileBadge(rankNode,current,movement){
+    const existing=rankNode?.querySelector?.('.bs-rank-move')||null;
+    if(!current){existing?.remove?.();return!!existing}
+    const up=current.direction==='up',expectedText=`${up?'▲':'▼'} ${current.amount}`,expectedClass=up?'bs-rank-up':'bs-rank-down';
+    if(existing&&text(existing)===expectedText&&existing.classList?.contains?.(expectedClass))return false;
+    existing?.remove?.();rankNode?.insertAdjacentHTML?.('beforeend',movement.badge(current));return true;
+  }
+
   function apply(host,kind){
     const movement=root.BizimSkorRankingMovement;
     if(!movement||!host)return false;
@@ -55,8 +63,7 @@
     const state=movement.track(contextKey(host,kind),rows);
     rows.forEach(row=>{
       const current=movement.movementFor(state,row.name);
-      row.rankNode.querySelectorAll?.('.bs-rank-move').forEach(node=>node.remove());
-      if(current)row.rankNode.insertAdjacentHTML('beforeend',movement.badge(current));
+      reconcileBadge(row.rankNode,current,movement);
     });
     return true;
   }
@@ -84,5 +91,5 @@
     return true;
   }
 
-  return Object.freeze({number,tableRows,arenaRows,rankingTargets,contextKey,apply,scan,mount});
+  return Object.freeze({number,tableRows,arenaRows,rankingTargets,contextKey,reconcileBadge,apply,scan,mount});
 });
