@@ -23,7 +23,18 @@ const requiredDarkSelectors=[
   'html[data-theme="dark"] .support-contact-button',
   'html[data-theme="dark"] .support-head>button',
   'html[data-theme="dark"] .support-admin-filters button',
-  'html[data-theme="dark"] #loginHelpActions>button'
+  'html[data-theme="dark"] #loginHelpActions>button',
+  'html[data-theme="dark"] .daily-match',
+  'html[data-theme="dark"] .match-stats-modal',
+  'html[data-theme="dark"] .match-stats-head',
+  'html[data-theme="dark"] .match-stats-section',
+  'html[data-theme="dark"] .match-stats-standing article',
+  'html[data-theme="dark"] .match-stats-result',
+  'html[data-theme="dark"] .robot-prediction-button',
+  'html[data-theme="dark"] .robot-prediction-all',
+  'html[data-theme="dark"] .robot-prediction-rule',
+  'html[data-theme="dark"] .football-center-updated',
+  'html[data-theme="dark"] .football-center-error'
 ];
 
 for(const selector of requiredDarkSelectors){
@@ -33,5 +44,7 @@ for(const selector of requiredDarkSelectors){
 assert.ok(css.includes('html[data-theme="dark"] .league-summary-status'), 'Arena status text needs a dark-mode color');
 assert.ok(css.includes('html[data-theme="dark"] .bs-profile-note'), 'Profile secondary text needs a dark-mode color');
 assert.ok(css.includes('html[data-theme="dark"] .bs-museum-head span'), 'Museum secondary text needs a dark-mode color');
+assert.ok(css.includes('html[data-theme="dark"] .daily-match b'), 'Daily match accent text needs a dark-mode color');
+assert.ok(css.includes('html[data-theme="dark"] .match-stats-muted'), 'Match statistics secondary text needs a dark-mode color');
 
 console.log('theme dark readability ok');
