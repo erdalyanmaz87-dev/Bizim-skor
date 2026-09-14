@@ -42,23 +42,37 @@
     return true;
   }
   function showSuper(doc){
+    const runtime=root?.BizimSkorScreenNavigationRuntime;
+    if(runtime?.open?.('pred',{source:'prediction-competition-nav'})){ensureNav(doc,'pred');return true}
     const tab=doc.querySelector('.tab[data-tab="pred"]');
     if(tab){tab.click();return true}
     doc.querySelectorAll('section').forEach(section=>section.classList.add('hide'));
     doc.getElementById('pred')?.classList.remove('hide');
     return !!doc.getElementById('pred');
   }
+  function competitionUi(key){
+    if(key==='championsPred')return root?.BizimSkorChampionsUI||null;
+    if(key==='nationsPred')return root?.BizimSkorNationsUI||null;
+    return null;
+  }
   function openCompetition(key,doc=typeof document!=='undefined'?document:null){
     if(!doc)return false;
-    let result;
-    if(key==='championsPred')result=root?.BizimSkorChampionsUI?.openPrediction?.();
-    else if(key==='nationsPred')result=root?.BizimSkorNationsUI?.openPrediction?.();
-    else result=showSuper(doc);
-    if((key==='championsPred'&&!root?.BizimSkorChampionsUI?.openPrediction)||(key==='nationsPred'&&!root?.BizimSkorNationsUI?.openPrediction)){
+    if(key==='pred')return showSuper(doc);
+    const ui=competitionUi(key);
+    if(!ui){root?.alert?.('Şu anda açık tahmin bulunmuyor.');return false}
+    const runtime=root?.BizimSkorScreenNavigationRuntime;
+    if(runtime?.open?.(key,{source:'prediction-competition-nav'})){
+      ensureNav(doc,key);
+      const result=ui.loadPrediction?.();
+      Promise.resolve(result).catch(error=>console.warn('prediction competition load',error));
+      return true;
+    }
+    if(typeof ui.openPrediction!=='function'){
       root?.alert?.('Şu anda açık tahmin bulunmuyor.');
       return false;
     }
-    Promise.resolve(result).catch(()=>{}).finally(()=>root?.setTimeout?.(()=>ensureNav(doc,key),0));
+    const result=ui.openPrediction();
+    Promise.resolve(result).catch(error=>console.warn('prediction competition open',error)).finally(()=>root?.setTimeout?.(()=>ensureNav(doc,key),0));
     ensureNav(doc,key);
     return true;
   }
@@ -70,6 +84,7 @@
       new MutationObserver(()=>ensureNav(doc)).observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
     }
     root?.addEventListener?.('bizimskor:nations-prediction-opened',()=>ensureNav(doc,'nationsPred'));
+    root?.addEventListener?.('bizimskor:champions-prediction-opened',()=>ensureNav(doc,'championsPred'));
     doc.addEventListener?.('click',event=>{if(event.target.closest?.('[data-simple-nav="pred"]'))root?.setTimeout?.(()=>ensureNav(doc,'pred'),0)});
     return ready;
   }
