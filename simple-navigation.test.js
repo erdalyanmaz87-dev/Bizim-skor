@@ -34,9 +34,15 @@ assert.match(drawer,/data-simple-account="museum"/);
 assert.match(drawer,/data-simple-account="logout"/);
 assert.match(drawer,/data-simple-account="inviteChampion"/);
 assert.match(drawer,/Ayın Davet Şampiyonu/);
+assert.match(drawer,/data-simple-nav-group="info"/);
+assert.match(drawer,/data-simple-account="support"/);
+assert.match(drawer,/Bize Ulaşın/);
 
 const guestDrawer=nav.drawerMarkup(groups,{loggedIn:false});
 assert.match(guestDrawer,/data-simple-account="login"/);
 assert.doesNotMatch(guestDrawer,/data-simple-account="logout"/);
+assert.match(guestDrawer,/data-simple-nav-group="info"/);
+assert.match(guestDrawer,/data-simple-account="support"/);
+assert.match(guestDrawer,/Bize Ulaşın/);
 
 console.log('simple-navigation ok');
