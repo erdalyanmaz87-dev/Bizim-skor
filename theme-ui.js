@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const STORAGE_KEY='bizimSkorTheme';
   const COLORS={light:'#071633',dark:'#020617'};
-  let waitingForDocument=false;
+  let waitingForDocument=false,observerStarted=false;
 
   function normalizeTheme(value){return value==='dark'?'dark':'light'}
   function readTheme(storage=root?.localStorage){try{return normalizeTheme(storage?.getItem(STORAGE_KEY))}catch(_){return'light'}}
@@ -35,13 +35,27 @@
     });
     return current;
   }
+  function ensureHeaderHost(doc,storage){
+    const user=doc?.querySelector?.('.bs-header-user'),account=doc?.querySelector?.('.bs-header-account');
+    if(!user||!account)return false;
+    let host=doc.getElementById('bsHeaderThemeHost');
+    if(!host){host=doc.createElement('div');host.id='bsHeaderThemeHost';host.className='bs-theme-host bs-theme-header-host';account.insertBefore(host,user)}
+    const original=doc.getElementById('conn');if(original&&original!==host)original.innerHTML='';
+    if(!host.querySelector('#bsThemeToggle'))renderToggle(host,storage,doc);
+    return true;
+  }
   function mount(doc=typeof document!=='undefined'?document:null,storage=root?.localStorage){
     if(!doc)return false;
     applyTheme(readTheme(storage),doc);
+    if(ensureHeaderHost(doc,storage))return true;
     const host=doc.getElementById?.('conn');
-    if(host){host.className='bs-theme-host';renderToggle(host,storage,doc);return true}
+    if(host){host.className='bs-theme-host';renderToggle(host,storage,doc)}
+    if(!observerStarted&&doc.body&&typeof MutationObserver==='function'){
+      observerStarted=true;
+      new MutationObserver(()=>ensureHeaderHost(doc,storage)).observe(doc.body,{childList:true,subtree:true});
+    }
     if(!waitingForDocument&&doc.addEventListener){waitingForDocument=true;doc.addEventListener('DOMContentLoaded',()=>{waitingForDocument=false;mount(doc,storage)},{once:true})}
-    return false;
+    return !!host;
   }
   function showConnectionError(message,doc=typeof document!=='undefined'?document:null){
     if(!doc)return false;
@@ -50,5 +64,5 @@
     error.textContent='Bağlantı hatası: '+String(message||'Bilinmeyen hata');
     return true;
   }
-  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,mount,showConnectionError});
+  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,mount,showConnectionError});
 });
