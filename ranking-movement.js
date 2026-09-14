@@ -3,7 +3,7 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.BizimSkorRankingMovement=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
-  const PREFIX='bizimSkorRankingMovement:v2:';
+  const PREFIX='bizimSkorRankingMovement:v3:';
   function normalizeName(value){return String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('tr-TR')}
   function normalizeRows(rows){return (rows||[]).map((row,index)=>({name:String(row.name??row.player_name??''),rank:Number(row.rank??row.league_rank??index+1),metric:String(row.metric??[row.pts??row.points??row.total_points??'',row.ex??row.exact_count??row.exact_scores??'',row.cr??row.correct_count??row.correct_results??''].join('|'))})).filter(row=>row.name&&Number.isFinite(row.rank)&&row.rank>0)}
   function fingerprint(rows){return normalizeRows(rows).map(row=>`${normalizeName(row.name)}:${row.rank}:${row.metric}`).join(';')}
@@ -21,7 +21,7 @@
   function read(key){return readFrom(root.localStorage,key)}
   function write(key,state){return writeTo(root.localStorage,key,state)}
   function track(key,rows,revision){const state=nextState(read(key),rows,revision);write(key,state);return state}
-  function trackWithSeed(key,rows,revision,seed,storage=root.localStorage){const stored=readFrom(storage,key),currentRevision=String(revision??fingerprint(rows));const previous=stored?.revision===currentRevision?stored:(seed||stored||null);const state=nextState(previous,rows,currentRevision);writeTo(storage,key,state);return state}
+  function trackWithSeed(key,rows,revision,seed,storage=root.localStorage){const stored=readFrom(storage,key),previous=seed||stored||null;const state=nextState(previous,rows,revision);writeTo(storage,key,state);return state}
   function movementFor(state,name){return state?.movement?.[normalizeName(name)]||null}
   function badge(movement){if(!movement||!movement.amount)return'';const up=movement.direction==='up',arrow=up?'▲':'▼',cls=up?'bs-rank-up':'bs-rank-down';return ` <span class="bs-rank-move ${cls}" title="Önceki maç sonucuna göre ${movement.amount} sıra ${up?'yükseldi':'geriledi'}">${arrow} ${movement.amount}</span>`}
   function rankHtml(rank,movement,medal=''){return `${medal}${rank}${badge(movement)}`}
