@@ -25,10 +25,10 @@
     return Object.fromEntries(normalizeRows(rows).map(row=>[normalizeName(row.name),{rank:row.rank,metric:row.metric}]));
   }
 
-  function nextState(previous,rows){
+  function nextState(previous,rows,forceRevision=false){
     const currentRows=normalizeRows(rows);
     const currentFingerprint=fingerprint(currentRows);
-    if(previous&&previous.fingerprint===currentFingerprint){
+    if(previous&&previous.fingerprint===currentFingerprint&&!forceRevision){
       return {...previous,movement:previous.movement||{}};
     }
 
@@ -60,8 +60,8 @@
     return state;
   }
 
-  function track(key,rows){
-    const state=nextState(read(key),rows);
+  function track(key,rows,forceRevision=false){
+    const state=nextState(read(key),rows,forceRevision);
     write(key,state);
     return state;
   }
@@ -84,7 +84,7 @@
     if(!doc||doc.getElementById('bizimSkorRankingMovementStyle'))return false;
     const style=doc.createElement('style');
     style.id='bizimSkorRankingMovementStyle';
-    style.textContent='.bs-rank-move{display:inline-flex;align-items:center;margin-left:4px;font-size:11px;font-weight:900;white-space:nowrap;vertical-align:middle}.bs-rank-up{color:#16a34a}.bs-rank-down{color:#dc2626}';
+    style.textContent='.bs-rank-move{display:inline-flex;align-items:center;margin-left:4px;font-size:11px;font-weight:900;white-space:nowrap;vertical-align:middle}.bs-rank-up{color:#16a34a}.bs-rank-down{color:#dc2626}html[data-theme="dark"] .bs-rank-up{color:#4ade80}html[data-theme="dark"] .bs-rank-down{color:#f87171}';
     doc.head.appendChild(style);
     return true;
   }

@@ -42,3 +42,18 @@ test('ilk kez siralamaya giren oyuncuya yapay yukselis oku vermez',()=>{
   const next=Movement.nextState(first,[row('Ali',1,'10'),row('Yeni',2,'5')]);
   assert.equal(next.movement.yeni,undefined);
 });
+
+
+test('yeni mac revizyonunda siralama degismediyse eski oku temizler',()=>{
+  const first=Movement.nextState(null,[row('Ali',2,'8'),row('Veli',1,'10')]);
+  const moved=Movement.nextState(first,[row('Ali',1,'12'),row('Veli',2,'10')]);
+  assert.equal(moved.movement.ali.direction,'up');
+  assert.deepEqual(Movement.nextState(moved,[row('Ali',1,'12'),row('Veli',2,'10')],true).movement,{});
+});
+
+test('koyu temada kucuk dusus oku okunakli acik kirmizi kullanir',()=>{
+  let style;
+  const doc={getElementById:()=>null,createElement:()=>style={textContent:''},head:{appendChild:()=>{}}};
+  Movement.ensureStyles(doc);
+  assert.match(style.textContent,/html\[data-theme="dark"\] \.bs-rank-down\{color:#f87171\}/);
+});

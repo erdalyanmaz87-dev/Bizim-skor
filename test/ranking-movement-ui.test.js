@@ -34,3 +34,9 @@ test('aynı hareket rozeti zaten görünüyorsa DOMu yeniden değiştirmez',()=>
   assert.equal(removed,0);
   assert.equal(inserted,0);
 });
+
+test('aynı içerikli fakat yeniden çizilmiş tabloyu yeni revizyon sayar',()=>{
+  const oldNode={},newNode={},fingerprint='ali:1:12';
+  assert.equal(ui.isNewEquivalentRender({firstNode:oldNode,fingerprint},[{rankNode:newNode}],fingerprint),true);
+  assert.equal(ui.isNewEquivalentRender({firstNode:oldNode,fingerprint},[{rankNode:oldNode}],fingerprint),false);
+});

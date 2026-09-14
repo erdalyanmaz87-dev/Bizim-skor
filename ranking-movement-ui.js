@@ -3,7 +3,7 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else{root.BizimSkorRankingMovementUI=api;api.mount()}
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
-  const tracked=new WeakSet();
+  const renderedHosts=new WeakMap();
 
   function text(node){return String(node?.textContent||'').trim()}
   function number(value){const m=String(value??'').match(/-?\d+(?:[.,]\d+)?/);return m?Number(m[0].replace(',','.')):0}
@@ -54,13 +54,18 @@
     existing?.remove?.();rankNode?.insertAdjacentHTML?.('beforeend',movement.badge(current));return true;
   }
 
+  function isNewEquivalentRender(previous,rows,fingerprint){return!!(previous&&previous.firstNode!==rows?.[0]?.rankNode&&previous.fingerprint===fingerprint)}
+
   function apply(host,kind){
     const movement=root.BizimSkorRankingMovement;
     if(!movement||!host)return false;
     movement.ensureStyles?.();
     const rows=kind==='arena'?arenaRows(host):tableRows(host);
     if(!rows.length)return false;
-    const state=movement.track(contextKey(host,kind),rows);
+    const fingerprint=movement.fingerprint(rows),previousRender=renderedHosts.get(host);
+    const forceRevision=isNewEquivalentRender(previousRender,rows,fingerprint);
+    const state=movement.track(contextKey(host,kind),rows,forceRevision);
+    renderedHosts.set(host,{firstNode:rows[0]?.rankNode,fingerprint});
     rows.forEach(row=>{
       const current=movement.movementFor(state,row.name);
       reconcileBadge(row.rankNode,current,movement);
@@ -91,5 +96,5 @@
     return true;
   }
 
-  return Object.freeze({number,tableRows,arenaRows,rankingTargets,contextKey,reconcileBadge,apply,scan,mount});
+  return Object.freeze({number,tableRows,arenaRows,rankingTargets,contextKey,reconcileBadge,isNewEquivalentRender,apply,scan,mount});
 });
