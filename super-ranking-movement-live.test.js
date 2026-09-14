@@ -13,12 +13,21 @@ test('haftalik hareket sadece sonucun ait oldugu hafta icin uygulanir',()=>{
   assert.equal(Live.movementForContext({scope:'weekly',resultWeek:5,selectedWeek:4,beforeRank:26,currentRank:19}),null);
 });
 
-test('sunucu satirlarini kapsam ve oyuncuya gore indeksler',()=>{
+test('rpcnin scope kolonunu kapsam olarak indeksler',()=>{
   const idx=Live.indexRows([
-    {movement_scope:'general',week:5,player_name:'Kat',before_rank:25},
-    {movement_scope:'weekly',week:5,player_name:'Kat',before_rank:26}
+    {scope:'general',week:5,player_name:'Kat',before_rank:25},
+    {scope:'weekly',week:5,player_name:'Kat',before_rank:26}
   ]);
   assert.equal(idx.general.get('kat').beforeRank,25);
   assert.equal(idx.weekly.get('kat').beforeRank,26);
   assert.equal(idx.resultWeek,5);
+});
+
+test('hafta secici ekranda yoksa basliktan haftayi bulur',()=>{
+  const doc={getElementById(id){
+    if(id==='weeklyRankingWeekSelect')return null;
+    if(id==='weeklyRankingTitle')return{textContent:'🏆 5. Hafta Sıralaması'};
+    return null;
+  }};
+  assert.equal(Live.selectedWeek(doc),5);
 });
