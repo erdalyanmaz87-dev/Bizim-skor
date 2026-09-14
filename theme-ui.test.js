@@ -36,4 +36,6 @@ assert.strictEqual(theme.changeTheme('dark',storage,doc),'light');
 const failingStorage={getItem(){throw new Error('blocked')}};
 assert.strictEqual(theme.readTheme(failingStorage),'light');
 
+assert.strictEqual(theme.adminLegacyHideCss(),'#openAdminStatistics,#openSupportAdmin{display:none!important}');
+
 console.log('theme-ui ok');
