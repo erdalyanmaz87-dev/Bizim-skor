@@ -26,6 +26,7 @@ assert.strictEqual(ui.rankingTabForCard('champions'),'championsRanking');
 assert.strictEqual(ui.rankingTabForCard('sezu'),'sezu');
 assert.strictEqual(ui.rankingTabForCard('general'),'general');
 assert.strictEqual(ui.rankingTabForCard('rate'),null);
+assert.deepStrictEqual(ui.homeDashboardKinds(),['rate'],'Benim Durumum altında lig sıralama kartları görünmemeli');
 
 const nodes={
  personalWeekRank:{textContent:'8.'},personalGeneralRank:{textContent:'10.'},
