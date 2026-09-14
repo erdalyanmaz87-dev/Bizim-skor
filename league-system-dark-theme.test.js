@@ -16,3 +16,10 @@ test('yükselme ve düşme bölgeleri koyu temada hem zemin hem sınırla ayrıl
   assert.match(styles,/html\[data-theme="dark"\] \.league-promotion-boundary\{[^}]*border-bottom:3px solid #22c55e/);
   assert.match(styles,/html\[data-theme="dark"\] \.league-relegation-boundary\{[^}]*border-top:3px solid #ef4444/);
 });
+
+test('Arena sıralaması sezon, dönem ve veri revizyonunu taşır',()=>{
+  const html=ui.renderLeagueShell({league_code:'gold',period_no:2},[{player_name:'Ali',league_rank:1,performance_score:42,valid_round_count:3}],{});
+  assert.match(html,/data-ranking-season="2026\/27"/);
+  assert.match(html,/data-ranking-period="2"/);
+  assert.match(html,/data-ranking-revision="2\|\|Ali:1:42:3"/);
+});

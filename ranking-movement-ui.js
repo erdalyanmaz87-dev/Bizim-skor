@@ -3,40 +3,34 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else{root.BizimSkorRankingMovementUI=api;api.mount()}
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
-  const renderedHosts=new WeakMap();
-
+  const DEFAULT_SEASON='2026/27';
   function text(node){return String(node?.textContent||'').trim()}
   function number(value){const m=String(value??'').match(/-?\d+(?:[.,]\d+)?/);return m?Number(m[0].replace(',','.')):0}
   function rankingTargets(){return[['generalBoard','general'],['weeklyRankingBoard','weekly'],['championsRankingBoard','champions'],['championsWeeklyRankingBoard','weekly'],['nationsRankingBoard','nations'],['nationsWeeklyRankingBoard','weekly'],['friendLeagueRanking','friend']]}
+  function seasonFor(host){return String(host?.dataset?.rankingSeason||host?.closest?.('[data-ranking-season]')?.dataset?.rankingSeason||root.BizimSkorSeason||DEFAULT_SEASON)}
   function contextKey(host,kind){
-    if(kind==='general')return'general';
+    const season=seasonFor(host);
+    if(kind==='general')return`season:${season}:general`;
     if(kind==='weekly'){
       const title=text(root.document?.getElementById('weeklyRankingTitle'))||'weekly';
       const board=String(host?.id||'weekly');
-      return`weekly:${board}:${title.toLocaleLowerCase('tr-TR')}`;
+      return`season:${season}:weekly:${board}:${title.toLocaleLowerCase('tr-TR')}`;
     }
-    if(kind==='friend'){
-      const league=String(host?.dataset?.rankingContext||'current');
-      return`friend:${league}`;
-    }
+    if(kind==='friend')return`season:${season}:friend:${String(host?.dataset?.rankingContext||'current')}`;
     if(kind==='arena'){
-      const heading=text(host.closest?.('.league-shell')?.querySelector('h2'))||'arena';
-      return'arena:'+heading.toLocaleLowerCase('tr-TR');
+      const shell=host.closest?.('.league-shell'),heading=text(shell?.querySelector('h2'))||'arena';
+      const period=String(host?.dataset?.rankingPeriod||shell?.dataset?.rankingPeriod||'current');
+      return`season:${season}:arena:${period}:${heading.toLocaleLowerCase('tr-TR')}`;
     }
-    return kind;
+    return`season:${season}:${kind}`;
   }
-
   function tableRows(host){
     return [...(host?.querySelectorAll?.('table tr')||[])].slice(1).map((tr,index)=>{
-      const cells=tr.querySelectorAll('td');
-      if(cells.length<2)return null;
+      const cells=tr.querySelectorAll('td');if(cells.length<2)return null;
       const name=text(cells[1].querySelector?.('.bs-player-profile-link'))||text(cells[1]);
-      const rank=number(cells[0]);
-      const metric=[...cells].slice(2).map(cell=>text(cell)).join('|');
-      return{name,rank:rank||index+1,metric,rankNode:cells[0]};
+      return{name,rank:number(cells[0])||index+1,metric:[...cells].slice(2).map(cell=>text(cell)).join('|'),rankNode:cells[0]};
     }).filter(Boolean);
   }
-
   function arenaRows(host){
     return [...(host?.querySelectorAll?.('.league-row')||[])].map((row,index)=>({
       name:text(row.querySelector('.league-player')).replace(/^Sen\s*•\s*/i,''),
@@ -45,7 +39,7 @@
       rankNode:row.querySelector('.league-rank')
     })).filter(row=>row.name&&row.rankNode);
   }
-
+  function revisionFor(host,rows,movement){return String(host?.dataset?.rankingRevision||host?.closest?.('[data-ranking-revision]')?.dataset?.rankingRevision||movement.fingerprint(rows))}
   function reconcileBadge(rankNode,current,movement){
     const existing=rankNode?.querySelector?.('.bs-rank-move')||null;
     if(!current){existing?.remove?.();return!!existing}
@@ -53,48 +47,18 @@
     if(existing&&text(existing)===expectedText&&existing.classList?.contains?.(expectedClass))return false;
     existing?.remove?.();rankNode?.insertAdjacentHTML?.('beforeend',movement.badge(current));return true;
   }
-
-  function isNewEquivalentRender(previous,rows,fingerprint){return!!(previous&&previous.firstNode!==rows?.[0]?.rankNode&&previous.fingerprint===fingerprint)}
-
   function apply(host,kind){
-    const movement=root.BizimSkorRankingMovement;
-    if(!movement||!host)return false;
-    movement.ensureStyles?.();
-    const rows=kind==='arena'?arenaRows(host):tableRows(host);
-    if(!rows.length)return false;
-    const fingerprint=movement.fingerprint(rows),previousRender=renderedHosts.get(host);
-    const forceRevision=isNewEquivalentRender(previousRender,rows,fingerprint);
-    const state=movement.track(contextKey(host,kind),rows,forceRevision);
-    renderedHosts.set(host,{firstNode:rows[0]?.rankNode,fingerprint});
-    rows.forEach(row=>{
-      const current=movement.movementFor(state,row.name);
-      reconcileBadge(row.rankNode,current,movement);
-    });
-    return true;
+    const movement=root.BizimSkorRankingMovement;if(!movement||!host)return false;
+    movement.ensureStyles?.();const rows=kind==='arena'?arenaRows(host):tableRows(host);if(!rows.length)return false;
+    const state=movement.track(contextKey(host,kind),rows,revisionFor(host,rows,movement));
+    rows.forEach(row=>reconcileBadge(row.rankNode,movement.movementFor(state,row.name),movement));return true;
   }
-
-  function scan(doc=root.document){
-    if(!doc)return false;
-    let changed=false;
-    rankingTargets().forEach(([id,kind])=>{const host=doc.getElementById(id);if(host)changed=apply(host,kind)||changed});
-    doc.querySelectorAll?.('#leagueSystemPanel .league-table-wrap').forEach(host=>{changed=apply(host,'arena')||changed});
-    return changed;
-  }
-
+  function scan(doc=root.document){if(!doc)return false;let changed=false;rankingTargets().forEach(([id,kind])=>{const host=doc.getElementById(id);if(host)changed=apply(host,kind)||changed});doc.querySelectorAll?.('#leagueSystemPanel .league-table-wrap').forEach(host=>{changed=apply(host,'arena')||changed});return changed}
   function mount(){
-    const doc=root.document,Observer=root.MutationObserver;
-    if(!doc||!Observer||root.__bizimSkorRankingMovementObserver)return false;
-    let timer=null;
-    const schedule=()=>{root.clearTimeout?.(timer);timer=root.setTimeout?.(()=>scan(doc),40)};
-    const start=()=>{
-      scan(doc);
-      const observer=new Observer(schedule);
-      observer.observe(doc.body,{childList:true,subtree:true,characterData:true});
-      root.__bizimSkorRankingMovementObserver=observer;
-    };
-    if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',start,{once:true});else start();
-    return true;
+    const doc=root.document,Observer=root.MutationObserver;if(!doc||!Observer||root.__bizimSkorRankingMovementObserver)return false;
+    let timer=null;const schedule=()=>{root.clearTimeout?.(timer);timer=root.setTimeout?.(()=>scan(doc),40)};
+    const start=()=>{scan(doc);const observer=new Observer(schedule);observer.observe(doc.body,{childList:true,subtree:true,characterData:true});root.__bizimSkorRankingMovementObserver=observer};
+    if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',start,{once:true});else start();return true;
   }
-
-  return Object.freeze({number,tableRows,arenaRows,rankingTargets,contextKey,reconcileBadge,isNewEquivalentRender,apply,scan,mount});
+  return Object.freeze({number,tableRows,arenaRows,rankingTargets,seasonFor,contextKey,revisionFor,reconcileBadge,apply,scan,mount});
 });

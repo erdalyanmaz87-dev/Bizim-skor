@@ -65,10 +65,12 @@
 
   function renderLeagueRules(){return `<div class="league-rules"><h3>ⓘ Lig Kuralları</h3><p>Bir lig dönemi <b>4 Süper Lig haftası</b> sürer.</p><p>Bu dört hafta içinde oynanan Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi tahmin turları ortak lig performansına dahil edilir.</p><p>Lig sisteminde yükselme/düşme hakkı için dönem içinde <b>en az 2 ayrı tahmin turu</b> tamamlamak gerekir.</p><p>2 tur şartını tamamlamayan oyuncu dönem sonunda <b>bir alt lige düşer</b>. Bronz Lig oyuncusu Bronz Lig’de kalır.</p><p>Yeni oyuncular Bronz Lig’den başlar.</p><p>Yükselme ve düşme kontenjanları dönem başında belirlenir ve dönem boyunca değişmez.</p><p>Katılmadığın tur normal dönem performansına 0 yazmaz; ancak 2 tur şartı ayrıca uygulanır.</p></div>`}
   function renderOtherLeagueChips(counts={},currentLeague){return `<div class="league-other"><div class="league-other-title">Diğer Ligler</div><div class="league-chips">${Object.keys(LABELS).map(code=>`<button type="button" class="league-chip${code===currentLeague?' league-chip-active':''}" data-league-code="${code}">${ICONS[code]} <span>${esc(LABELS[code])}</span><small>${Number(counts[code])||0}</small></button>`).join('')}</div></div>`}
+  function rankingPeriod(summary={}){return String(summary.period_id??summary.period_no??summary.period_start_week??summary.start_week??'current')}
+  function rankingRevision(summary={},rows=[]){return [rankingPeriod(summary),summary.completed_round_count??summary.valid_round_count??'',...(rows||[]).map(row=>[row.player_name,row.league_rank,row.performance_score,row.valid_round_count].join(':'))].join('|')}
   function renderLeagueShell(summary={},rows=[],counts={}){
     const code=summary.league_code||'bronze',ownCode=summary.own_league_code||code,showEligibilityNote=!summary.is_eligible&&code===ownCode;
     const targets=movementTargets(code,counts,summary.locked_promotion_slots||null);
-    return `<div class="league-shell"><div class="league-header"><div><div class="league-eyebrow">Bizim Skor Ligleri</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><button type="button" class="league-rules-button" data-league-rules="1">ⓘ Kurallar</button></div>${renderOtherLeagueChips(counts,code)}${renderLeagueTable(rows,{...summary,league_code:code,movement_targets:targets})}${showEligibilityNote?`<div class="league-eligibility-note">Yükselme/düşme için ${Math.max(1,Number(summary.rounds_needed)||2)} tahmin turu daha tamamlamalısın.</div>`:''}<div class="league-rules-host" hidden>${renderLeagueRules()}</div></div>`;
+    return `<div class="league-shell" data-ranking-season="2026/27" data-ranking-period="${esc(rankingPeriod(summary))}" data-ranking-revision="${esc(rankingRevision(summary,rows))}"><div class="league-header"><div><div class="league-eyebrow">Bizim Skor Ligleri</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><button type="button" class="league-rules-button" data-league-rules="1">ⓘ Kurallar</button></div>${renderOtherLeagueChips(counts,code)}${renderLeagueTable(rows,{...summary,league_code:code,movement_targets:targets})}${showEligibilityNote?`<div class="league-eligibility-note">Yükselme/düşme için ${Math.max(1,Number(summary.rounds_needed)||2)} tahmin turu daha tamamlamalısın.</div>`:''}<div class="league-rules-host" hidden>${renderLeagueRules()}</div></div>`;
   }
   function renderPreviewShell(code,rows=[],counts={}){
     const targets=movementTargets(code,counts);
@@ -99,5 +101,5 @@
     await loadLeague(summary.league_code||'bronze');return true;
   }
 
-  return {esc,movementTargets,renderArenaPending,renderLeagueSummary,renderPreviewSummary,renderLeagueTable,renderLeagueRules,renderOtherLeagueChips,renderLeagueShell,renderPreviewShell,css,mount};
+  return {esc,movementTargets,rankingPeriod,rankingRevision,renderArenaPending,renderLeagueSummary,renderPreviewSummary,renderLeagueTable,renderLeagueRules,renderOtherLeagueChips,renderLeagueShell,renderPreviewShell,css,mount};
 });
