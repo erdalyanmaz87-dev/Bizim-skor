@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Şut Yıkım</title>
+  <link rel="stylesheet" href="./shot-yikim.css">
+</head>
+<body>
+  <main class="shot-yikim">
+    <header class="shot-yikim__header">
+      <p class="shot-yikim__eyebrow">Mini Oyun</p>
+      <h1>Şut Yıkım</h1>
+      <p>Topu sürükleyip hedefe bırak. Tüm hedefleri beş şutta yık.</p>
+    </header>
+
+    <section class="shot-yikim__hud" aria-label="Oyun bilgileri">
+      <div><span>Puan</span><strong id="shotYikimScore">0</strong></div>
+      <div><span>Şut</span><strong id="shotYikimShots">5</strong></div>
+    </section>
+
+    <section id="shotYikimBoard" class="shot-yikim__board" role="application" aria-label="Şut Yıkım oyun alanı. Topu hedeflere doğru sürükleyip bırakın.">
+      <div class="shot-yikim__goal-glow" aria-hidden="true"></div>
+      <div id="shotYikimTargets" class="shot-yikim__targets" aria-hidden="true"></div>
+      <div id="shotYikimAim" class="shot-yikim__aim" aria-hidden="true"></div>
+      <div id="shotYikimBall" class="shot-yikim__ball" aria-hidden="true">⚽</div>
+    </section>
+
+    <p id="shotYikimStatus" class="shot-yikim__status" aria-live="polite">Nişan al ve ilk şutunu çek.</p>
+    <button id="shotYikimRestart" class="shot-yikim__restart" type="button">Yeniden Başlat</button>
+  </main>
+
+  <script src="./shot-yikim-engine.js"></script>
+  <script src="./shot-yikim.js"></script>
+</body>
+</html>
