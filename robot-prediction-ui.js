@@ -2,7 +2,22 @@
   const cache=new Map(),season='2026/27';
   function robot(){return root.BizimSkorRobotPrediction}
   function competition(settings){return settings.kind==='champions'?'champions_league':settings.kind==='nations'?'nations_league':'super_lig'}
-  async function suggestion(fixture,settings){const key=competition(settings)+':'+fixture.id;if(cache.has(key))return cache.get(key);const q=await root.sb.from('robot_match_predictions').select('home_score,away_score').eq('competition',competition(settings)).eq('fixture_id',Number(fixture.id)).maybeSingle();if(q.error)throw q.error;if(!q.data)throw new Error('Bu maç için SkorBot tahmini henüz hazır değil.');const value={homeScore:Number(q.data.home_score),awayScore:Number(q.data.away_score)};cache.set(key,value);return value}
+  async function suggestion(fixture,settings){
+    const key=competition(settings)+':'+fixture.id;if(cache.has(key))return cache.get(key);
+    const q=await root.sb.from('robot_match_predictions').select('home_score,away_score').eq('competition',competition(settings)).eq('fixture_id',Number(fixture.id)).maybeSingle();
+    if(q.error)throw q.error;
+    if(q.data){const value={homeScore:Number(q.data.home_score),awayScore:Number(q.data.away_score)};cache.set(key,value);return value}
+    if(settings.kind==='super'){
+      const statsApi=root.BizimSkorMatchStatistics;
+      if(!statsApi?.loadSnapshot)throw new Error('Bu maç için SkorBot tahmini henüz hazır değil.');
+      const snapshot=await statsApi.loadSnapshot(root.sb,Number(fixture.id),'super');
+      const value=robot()?.suggest?.(snapshot);
+      if(!value)throw new Error('Bu maç için SkorBot tahmini henüz hazır değil.');
+      cache.set(key,value);
+      return value
+    }
+    throw new Error('Bu maç için SkorBot tahmini henüz hazır değil.')
+  }
   function superFixtures(){return root.BizimSkorPredictionContext?.().fixtures||[]}
   function championsFixtures(){return root.BizimSkorChampionsUI?.getFixtures?.()||[]}
   function nationsFixtures(){return root.BizimSkorNationsUI?.getFixtures?.()||[]}
@@ -21,7 +36,9 @@
   function inputRows(settings){return settings.fixtures.map((f,i)=>{const ids=settings.inputIds(f,i),h=document.getElementById(ids[0]),a=document.getElementById(ids[1]);return{fixtureId:f.id,index:i,home:h?.value??'',away:a?.value??''}})}
   async function bulkApply(settings){const R=robot();settings=normalize(config())||normalize(settings);if(!R)return alert('SkorBot önerisi henüz yükleniyor, tekrar dene.');if(!settings||!settings.fixtures.length)return alert('SkorBot için bu haftanın maçları henüz yüklenemedi.');const remaining=await allowance(settings);if(remaining<=0)return alert(`SkorBot kullanım hakkın doldu (${R.robotLimit(settings.fixtures.length)} maç).`);const selected=R.pickRandomEmpty(inputRows(settings),remaining);for(const item of selected){const f=settings.fixtures[item.index],[homeId,awayId]=settings.inputIds(f,item.index),home=document.getElementById(homeId),away=document.getElementById(awayId);try{if(!home||!away)continue;const value=await suggestion(f,settings);home.value=String(value.homeScore);away.value=String(value.awayScore);home.dataset.robotScore=home.value;away.dataset.robotScore=away.value}catch(_){}}
   }
-  async function decorate(){const R=robot();let settings=normalize(config());if(!settings||!R)return;ensureStyles();try{await syncPersistedMarks(settings)}catch(_){}settings.rows.forEach((row,index)=>{let button=row.querySelector('[data-robot-one]');const fixture=settings.fixtures[index];if(!fixture)return;if(!button){button=document.createElement('button');button.type='button';button.dataset.robotOne='1';button.className='robot-prediction-button';button.textContent='🤖 SkorBot’un Önerisi';row.appendChild(button)}button.onclick=()=>applyOne(fixture,index,settings)});if(settings.host){let all=settings.host.querySelector('[data-robot-all]');if(!all){all=document.createElement('button');all.type='button';all.dataset.robotAll='1';all.className='robot-prediction-all';all.textContent='🤖 SkorBot’un Önerisini Boş Maçlara Uygula';settings.host.appendChild(all)}all.onclick=()=>bulkApply(config()||settings)}const rule=settings.anchor?.querySelector?.('[data-robot-prediction-rule]');if(rule)rule.innerHTML=ruleText(settings);else if(settings.anchor){const note=document.createElement('p');note.dataset.robotPredictionRule='1';note.className='robot-prediction-rule';note.innerHTML=ruleText(settings);settings.anchor.appendChild(note)}}
+  let warmupKey='';
+  function warmup(settings){if(!settings||settings.kind!=='super'||!settings.fixtures.length)return;const key=`${settings.kind}:${settings.week}:${settings.fixtures.map(f=>f.id).join(',')}`;if(key===warmupKey)return;warmupKey=key;Promise.allSettled(settings.fixtures.map(f=>suggestion(f,settings))).catch(()=>{})}
+  async function decorate(){const R=robot();let settings=normalize(config());if(!settings||!R)return;ensureStyles();warmup(settings);try{await syncPersistedMarks(settings)}catch(_){}settings.rows.forEach((row,index)=>{let button=row.querySelector('[data-robot-one]');const fixture=settings.fixtures[index];if(!fixture)return;if(!button){button=document.createElement('button');button.type='button';button.dataset.robotOne='1';button.className='robot-prediction-button';button.textContent='🤖 SkorBot’un Önerisi';row.appendChild(button)}button.onclick=()=>applyOne(fixture,index,settings)});if(settings.host){let all=settings.host.querySelector('[data-robot-all]');if(!all){all=document.createElement('button');all.type='button';all.dataset.robotAll='1';all.className='robot-prediction-all';all.textContent='🤖 SkorBot’un Önerisini Boş Maçlara Uygula';settings.host.appendChild(all)}all.onclick=()=>bulkApply(config()||settings)}const rule=settings.anchor?.querySelector?.('[data-robot-prediction-rule]');if(rule)rule.innerHTML=ruleText(settings);else if(settings.anchor){const note=document.createElement('p');note.dataset.robotPredictionRule='1';note.className='robot-prediction-rule';note.innerHTML=ruleText(settings);settings.anchor.appendChild(note)}}
   function mount(){const run=()=>setTimeout(decorate,0);new MutationObserver(run).observe(document.body,{childList:true,subtree:true});document.addEventListener('change',run);document.addEventListener('click',event=>{if(event.target?.closest?.('[data-tab="pred"],.prediction-week-card,.nations-week-card'))setTimeout(run,350)});let tries=0;const retry=setInterval(()=>{run();if(robot()||++tries>20)clearInterval(retry)},250);run()}
-  root.BizimSkorRobotUI=Object.freeze({suggestion,decorate,mount});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+  root.BizimSkorRobotUI=Object.freeze({suggestion,decorate,warmup,mount});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })(typeof globalThis!=='undefined'?globalThis:this);
