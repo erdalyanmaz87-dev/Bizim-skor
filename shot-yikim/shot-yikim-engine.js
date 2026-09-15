@@ -10,12 +10,28 @@
     { id: 'target-3', x: 0.72, y: 0.31, radius: 0.075 }
   ]);
 
+  function freshTargets() {
+    return TARGETS.map(target => ({ ...target, hp: 1, destroyed: false }));
+  }
+
   function createInitialState() {
     return {
       status: 'ready',
+      round: 1,
       score: 0,
       shotsRemaining: CONFIG.shots,
-      targets: TARGETS.map(target => ({ ...target, hp: 1, destroyed: false })),
+      targets: freshTargets(),
+      lastShot: null
+    };
+  }
+
+  function startNextRound(state) {
+    return {
+      status: 'ready',
+      round: (Number(state?.round) || 1) + 1,
+      score: Number(state?.score) || 0,
+      shotsRemaining: CONFIG.shots,
+      targets: freshTargets(),
       lastShot: null
     };
   }
@@ -84,5 +100,5 @@
 
   function resetGame() { return createInitialState(); }
 
-  return Object.freeze({ CONFIG, createInitialState, isValidShot, lineHitsTarget, resolveShot, resetGame });
+  return Object.freeze({ CONFIG, createInitialState, startNextRound, isValidShot, lineHitsTarget, resolveShot, resetGame });
 });
