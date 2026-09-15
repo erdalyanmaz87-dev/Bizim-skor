@@ -1,0 +1,11 @@
+const assert=require('assert');
+const fs=require('fs');
+const src=fs.readFileSync(require.resolve('./premium-reference-ui.js'),'utf8');
+assert.match(src,/\.bs-home-stat\.champions\{[^}]*order:1/i,'Champions card must be first');
+assert.match(src,/\.bs-home-stat\.general\{[^}]*order:2/i,'Super League general card must be second');
+assert.match(src,/\.bs-home-stat\.nations\{[^}]*order:3/i,'Nations League card must be third');
+assert.match(src,/\.bs-home-stat\.league\{[^}]*order:4/i,'Weekly Super League card must start second row');
+assert.match(src,/\.bs-home-stat\.rate\{[^}]*order:5/i,'Result rate card must be second row');
+assert.match(src,/\.bs-home-stat\.admin-statistics\{display:none!important\}/i,'Admin summary must stay hidden');
+assert.doesNotMatch(src,/\.bs-home-stat\.general,#bsHomeDashboard \.bs-home-stat\.nations[^\n]*display:none/i,'General and Nations cards must not be hidden');
+console.log('premium reference dashboard layout ok');
