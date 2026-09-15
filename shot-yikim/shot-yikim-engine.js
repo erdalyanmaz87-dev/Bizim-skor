@@ -3,102 +3,48 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ShotYikimEngine = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function() {
-  const CONFIG = Object.freeze({ shots: 5, hitScore: 100, destroyBonus: 150, roundBonus: 300, minShotPower: 0.03 });
-  const TARGETS = Object.freeze([
-    { id: 'target-1', x: 0.28, y: 0.31, radius: 0.075 },
-    { id: 'target-2', x: 0.50, y: 0.22, radius: 0.075 },
-    { id: 'target-3', x: 0.72, y: 0.31, radius: 0.075 }
-  ]);
-
-  function freshTargets() {
-    return TARGETS.map(target => ({ ...target, hp: 1, destroyed: false }));
+  const CONFIG = Object.freeze({ hitScore: 100, destroyBonus: 150, roundBonus: 300, minShotPower: 0.03, maxRounds: 20 });
+  const T = (id, x, y, shape = 'block', material = 'stone', hp = 1, opts = {}) => ({ id, x, y, shape, material, hp, radius: opts.radius || 0.065, w: opts.w, h: opts.h, rotation: opts.rotation || 0, moving: opts.moving || false, motion: opts.motion || 'horizontal' });
+  const L = (id, shots, targets, name) => ({ id, shots, targets, name });
+  const LEVELS = Object.freeze([
+    L(1,5,[T('1-a',.36,.34),T('1-b',.50,.24,'disc'),T('1-c',.64,.34)],'Isınma'),
+    L(2,6,[T('2-a',.30,.38,'crate','wood'),T('2-b',.44,.28),T('2-c',.58,.28),T('2-d',.72,.38,'crate','wood')],'İki Kanat'),
+    L(3,7,[T('3-a',.50,.19,'wedge','stone',1,{radius:.06}),T('3-b',.36,.31),T('3-c',.64,.31),T('3-d',.42,.44,'barrel','metal'),T('3-e',.58,.44,'barrel','metal')],'Çatı'),
+    L(4,7,[T('4-a',.32,.25,'crate','wood'),T('4-b',.50,.25,'block','stone',2),T('4-c',.68,.25,'crate','wood'),T('4-d',.37,.43,'disc'),T('4-e',.63,.43,'disc')],'Merkez Kalkanı'),
+    L(5,8,[T('5-a',.27,.39,'barrel','metal'),T('5-b',.39,.28),T('5-c',.50,.19,'crate','wood'),T('5-d',.61,.28),T('5-e',.73,.39,'barrel','metal'),T('5-f',.50,.45,'disc')],'Kule'),
+    L(6,8,[T('6-a',.29,.25),T('6-b',.50,.21,'block','stone',2),T('6-c',.71,.25),T('6-d',.34,.43,'crate','wood'),T('6-e',.50,.43,'barrel','metal'),T('6-f',.66,.43,'crate','wood')],'Sert Merkez'),
+    L(7,9,[T('7-a',.24,.39,'wedge'),T('7-b',.34,.28,'barrel','metal'),T('7-c',.50,.20,'block','stone',2),T('7-d',.66,.28,'barrel','metal'),T('7-e',.76,.39,'wedge'),T('7-f',.40,.47,'crate','wood'),T('7-g',.60,.47,'crate','wood')],'Piramit'),
+    L(8,10,[T('8-a',.28,.22,'crate','wood'),T('8-b',.50,.18,'wedge','stone',2),T('8-c',.72,.22,'crate','wood'),T('8-d',.31,.37,'barrel','metal'),T('8-e',.50,.34,'block','stone',2),T('8-f',.69,.37,'barrel','metal'),T('8-g',.39,.50,'disc'),T('8-h',.61,.50,'disc')],'Çift Zırh'),
+    L(9,11,[T('9-a',.22,.34),T('9-b',.34,.23,'crate','wood'),T('9-c',.50,.18,'disc','stone',2),T('9-d',.66,.23,'crate','wood'),T('9-e',.78,.34),T('9-f',.30,.49,'barrel','metal'),T('9-g',.50,.45,'block','stone',2),T('9-h',.70,.49,'barrel','metal')],'Kale Kapısı'),
+    L(10,12,[T('10-a',.24,.22,'wedge'),T('10-b',.40,.21,'block','stone',2),T('10-c',.60,.21,'block','stone',2),T('10-d',.76,.22,'wedge'),T('10-e',.29,.38,'crate','wood'),T('10-f',.50,.35,'barrel','metal',2),T('10-g',.71,.38,'crate','wood'),T('10-h',.38,.51,'disc'),T('10-i',.62,.51,'disc')],'İlk Final'),
+    L(11,12,[T('11-a',.24,.25,'crate','wood',1,{moving:true}),T('11-b',.42,.21,'block','stone',2),T('11-c',.58,.21,'block','stone',2),T('11-d',.76,.25,'crate','wood',1,{moving:true}),T('11-e',.30,.42,'barrel','metal'),T('11-f',.50,.38,'disc','stone',2),T('11-g',.70,.42,'barrel','metal'),T('11-h',.40,.53,'wedge'),T('11-i',.60,.53,'wedge')],'Hareket Başlıyor'),
+    L(12,13,[T('12-a',.20,.34,'barrel','metal',1,{moving:true}),T('12-b',.32,.22,'crate','wood'),T('12-c',.50,.17,'block','stone',2),T('12-d',.68,.22,'crate','wood'),T('12-e',.80,.34,'barrel','metal',1,{moving:true}),T('12-f',.29,.48),T('12-g',.43,.40,'disc','stone',2),T('12-h',.57,.40,'disc','stone',2),T('12-i',.71,.48)],'Dar Koridor'),
+    L(13,14,[T('13-a',.22,.20,'wedge','stone',1,{moving:true,motion:'vertical'}),T('13-b',.38,.22,'block','stone',2),T('13-c',.62,.22,'block','stone',2),T('13-d',.78,.20,'wedge','stone',1,{moving:true,motion:'vertical'}),T('13-e',.28,.36,'crate','wood'),T('13-f',.50,.34,'barrel','metal',2),T('13-g',.72,.36,'crate','wood'),T('13-h',.32,.51,'disc'),T('13-i',.50,.49,'block','stone',2),T('13-j',.68,.51,'disc')],'Sıkıştırma'),
+    L(14,15,[T('14-a',.19,.33,'crate','wood',1,{moving:true}),T('14-b',.31,.24,'barrel','metal'),T('14-c',.44,.18,'block','stone',2),T('14-d',.56,.18,'block','stone',2),T('14-e',.69,.24,'barrel','metal'),T('14-f',.81,.33,'crate','wood',1,{moving:true}),T('14-g',.25,.48,'wedge'),T('14-h',.41,.42,'disc','stone',2),T('14-i',.59,.42,'disc','stone',2),T('14-j',.75,.48,'wedge')],'Çifte Duvar'),
+    L(15,16,[T('15-a',.18,.23,'block','stone',1,{moving:true}),T('15-b',.32,.19,'crate','wood'),T('15-c',.50,.16,'wedge','stone',2),T('15-d',.68,.19,'crate','wood'),T('15-e',.82,.23,'block','stone',1,{moving:true}),T('15-f',.24,.39,'barrel','metal'),T('15-g',.39,.35,'block','stone',2),T('15-h',.61,.35,'block','stone',2),T('15-i',.76,.39,'barrel','metal'),T('15-j',.50,.52,'disc','stone',2)],'On Beşinci Duvar'),
+    L(16,17,[T('16-a',.20,.18,'wedge','stone',1,{moving:true,motion:'vertical'}),T('16-b',.35,.20,'block','stone',2),T('16-c',.50,.16,'crate','wood',2),T('16-d',.65,.20,'block','stone',2),T('16-e',.80,.18,'wedge','stone',1,{moving:true,motion:'vertical'}),T('16-f',.24,.36,'barrel','metal'),T('16-g',.42,.34,'disc','stone',2),T('16-h',.58,.34,'disc','stone',2),T('16-i',.76,.36,'barrel','metal'),T('16-j',.34,.51,'crate','wood'),T('16-k',.66,.51,'crate','wood')],'Çapraz Ateş'),
+    L(17,18,[T('17-a',.17,.28,'crate','wood',1,{moving:true}),T('17-b',.29,.20,'barrel','metal'),T('17-c',.42,.17,'block','stone',2),T('17-d',.58,.17,'block','stone',2),T('17-e',.71,.20,'barrel','metal'),T('17-f',.83,.28,'crate','wood',1,{moving:true}),T('17-g',.22,.43,'wedge'),T('17-h',.37,.38,'disc','stone',2),T('17-i',.50,.35,'block','stone',2),T('17-j',.63,.38,'disc','stone',2),T('17-k',.78,.43,'wedge')],'Yüksek Baskı'),
+    L(18,19,[T('18-a',.16,.20,'wedge','stone',1,{moving:true}),T('18-b',.29,.20,'crate','wood',2),T('18-c',.42,.17,'barrel','metal',2),T('18-d',.58,.17,'barrel','metal',2),T('18-e',.71,.20,'crate','wood',2),T('18-f',.84,.20,'wedge','stone',1,{moving:true}),T('18-g',.20,.38),T('18-h',.36,.34,'disc','stone',2),T('18-i',.50,.31,'block','stone',2),T('18-j',.64,.34,'disc','stone',2),T('18-k',.80,.38)],'Zırhlı Hat'),
+    L(19,20,[T('19-a',.15,.27,'crate','wood',1,{moving:true}),T('19-b',.27,.18,'block','stone',2),T('19-c',.40,.15,'wedge','stone',2),T('19-d',.60,.15,'wedge','stone',2),T('19-e',.73,.18,'block','stone',2),T('19-f',.85,.27,'crate','wood',1,{moving:true}),T('19-g',.22,.42,'barrel','metal',2),T('19-h',.38,.36,'disc','stone',2),T('19-i',.50,.32,'block','stone',2),T('19-j',.62,.36,'disc','stone',2),T('19-k',.78,.42,'barrel','metal',2)],'Yarı Final'),
+    L(20,24,[T('20-a',.14,.18,'wedge','stone',1,{moving:true,motion:'vertical'}),T('20-b',.27,.20,'crate','wood',2,{moving:true}),T('20-c',.40,.15,'block','stone',2),T('20-d',.50,.12,'disc','metal',3),T('20-e',.60,.15,'block','stone',2),T('20-f',.73,.20,'crate','wood',2,{moving:true}),T('20-g',.86,.18,'wedge','stone',1,{moving:true,motion:'vertical'}),T('20-h',.22,.39,'barrel','metal',2),T('20-i',.38,.34,'disc','stone',2),T('20-j',.50,.31,'block','stone',3),T('20-k',.62,.34,'disc','stone',2),T('20-l',.78,.39,'barrel','metal',2)],'Büyük Final')
+  ].map(level => Object.freeze({ ...level, targets: Object.freeze(level.targets.map(target => Object.freeze(target))) })));
+  function cloneTarget(target){ return { ...target, maxHp: target.hp, destroyed: false }; }
+  function levelFor(round){ return LEVELS[Math.min(Math.max(Number(round)||1,1),LEVELS.length)-1]; }
+  function createStateForRound(round,score=0,phase='playing'){
+    const safeRound=Math.min(Math.max(Number(round)||1,1),LEVELS.length),level=levelFor(safeRound);
+    return {status:'ready',phase,round:safeRound,levelName:level.name,score:Number(score)||0,shotsRemaining:level.shots,targets:level.targets.map(cloneTarget),lastShot:null,maxRounds:LEVELS.length};
   }
-
-  function createInitialState() {
-    return {
-      status: 'ready',
-      round: 1,
-      score: 0,
-      shotsRemaining: CONFIG.shots,
-      targets: freshTargets(),
-      lastShot: null
-    };
-  }
-
-  function startNextRound(state) {
-    return {
-      status: 'ready',
-      round: (Number(state?.round) || 1) + 1,
-      score: Number(state?.score) || 0,
-      shotsRemaining: CONFIG.shots,
-      targets: freshTargets(),
-      lastShot: null
-    };
-  }
-
-  function shotPower(shot) {
-    const dx = Number(shot?.end?.x) - Number(shot?.start?.x);
-    const dy = Number(shot?.end?.y) - Number(shot?.start?.y);
-    return Math.hypot(dx, dy);
-  }
-
-  function isValidShot(shot) {
-    return Number.isFinite(shotPower(shot)) && shotPower(shot) >= CONFIG.minShotPower;
-  }
-
-  function lineHitsTarget(shot, target) {
-    const ax = Number(shot.start.x), ay = Number(shot.start.y);
-    const bx = Number(shot.end.x), by = Number(shot.end.y);
-    const abx = bx - ax, aby = by - ay;
-    const lengthSq = abx * abx + aby * aby;
-    if (!lengthSq) return false;
-    const projection = ((target.x - ax) * abx + (target.y - ay) * aby) / lengthSq;
-    const t = Math.max(0, Math.min(1, projection));
-    const px = ax + abx * t, py = ay + aby * t;
-    return Math.hypot(target.x - px, target.y - py) <= target.radius;
-  }
-
-  function resolveShot(state, shot) {
-    if (!isValidShot(shot) || state.status === 'round-complete' || state.status === 'game-over') {
-      return { state, result: { valid: false, hitTargetId: null, destroyedTargetId: null } };
-    }
-
-    const next = {
-      ...state,
-      targets: state.targets.map(target => ({ ...target })),
-      shotsRemaining: Math.max(0, state.shotsRemaining - 1),
-      lastShot: { start: { ...shot.start }, end: { ...shot.end } }
-    };
-
-    let hitTargetId = null;
-    let destroyedTargetId = null;
-    const target = next.targets.find(candidate => !candidate.destroyed && lineHitsTarget(shot, candidate));
-
-    if (target) {
-      hitTargetId = target.id;
-      target.hp = Math.max(0, target.hp - 1);
-      next.score += CONFIG.hitScore;
-      if (target.hp === 0) {
-        target.destroyed = true;
-        destroyedTargetId = target.id;
-        next.score += CONFIG.destroyBonus;
-      }
-    }
-
-    const allDestroyed = next.targets.every(candidate => candidate.destroyed);
-    if (allDestroyed) {
-      next.status = 'round-complete';
-      next.score += CONFIG.roundBonus;
-    } else if (next.shotsRemaining === 0) {
-      next.status = 'game-over';
-    } else {
-      next.status = 'playing';
-    }
-
-    return { state: next, result: { valid: true, hitTargetId, destroyedTargetId } };
-  }
-
-  function resetGame() { return createInitialState(); }
-
-  return Object.freeze({ CONFIG, createInitialState, startNextRound, isValidShot, lineHitsTarget, resolveShot, resetGame });
+  function createInitialState(){return createStateForRound(1,0,'menu');}
+  function startGame(){return createStateForRound(1,0,'playing');}
+  function startNextRound(state){if((Number(state?.round)||1)>=LEVELS.length)return{...state,status:'game-complete',phase:'playing'};return createStateForRound((Number(state?.round)||1)+1,Number(state?.score)||0,'playing');}
+  function shotPower(shot){const dx=Number(shot?.end?.x)-Number(shot?.start?.x),dy=Number(shot?.end?.y)-Number(shot?.start?.y);return Math.hypot(dx,dy);}
+  function isValidShot(shot){return Number.isFinite(shotPower(shot))&&shotPower(shot)>=CONFIG.minShotPower;}
+  function lineHitsTarget(shot,target){const ax=Number(shot.start.x),ay=Number(shot.start.y),bx=Number(shot.end.x),by=Number(shot.end.y),abx=bx-ax,aby=by-ay,lengthSq=abx*abx+aby*aby;if(!lengthSq)return false;const projection=((target.x-ax)*abx+(target.y-ay)*aby)/lengthSq,t=Math.max(0,Math.min(1,projection)),px=ax+abx*t,py=ay+aby*t;return Math.hypot(target.x-px,target.y-py)<=target.radius;}
+  function applyHit(next,target){let destroyedTargetId=null;target.hp=Math.max(0,target.hp-1);next.score+=CONFIG.hitScore;if(target.hp===0){target.destroyed=true;destroyedTargetId=target.id;next.score+=CONFIG.destroyBonus;}return destroyedTargetId;}
+  function finishState(next){const allDestroyed=next.targets.every(candidate=>candidate.destroyed);if(allDestroyed){next.score+=CONFIG.roundBonus;next.status=next.round>=LEVELS.length?'game-complete':'round-complete';}else if(next.shotsRemaining===0)next.status='game-over';else next.status='playing';}
+  function baseShotState(state,shot){return{...state,phase:'playing',targets:state.targets.map(target=>({...target})),shotsRemaining:Math.max(0,state.shotsRemaining-1),lastShot:shot?{start:{...shot.start},end:{...shot.end}}:null};}
+  function resolveShot(state,shot){if(!isValidShot(shot)||['round-complete','game-over','game-complete'].includes(state.status))return{state,result:{valid:false,hitTargetId:null,destroyedTargetId:null}};const next=baseShotState(state,shot),target=next.targets.find(candidate=>!candidate.destroyed&&lineHitsTarget(shot,candidate));let hitTargetId=null,destroyedTargetId=null;if(target){hitTargetId=target.id;destroyedTargetId=applyHit(next,target);}finishState(next);return{state:next,result:{valid:true,hitTargetId,destroyedTargetId}};}
+  function resolveTargetHit(state,targetId){if(['round-complete','game-over','game-complete'].includes(state.status))return{state,result:{valid:false,hitTargetId:null,destroyedTargetId:null}};const source=state.targets.find(target=>target.id===targetId&&!target.destroyed);if(!source)return{state,result:{valid:false,hitTargetId:null,destroyedTargetId:null}};const shot={start:{x:.5,y:.88},end:{x:source.x,y:source.y}},next=baseShotState(state,shot),target=next.targets.find(candidate=>candidate.id===targetId),destroyedTargetId=applyHit(next,target);finishState(next);return{state:next,result:{valid:true,hitTargetId:targetId,destroyedTargetId}};}
+  function resetGame(){return startGame();}
+  return Object.freeze({CONFIG,LEVELS,createInitialState,createStateForRound,startGame,startNextRound,isValidShot,lineHitsTarget,resolveShot,resolveTargetHit,resetGame});
 });
