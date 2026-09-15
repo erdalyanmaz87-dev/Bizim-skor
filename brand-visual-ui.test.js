@@ -9,5 +9,7 @@ assert.deepStrictEqual(ui.splitMatchTeams('Kasımpaşa – Konyaspor'),['Kasımp
 assert.deepStrictEqual(ui.splitMatchTeams('Galatasaray - Fenerbahçe'),['Galatasaray','Fenerbahçe']);
 assert.strictEqual(ui.splitMatchTeams('Tek takım'),null);
 assert.match(ui.predictionTeamSelector(),/\.m \.t:last-child/,'away team in prediction rows must be branded');
-assert.match(ui.stadiumBackgroundUrl(),/^https:\/\/upload\.wikimedia\.org\//,'header must use an actual stadium image');
+assert.match(ui.stadiumBackgroundUrl(),/Stadio_Olimpico/,'header must use a crowd/tribune stadium image');
+assert.deepStrictEqual(ui.parseRateText('28/54 • %52'),{correct:28,total:54,percent:52});
+assert.deepStrictEqual(ui.parseRateText('—'),{correct:0,total:0,percent:0});
 console.log('brand visual helpers ok');
