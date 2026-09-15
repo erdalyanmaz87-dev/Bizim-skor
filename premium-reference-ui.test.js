@@ -1,6 +1,6 @@
 const assert=require('assert');
 const fs=require('fs');
-const src=fs.readFileSync(require.resolve('./premium-reference-ui.js'),'utf8');
+const src=fs.readFileSync(require.resolve('./dashboard-five-card-overlay.js'),'utf8');
 assert.match(src,/\.bs-home-stat\.champions\{[^}]*order:1/i,'Champions card must be first');
 assert.match(src,/\.bs-home-stat\.general\{[^}]*order:2/i,'Super League general card must be second');
 assert.match(src,/\.bs-home-stat\.nations\{[^}]*order:3/i,'Nations League card must be third');
