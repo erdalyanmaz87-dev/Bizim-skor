@@ -1,0 +1,1 @@
+Tests verified locally before preview PR: brand assets, coverage, visual helpers and loader order.
