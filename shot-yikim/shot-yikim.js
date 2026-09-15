@@ -21,11 +21,16 @@
     return { start: { ...start }, end: { ...end } };
   }
 
+  function shotToTarget(target) {
+    return shotFromDrag(BALL_ORIGIN, { x: Number(target.x), y: Number(target.y) });
+  }
+
   function statusText(state) {
-    if (state.status === 'round-complete') return 'Tur Tamam! Tüm hedefleri yıktın.';
-    if (state.status === 'game-over') return 'Oyun Bitti. Tekrar deneyebilirsin.';
-    if (state.status === 'playing') return 'Devam! Kalan hedefleri vur.';
-    return 'Nişan al ve ilk şutunu çek.';
+    const round = Number(state?.round) || 1;
+    if (state.status === 'round-complete') return `Tur ${round} tamamlandı! ${round + 1}. tur geliyor...`;
+    if (state.status === 'game-over') return `Oyun bitti. Tur ${round}'da kaldın.`;
+    if (state.status === 'playing') return `Tur ${round}: Devam! Kalan hedeflere dokun.`;
+    return `Tur ${round}: Bir hedefe dokun ve şutunu çek.`;
   }
 
   function mount(doc) {
@@ -33,89 +38,117 @@
     if (!engine) return false;
     const board = doc.getElementById('shotYikimBoard');
     const ball = doc.getElementById('shotYikimBall');
-    const aim = doc.getElementById('shotYikimAim');
     const score = doc.getElementById('shotYikimScore');
     const shots = doc.getElementById('shotYikimShots');
+    const round = doc.getElementById('shotYikimRound');
     const status = doc.getElementById('shotYikimStatus');
     const restart = doc.getElementById('shotYikimRestart');
     const targets = doc.getElementById('shotYikimTargets');
-    if (!board || !ball || !aim || !score || !shots || !status || !restart || !targets) return false;
+    if (!board || !ball || !score || !shots || !round || !status || !restart || !targets) return false;
 
     let state = engine.createInitialState();
-    let activePointerId = null;
+    let animating = false;
+    let impactTimer = null;
+    let unlockTimer = null;
+    let roundTimer = null;
+    const reduceMotion = Boolean(root?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+    const impactDelay = reduceMotion ? 40 : 420;
+    const returnDelay = reduceMotion ? 20 : 180;
+    const roundDelay = reduceMotion ? 120 : 900;
+
+    function clearTimers() {
+      [impactTimer, unlockTimer, roundTimer].forEach(timer => timer && root.clearTimeout?.(timer));
+      impactTimer = unlockTimer = roundTimer = null;
+    }
 
     function renderTargets() {
       const existing = new Map([...targets.querySelectorAll('[data-target-id]')].map(el => [el.dataset.targetId, el]));
       state.targets.forEach(target => {
         let el = existing.get(target.id);
         if (!el) {
-          el = doc.createElement('div');
+          el = doc.createElement('button');
+          el.type = 'button';
           el.className = 'shot-yikim__target';
           el.dataset.targetId = target.id;
+          el.setAttribute('aria-label', `${target.id.replace('target-', '')}. hedefe şut çek`);
           targets.appendChild(el);
         }
         el.style.left = `${target.x * 100}%`;
         el.style.top = `${target.y * 100}%`;
         el.classList.toggle('is-destroyed', target.destroyed);
+        el.disabled = target.destroyed || animating || state.status === 'game-over' || state.status === 'round-complete';
       });
     }
 
     function render() {
       score.textContent = String(state.score);
       shots.textContent = String(state.shotsRemaining);
+      round.textContent = String(state.round);
       status.textContent = statusText(state);
       board.dataset.status = state.status;
       renderTargets();
     }
 
-    function updateAim(point) {
+    function resetBallPosition() {
+      ball.classList.remove('is-shooting');
+      ball.style.removeProperty('--shot-x');
+      ball.style.removeProperty('--shot-y');
+    }
+
+    function animateBallTo(target) {
       const rect = board.getBoundingClientRect();
-      const dx = (point.x - BALL_ORIGIN.x) * rect.width;
-      const dy = (point.y - BALL_ORIGIN.y) * rect.height;
-      const length = Math.hypot(dx, dy);
-      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-      aim.style.width = `${length}px`;
-      aim.style.transform = `rotate(${angle}deg)`;
-      aim.classList.add('is-visible');
+      const dx = (target.x - BALL_ORIGIN.x) * rect.width;
+      const dy = (target.y - BALL_ORIGIN.y) * rect.height;
+      ball.style.setProperty('--shot-x', `${dx}px`);
+      ball.style.setProperty('--shot-y', `${dy}px`);
+      void ball.offsetWidth;
+      ball.classList.add('is-shooting');
     }
 
-    function clearAim() {
-      aim.classList.remove('is-visible');
-      aim.style.width = '0px';
-    }
-
-    board.addEventListener('pointerdown', event => {
-      if (state.status === 'round-complete' || state.status === 'game-over') return;
-      activePointerId = event.pointerId;
-      board.setPointerCapture?.(event.pointerId);
-      updateAim(pointFromEvent(event, board));
-    });
-
-    board.addEventListener('pointermove', event => {
-      if (activePointerId !== event.pointerId) return;
-      updateAim(pointFromEvent(event, board));
-    });
-
-    board.addEventListener('pointerup', event => {
-      if (activePointerId !== event.pointerId) return;
-      const end = pointFromEvent(event, board);
-      activePointerId = null;
-      clearAim();
-      const outcome = engine.resolveShot(state, shotFromDrag(BALL_ORIGIN, end));
+    function finishShot(target) {
+      const outcome = engine.resolveShot(state, shotToTarget(target));
       state = outcome.state;
       render();
-    });
+      resetBallPosition();
 
-    board.addEventListener('pointercancel', event => {
-      if (activePointerId !== event.pointerId) return;
-      activePointerId = null;
-      clearAim();
+      if (state.status === 'round-complete') {
+        roundTimer = root.setTimeout(() => {
+          state = engine.startNextRound(state);
+          animating = false;
+          render();
+        }, roundDelay);
+        return;
+      }
+
+      unlockTimer = root.setTimeout(() => {
+        animating = false;
+        render();
+      }, returnDelay);
+    }
+
+    function shootTarget(targetId) {
+      if (animating || state.status === 'game-over' || state.status === 'round-complete') return false;
+      const target = state.targets.find(candidate => candidate.id === targetId && !candidate.destroyed);
+      if (!target) return false;
+      animating = true;
+      render();
+      status.textContent = `Tur ${state.round}: Şut!`;
+      animateBallTo(target);
+      impactTimer = root.setTimeout(() => finishShot(target), impactDelay);
+      return true;
+    }
+
+    targets.addEventListener('click', event => {
+      const targetEl = event.target.closest?.('[data-target-id]');
+      if (!targetEl) return;
+      shootTarget(targetEl.dataset.targetId);
     });
 
     restart.addEventListener('click', () => {
+      clearTimers();
       state = engine.resetGame();
-      activePointerId = null;
-      clearAim();
+      animating = false;
+      resetBallPosition();
       render();
     });
 
@@ -123,5 +156,5 @@
     return true;
   }
 
-  return Object.freeze({ clamp01, pointFromEvent, shotFromDrag, statusText, mount });
+  return Object.freeze({ clamp01, pointFromEvent, shotFromDrag, shotToTarget, statusText, mount });
 });
