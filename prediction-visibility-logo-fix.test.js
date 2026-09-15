@@ -6,4 +6,8 @@ assert.match(src,/opportunity-match[^`]*color:#0f172a!important/i,'light opportu
 assert.match(src,/removeAttribute\(['"]data-bs-brand-team['"]\)/,'stale logo decoration marker must be cleared');
 assert.match(src,/addEventListener\(['"]change['"]/,'week changes must trigger logo repair');
 assert.match(src,/MutationObserver/,'async week rendering must be observed');
+assert.match(src,/white-space:nowrap!important/,'prediction team names must stay on one line');
+assert.match(src,/text-overflow:ellipsis!important/,'long team names must truncate cleanly instead of wrapping');
+assert.match(src,/erzurumsporfklogo\.png/,'Erzurumspor must have a stable crest override');
+assert.match(src,/Logo_Rizespor\.png/,'Rizespor must have a stable crest override');
 console.log('prediction visibility/logo regression coverage ok');
