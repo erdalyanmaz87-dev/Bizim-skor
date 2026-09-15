@@ -2,43 +2,38 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-
 const read = name => fs.readFileSync(path.join(__dirname, name), 'utf8');
 
-test('standalone page exposes tap-to-shoot game surface and round HUD', () => {
+test('opening screen is football themed and advertises 20 levels', () => {
   const html = read('index.html');
-  for (const id of ['shotYikimBoard','shotYikimBall','shotYikimScore','shotYikimShots','shotYikimRound','shotYikimStatus','shotYikimRestart','shotYikimTargets']) {
+  for (const id of ['shotYikimMenu','shotYikimStart','shotYikimBoard','shotYikimBall','shotYikimRound','shotYikimScore','shotYikimShots','shotYikimStatus','shotYikimRestart','shotYikimTargets']) {
     assert.match(html, new RegExp(`id=["']${id}["']`));
   }
-  assert.ok(html.indexOf('shot-yikim-engine.js') < html.indexOf('shot-yikim.js'));
-  assert.match(html, /Hedefe dokun/);
+  assert.match(html, /20 Bölüm|20 bölüm/i);
+  assert.match(html, /Futbol/i);
 });
 
-test('styles animate the ball and topple destroyed targets', () => {
+test('gameplay styles provide 3d materials and stadium presentation', () => {
   const css = read('shot-yikim.css');
-  assert.match(css, /\.shot-yikim/);
-  assert.match(css, /\.shot-yikim__ball\.is-shooting/);
-  assert.match(css, /\.shot-yikim__target\.is-destroyed/);
-  assert.match(css, /aspect-ratio/);
+  assert.match(css, /shot-yikim__stadium/);
+  assert.match(css, /material-stone/);
+  assert.match(css, /material-wood/);
+  assert.match(css, /material-metal/);
+  assert.match(css, /shape-wedge/);
+  assert.match(css, /is-moving/);
+  assert.match(css, /perspective/);
 });
 
-test('ui module normalizes pointer coordinates', () => {
+test('ui direct shot starts from the football origin', () => {
   const ui = require('./shot-yikim.js');
-  const board = { getBoundingClientRect: () => ({ left: 10, top: 20, width: 200, height: 400 }) };
-  assert.deepEqual(ui.pointFromEvent({ clientX: 110, clientY: 220 }, board), { x: 0.5, y: 0.5 });
-});
-
-test('target tap creates a direct shot from ball origin to target center', () => {
-  const ui = require('./shot-yikim.js');
-  assert.deepEqual(ui.shotToTarget({ x: 0.28, y: 0.31 }), {
+  assert.deepEqual(ui.shotToTarget({ x: 0.32, y: 0.30 }), {
     start: { x: 0.5, y: 0.88 },
-    end: { x: 0.28, y: 0.31 }
+    end: { x: 0.32, y: 0.30 }
   });
 });
 
-test('status copy announces automatic next round', () => {
+test('status copy distinguishes automatic next level and campaign win', () => {
   const ui = require('./shot-yikim.js');
-  assert.match(ui.statusText({ status: 'round-complete', round: 1 }), /2\. tur/);
-  assert.match(ui.statusText({ status: 'ready', round: 2 }), /dokun/);
-  assert.match(ui.statusText({ status: 'game-over', round: 2 }), /bitti/i);
+  assert.match(ui.statusText({ status: 'round-complete', round: 4 }), /5\. bölüm/i);
+  assert.match(ui.statusText({ status: 'game-complete', round: 20 }), /20 bölüm/i);
 });
