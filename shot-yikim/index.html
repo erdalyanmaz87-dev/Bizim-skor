@@ -8,26 +8,51 @@
 </head>
 <body>
   <main class="shot-yikim">
+    <section id="shotYikimMenu" class="shot-yikim__menu" aria-label="Şut Yıkım başlangıç ekranı">
+      <div class="shot-yikim__splash-art" aria-hidden="true">
+        <div class="shot-yikim__logo"><span>Şut</span><strong>Yıkım</strong></div>
+        <div class="shot-yikim__splash-ball">⚽</div>
+        <div class="shot-yikim__mini-structure mini-a"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="shot-yikim__mini-structure mini-b"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="shot-yikim__menu-card">
+        <p class="shot-yikim__eyebrow">Futbol Yıkım Oyunu</p>
+        <h1>20 Bölüm</h1>
+        <p class="shot-yikim__menu-text">1. bölüm kolay. Her bölümde düzen değişir; hedefler artar, küçülür, güçlenir ve hareket etmeye başlar.</p>
+        <div class="shot-yikim__level-preview">
+          <div><span>1. Bölüm</span><small>3 basit hedef</small></div>
+          <div><span>20. Bölüm</span><small>Büyük Final</small></div>
+        </div>
+        <button id="shotYikimStart" class="shot-yikim__play" type="button">OYNA</button>
+      </div>
+    </section>
+
     <header class="shot-yikim__header">
-      <p class="shot-yikim__eyebrow">Mini Oyun</p>
-      <h1>Şut Yıkım</h1>
-      <p>Hedefe dokun. Top hedefe gitsin, hedefi devirsin. Üç hedef yıkılınca yeni tur otomatik başlar.</p>
+      <p class="shot-yikim__eyebrow">Futbol Yıkım</p>
+      <h2>Şut Yıkım</h2>
+      <p id="shotYikimLevelName">1. Bölüm · Isınma</p>
     </header>
 
     <section class="shot-yikim__hud" aria-label="Oyun bilgileri">
-      <div><span>Tur</span><strong id="shotYikimRound">1</strong></div>
+      <div><span>Bölüm</span><strong><b id="shotYikimRound">1</b>/20</strong></div>
       <div><span>Puan</span><strong id="shotYikimScore">0</strong></div>
-      <div><span>Şut</span><strong id="shotYikimShots">5</strong></div>
+      <div><span>Top</span><strong id="shotYikimShots">5</strong></div>
     </section>
 
     <section id="shotYikimBoard" class="shot-yikim__board" role="application" aria-label="Şut Yıkım oyun alanı. Şut çekmek için hedeflerden birine dokunun.">
-      <div class="shot-yikim__goal-glow" aria-hidden="true"></div>
+      <div class="shot-yikim__stadium" aria-hidden="true">
+        <div class="shot-yikim__lights light-left"></div><div class="shot-yikim__lights light-right"></div>
+        <div class="shot-yikim__crowd"></div>
+        <div class="shot-yikim__goal"></div>
+        <div class="shot-yikim__pitch-lines"></div>
+      </div>
       <div id="shotYikimTargets" class="shot-yikim__targets"></div>
+      <div class="shot-yikim__launcher" aria-hidden="true"></div>
       <div id="shotYikimBall" class="shot-yikim__ball" aria-hidden="true">⚽</div>
     </section>
 
-    <p id="shotYikimStatus" class="shot-yikim__status" aria-live="polite">Tur 1: Bir hedefe dokun ve şutunu çek.</p>
-    <button id="shotYikimRestart" class="shot-yikim__restart" type="button">Oyunu Sıfırla</button>
+    <p id="shotYikimStatus" class="shot-yikim__status" aria-live="polite">Başlamak için OYNA'ya bas.</p>
+    <button id="shotYikimRestart" class="shot-yikim__restart" type="button">Baştan Başla</button>
   </main>
 
   <script src="./shot-yikim-engine.js"></script>
