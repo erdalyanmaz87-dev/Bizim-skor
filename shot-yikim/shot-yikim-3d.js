@@ -1,0 +1,55 @@
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js';
+import RAPIER from 'https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.20.0/+esm';
+
+await RAPIER.init();
+
+const TABLE={width:2.65,depth:1.75,topY:.92,thickness:.18};
+const GROUND_Y=-.18;
+const LAUNCH={x:0,y:.46,z:3.35};
+const MATERIAL={wood:{color:0xb96a27,density:.65,friction:.72,restitution:.08},stone:{color:0x7b838f,density:1.45,friction:.82,restitution:.04},metal:{color:0x7b8798,density:2.2,friction:.56,restitution:.06}};
+
+function boxGeometry(size){return new THREE.BoxGeometry(size.x,size.y,size.z);}
+function makeMaterial(kind){const m=MATERIAL[kind]||MATERIAL.stone;return new THREE.MeshStandardMaterial({color:m.color,roughness:kind==='metal'?.35:.72,metalness:kind==='metal'?.68:.06});}
+function toWorldBlock(block){return{...block,position:{x:block.position.x*2.05,y:block.position.y,z:block.position.z*2.2},size:{x:block.size.x*2.05,y:block.size.y,z:block.size.z*1.75}};}
+
+export async function createGame3D({container,level,onBlockFallen=()=>{},onSettled=()=>{}}){
+  if(!container)throw new Error('3D container required');
+  const scene=new THREE.Scene();scene.background=new THREE.Color(0x74c9ff);scene.fog=new THREE.Fog(0x74c9ff,8,18);
+  const camera=new THREE.PerspectiveCamera(42,1,.05,50);camera.position.set(0,2.55,4.55);camera.lookAt(0,1.18,0);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;container.innerHTML='';container.appendChild(renderer.domElement);
+  scene.add(new THREE.HemisphereLight(0xdff4ff,0x395c28,2.3));const sun=new THREE.DirectionalLight(0xffffff,3.2);sun.position.set(-3,6,4);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+
+  const pitch=new THREE.Mesh(new THREE.PlaneGeometry(18,22),new THREE.MeshStandardMaterial({color:0x21943a,roughness:1}));pitch.rotation.x=-Math.PI/2;pitch.position.y=GROUND_Y-.01;pitch.receiveShadow=true;scene.add(pitch);
+  const lineMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.72});const centerCircle=new THREE.Mesh(new THREE.RingGeometry(1.35,1.39,48),lineMat);centerCircle.rotation.x=-Math.PI/2;centerCircle.position.set(0,GROUND_Y+.01,-4);scene.add(centerCircle);
+  const standMat=new THREE.MeshStandardMaterial({color:0x294b7a,roughness:.9});for(const z of [-5.4,-6.15]){const s=new THREE.Mesh(new THREE.BoxGeometry(8,.65,.65),standMat);s.position.set(0,.18,z);scene.add(s);}for(const x of [-4.7,4.7]){const s=new THREE.Mesh(new THREE.BoxGeometry(.65,.65,8),standMat);s.position.set(x,.18,-1.5);scene.add(s);}
+
+  const world=new RAPIER.World({x:0,y:-9.81,z:0});
+  const groundBody=world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0,GROUND_Y-.12,0));world.createCollider(RAPIER.ColliderDesc.cuboid(7,.12,8).setFriction(.85),groundBody);
+  const tableBody=world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0,TABLE.topY-TABLE.thickness/2,0));world.createCollider(RAPIER.ColliderDesc.cuboid(TABLE.width/2,TABLE.thickness/2,TABLE.depth/2).setFriction(.92).setRestitution(.02),tableBody);
+  const tableMesh=new THREE.Mesh(new THREE.BoxGeometry(TABLE.width,TABLE.thickness,TABLE.depth),new THREE.MeshStandardMaterial({color:0x8b5127,roughness:.78}));tableMesh.position.set(0,TABLE.topY-TABLE.thickness/2,0);tableMesh.receiveShadow=true;tableMesh.castShadow=true;scene.add(tableMesh);
+  for(const x of [-1.08,1.08])for(const z of [-.67,.67]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.16,1.05,.16),new THREE.MeshStandardMaterial({color:0x65401f,roughness:.9}));leg.position.set(x,.38,z);leg.castShadow=true;scene.add(leg);const body=world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x,.38,z));world.createCollider(RAPIER.ColliderDesc.cuboid(.08,.525,.08),body);}
+
+  const raycaster=new THREE.Raycaster();const pointer=new THREE.Vector2();const fallbackPlane=new THREE.Plane(new THREE.Vector3(0,0,1),0);
+  let entries=[],footballBody=null,footballMesh=null,disposed=false,enabled=true,fallenIds=new Set(),shotActive=false,quietFrames=0,lastShotTime=0,raf=0;
+
+  function clearTower(){for(const e of entries){scene.remove(e.mesh);world.removeRigidBody(e.body);}entries=[];fallenIds.clear();}
+  function createBlock(block){const b=toWorldBlock(block);const mat=MATERIAL[b.material]||MATERIAL.stone;let geom,colliderDesc;if(b.shape==='cylinder'){const radius=Math.min(b.size.x,b.size.z)*.48;geom=new THREE.CylinderGeometry(radius,radius,b.size.y,20);colliderDesc=RAPIER.ColliderDesc.cylinder(b.size.y/2,radius);}else{geom=boxGeometry(b.size);colliderDesc=RAPIER.ColliderDesc.cuboid(b.size.x/2,b.size.y/2,b.size.z/2);}const mesh=new THREE.Mesh(geom,makeMaterial(b.material));mesh.position.set(b.position.x,b.position.y,b.position.z);mesh.rotation.y=b.rotationY||0;mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.blockId=b.id;scene.add(mesh);const desc=RAPIER.RigidBodyDesc.dynamic().setTranslation(b.position.x,b.position.y,b.position.z).setRotation({x:0,y:Math.sin((b.rotationY||0)/2),z:0,w:Math.cos((b.rotationY||0)/2)}).setLinearDamping(.08).setAngularDamping(.08);const body=world.createRigidBody(desc);colliderDesc.setDensity(mat.density).setFriction(mat.friction).setRestitution(mat.restitution);world.createCollider(colliderDesc,body);entries.push({id:b.id,mesh,body,size:b.size});}
+  function loadLevel(next){clearTower();for(const b of next.blocks)createBlock(b);resetFootball();quietFrames=0;shotActive=false;}
+  function resetFootball(){if(footballBody){world.removeRigidBody(footballBody);footballBody=null;}if(footballMesh){scene.remove(footballMesh);footballMesh=null;}footballMesh=new THREE.Mesh(new THREE.SphereGeometry(.13,24,16),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.52}));footballMesh.castShadow=true;footballMesh.position.set(LAUNCH.x,LAUNCH.y,LAUNCH.z);scene.add(footballMesh);const desc=RAPIER.RigidBodyDesc.dynamic().setTranslation(LAUNCH.x,LAUNCH.y,LAUNCH.z).setLinearDamping(.05).setAngularDamping(.04);footballBody=world.createRigidBody(desc);world.createCollider(RAPIER.ColliderDesc.ball(.13).setDensity(.85).setFriction(.55).setRestitution(.28),footballBody);footballBody.setEnabled(false);}
+  loadLevel(level);
+
+  function resize(){const w=Math.max(1,container.clientWidth),h=Math.max(1,container.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  const ro=new ResizeObserver(resize);ro.observe(container);resize();
+
+  function clientPointToWorld(clientX,clientY){const rect=renderer.domElement.getBoundingClientRect();pointer.x=((clientX-rect.left)/rect.width)*2-1;pointer.y=-((clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(pointer,camera);const hitMeshes=entries.map(e=>e.mesh).concat(tableMesh);const hits=raycaster.intersectObjects(hitMeshes,false);if(hits.length)return hits[0].point.clone();const p=new THREE.Vector3();return raycaster.ray.intersectPlane(fallbackPlane,p)?p:new THREE.Vector3(0,1.25,0);}
+  function shootAtClientPoint(clientX,clientY){if(!enabled||shotActive)return false;const target=clientPointToWorld(clientX,clientY);resetFootball();footballBody.setEnabled(true);footballBody.setTranslation(LAUNCH,true);footballBody.setLinvel({x:0,y:0,z:0},true);footballBody.setAngvel({x:0,y:0,z:0},true);const dir=target.clone().sub(new THREE.Vector3(LAUNCH.x,LAUNCH.y,LAUNCH.z)).normalize();const distance=Math.min(5.5,Math.max(2,target.distanceTo(new THREE.Vector3(LAUNCH.x,LAUNCH.y,LAUNCH.z))));const strength=5.7+distance*.72;footballBody.applyImpulse({x:dir.x*strength,y:dir.y*strength,z:dir.z*strength},true);shotActive=true;quietFrames=0;lastShotTime=performance.now();return true;}
+  function getRemainingBlockCount(){return Math.max(0,entries.length-fallenIds.size);}
+  function setEnabled(v){enabled=Boolean(v);}
+  function reset(next){loadLevel(next);}
+  function syncEntry(e){const p=e.body.translation(),q=e.body.rotation();e.mesh.position.set(p.x,p.y,p.z);e.mesh.quaternion.set(q.x,q.y,q.z,q.w);if(!fallenIds.has(e.id)){const leftTable=Math.abs(p.x)>TABLE.width/2+.18||Math.abs(p.z)>TABLE.depth/2+.18;const belowTop=p.y<TABLE.topY-.18;if((leftTable&&belowTop)||p.y<.5){fallenIds.add(e.id);onBlockFallen(e.id);}}}
+  function isSettled(){let maxSpeed=0;for(const e of entries){if(fallenIds.has(e.id))continue;const v=e.body.linvel(),a=e.body.angvel();maxSpeed=Math.max(maxSpeed,Math.hypot(v.x,v.y,v.z),Math.hypot(a.x,a.y,a.z)*.2);}return maxSpeed<.075;}
+  function loop(){if(disposed)return;world.step();for(const e of entries)syncEntry(e);if(footballBody){const p=footballBody.translation(),q=footballBody.rotation();footballMesh.position.set(p.x,p.y,p.z);footballMesh.quaternion.set(q.x,q.y,q.z,q.w);}if(shotActive){if(isSettled())quietFrames++;else quietFrames=0;if(quietFrames>34||performance.now()-lastShotTime>4800){shotActive=false;quietFrames=0;onSettled({remaining:getRemainingBlockCount()});resetFootball();}}renderer.render(scene,camera);raf=requestAnimationFrame(loop);}
+  loop();
+  function dispose(){disposed=true;cancelAnimationFrame(raf);ro.disconnect();renderer.dispose();container.innerHTML='';}
+  return{shootAtClientPoint,reset,setEnabled,getRemainingBlockCount,dispose};
+}
