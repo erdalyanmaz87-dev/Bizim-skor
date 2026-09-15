@@ -8,4 +8,6 @@ assert.strictEqual(ui.rankingCompetitionForTab('weeklyRankings'),null);
 assert.deepStrictEqual(ui.splitMatchTeams('Kasımpaşa – Konyaspor'),['Kasımpaşa','Konyaspor']);
 assert.deepStrictEqual(ui.splitMatchTeams('Galatasaray - Fenerbahçe'),['Galatasaray','Fenerbahçe']);
 assert.strictEqual(ui.splitMatchTeams('Tek takım'),null);
+assert.match(ui.predictionTeamSelector(),/\.m \.t:last-child/,'away team in prediction rows must be branded');
+assert.match(ui.stadiumBackgroundUrl(),/^https:\/\/upload\.wikimedia\.org\//,'header must use an actual stadium image');
 console.log('brand visual helpers ok');
