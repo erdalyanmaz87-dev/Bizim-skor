@@ -1,0 +1,11 @@
+const assert=require('assert');
+const ui=require('./brand-visual-ui.js');
+assert.strictEqual(ui.headerSlogan(),'Futbol birlikte daha güzel');
+assert.strictEqual(ui.rankingCompetitionForTab('championsRanking'),'champions');
+assert.strictEqual(ui.rankingCompetitionForTab('nationsRanking'),'nations');
+assert.strictEqual(ui.rankingCompetitionForTab('general'),'super');
+assert.strictEqual(ui.rankingCompetitionForTab('weeklyRankings'),null);
+assert.deepStrictEqual(ui.splitMatchTeams('Kasımpaşa – Konyaspor'),['Kasımpaşa','Konyaspor']);
+assert.deepStrictEqual(ui.splitMatchTeams('Galatasaray - Fenerbahçe'),['Galatasaray','Fenerbahçe']);
+assert.strictEqual(ui.splitMatchTeams('Tek takım'),null);
+console.log('brand visual helpers ok');
