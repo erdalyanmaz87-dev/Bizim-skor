@@ -3,57 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Şut Yıkım</title>
+  <meta name="theme-color" content="#0b315c">
+  <title>Şut Yıkım 3D</title>
   <link rel="stylesheet" href="./shot-yikim.css">
 </head>
 <body>
-  <main class="shot-yikim">
-    <section id="shotYikimMenu" class="shot-yikim__menu" aria-label="Şut Yıkım başlangıç ekranı">
-      <div class="shot-yikim__hero" aria-hidden="true">
-        <div class="shot-yikim__logo"><span>Şut</span><strong>Yıkım</strong></div>
-        <div class="shot-yikim__hero-ball">⚽</div>
-        <div class="shot-yikim__hero-tower"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      </div>
-      <div class="shot-yikim__menu-card">
-        <p class="shot-yikim__eyebrow">Futbol Fizik Oyunu</p>
-        <h1>20 Bölüm</h1>
-        <p class="shot-yikim__menu-text">Nereye dokunursan top oraya gider. Kuleyi alttan vur, üst parçaları salla ve bütün blokları masadan aşağı indir.</p>
-        <div class="shot-yikim__rules"><span>⚽ Serbest nişan</span><span>🧱 Gerçek çarpışma</span><span>⬇️ Masadan düşür</span></div>
-        <button id="shotYikimStart" class="shot-yikim__play" type="button">OYNA</button>
-      </div>
-    </section>
+<main class="shot-yikim">
+  <section id="shotYikimMenu" class="shot-yikim__menu">
+    <div class="shot-yikim__hero">
+      <div class="shot-yikim__logo"><span>Şut</span><strong>Yıkım 3D</strong></div>
+      <div class="shot-yikim__hero-ball">⚽</div>
+      <div class="shot-yikim__hero-table"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="shot-yikim__menu-card">
+      <p class="shot-yikim__eyebrow">Gerçek 3D Futbol Fiziği</p>
+      <h1>20 Bölüm</h1>
+      <p>Nereye dokunursan top oraya gider. Kuleyi sars, parçaları masanın önünden, arkasından veya yanından yere düşür.</p>
+      <button id="shotYikimStart" class="shot-yikim__play" type="button">OYNA</button>
+    </div>
+  </section>
 
-    <header class="shot-yikim__header">
-      <p class="shot-yikim__eyebrow">Futbol Yıkım</p>
-      <h2>Şut Yıkım</h2>
-      <p id="shotYikimLevelName">1. Bölüm · Isınma</p>
-    </header>
+  <header class="shot-yikim__header">
+    <p class="shot-yikim__eyebrow">Futbol Yıkım</p>
+    <h2>Şut Yıkım 3D</h2>
+    <p id="shotYikimLevelName">1. Bölüm · Isınma</p>
+  </header>
 
-    <section class="shot-yikim__hud" aria-label="Oyun bilgileri">
-      <div><span>Bölüm</span><strong><b id="shotYikimRound">1</b>/20</strong></div>
-      <div><span>Puan</span><strong id="shotYikimScore">0</strong></div>
-      <div><span>Top</span><strong id="shotYikimShots">5</strong></div>
-    </section>
+  <section class="shot-yikim__hud" aria-label="Oyun bilgileri">
+    <div><span>Bölüm</span><strong><b id="shotYikimRound">1</b>/20</strong></div>
+    <div><span>Puan</span><strong id="shotYikimScore">0</strong></div>
+    <div><span>Top</span><strong id="shotYikimShots">5</strong></div>
+  </section>
 
-    <section id="shotYikimBoard" class="shot-yikim__board" role="application" aria-label="Oyun alanında istediğiniz noktaya dokunarak futbol topunu o noktaya şutlayın.">
-      <div class="shot-yikim__stadium" aria-hidden="true">
-        <div class="shot-yikim__lights light-left"></div><div class="shot-yikim__lights light-right"></div>
-        <div class="shot-yikim__crowd"></div><div class="shot-yikim__goal"></div><div class="shot-yikim__pitch-lines"></div>
-      </div>
-      <div id="shotYikimTable" class="shot-yikim__table" aria-hidden="true"><span></span><span></span></div>
-      <div id="shotYikimPhysicsLayer" class="shot-yikim__physics-layer" aria-hidden="true"></div>
-      <div class="shot-yikim__launcher" aria-hidden="true"></div>
-      <div id="shotYikimBall" class="shot-yikim__ball" aria-hidden="true">⚽</div>
-      <div id="shotYikimAimDot" class="shot-yikim__aim-dot" aria-hidden="true"></div>
-    </section>
+  <section id="shotYikimBoard" class="shot-yikim__board" role="application" aria-label="3D oyun alanı. Şut çekmek için istediğiniz noktaya dokunun.">
+    <div id="shotYikimViewport" class="shot-yikim__viewport"></div>
+    <div class="shot-yikim__hint">Kulenin istediğin noktasına dokun ⚽</div>
+  </section>
 
-    <p id="shotYikimStatus" class="shot-yikim__status" aria-live="polite">Başlamak için OYNA'ya bas.</p>
-    <button id="shotYikimRestart" class="shot-yikim__restart" type="button">Bölümü Tekrarla</button>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js" crossorigin="anonymous"></script>
-  <script src="./shot-yikim-engine.js"></script>
-  <script src="./shot-yikim-physics.js"></script>
-  <script src="./shot-yikim.js"></script>
+  <p id="shotYikimStatus" class="shot-yikim__status" aria-live="polite">Başlamak için OYNA'ya bas.</p>
+  <button id="shotYikimRestart" class="shot-yikim__restart" type="button">Bölümü Tekrarla</button>
+</main>
+<script src="./shot-yikim-engine.js"></script>
+<script type="module" src="./shot-yikim.js"></script>
 </body>
 </html>
