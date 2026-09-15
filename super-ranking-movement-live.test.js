@@ -31,3 +31,22 @@ test('hafta secici ekranda yoksa basliktan haftayi bulur',()=>{
   }};
   assert.equal(Live.selectedWeek(doc),5);
 });
+
+test('hareket stillerini ana yardimci yuklenmese bile kendi basina garanti eder',()=>{
+  const nodes=new Map();
+  const doc={
+    getElementById(id){return nodes.get(id)||null},
+    createElement(tag){return{tag,id:'',textContent:''}},
+    head:{appendChild(node){nodes.set(node.id,node)}}
+  };
+  assert.equal(typeof Live.ensureMovementStyles,'function');
+  assert.equal(Live.ensureMovementStyles(doc),true);
+  const css=nodes.get('bizimSkorRankingMovementLiveStyle')?.textContent||'';
+  assert.match(css,/\.bs-rank-move\{[^}]*display:flex/i);
+  assert.match(css,/white-space:nowrap/i);
+  assert.match(css,/\.bs-rank-up\{[^}]*#16a34a/i);
+  assert.match(css,/\.bs-rank-down\{[^}]*#dc2626/i);
+  assert.match(css,/html\[data-theme="dark"\] \.bs-rank-up\{[^}]*#4ade80/i);
+  assert.match(css,/html\[data-theme="dark"\] \.bs-rank-down\{[^}]*#f87171/i);
+  assert.equal(Live.ensureMovementStyles(doc),false);
+});
