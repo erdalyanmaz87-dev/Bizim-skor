@@ -46,6 +46,11 @@ export function isPollableFixture({cache_status,result_finalized}){
   return !TERMINAL.has(String(cache_status||''));
 }
 
+export function isWithinLiveTrackingWindow(fixture,now=new Date()){
+  const kickoff=new Date(fixture?.kickoff).getTime(),current=new Date(now).getTime();
+  return Number.isFinite(kickoff)&&Number.isFinite(current)&&current>=kickoff&&current<kickoff+4*60*60*1000;
+}
+
 function teamKey(value){
   const key=String(value||'').toLocaleLowerCase('tr-TR').replace(/ı/g,'i').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
   return ({erzurumsporfk:'erzurumbb'})[key]||key;
