@@ -5,6 +5,8 @@ const path=require('node:path');
 const file=path.join(__dirname,'..','supabase','migrations','20260830_live_score_automation.sql');
 const hardeningFile=path.join(__dirname,'..','supabase','migrations','20260830203000_harden_live_score_discovery.sql');
 const scheduleFixFile=path.join(__dirname,'..','supabase','migrations','20260830210000_fix_daily_match_schedule_rpc.sql');
+const midnightFixFile=path.join(__dirname,'..','supabase','migrations','20260916141650_keep_live_matches_after_midnight.sql');
+const midnightBudgetFixFile=path.join(__dirname,'..','supabase','migrations','20260916145500_fix_midnight_poll_budget.sql');
 
 test('canlı skor tabloları RLS ile korunur ve tarayıcıya açılmaz',()=>{
   const sql=fs.readFileSync(file,'utf8');
@@ -61,4 +63,16 @@ test('manuel kesin sonuç eski canlı önbellekten önce gelir',()=>{
   assert.match(sql,/coalesce\(case when f\.result_status='finished' then 'FT' end,c\.status\)/i);
   assert.match(sql,/coalesce\(f\.result_home_score,c\.home_score\)/i);
   assert.match(sql,/coalesce\(f\.result_away_score,c\.away_score\)/i);
+});
+
+test('gece yarısını geçen canlı maç izlenir ve bitince bir saat gösterilir',()=>{
+  const sql=fs.readFileSync(midnightFixFile,'utf8');
+  assert.match(sql,/kickoff\s*\+\s*interval\s+'4 hours'/i);
+  assert.match(sql,/card_fetched_at\s*\+\s*interval\s+'1 hour'/i);
+  assert.doesNotMatch(sql,/kickoff at time zone 'Europe\/Istanbul'\)::date\s*=\s*\(p_now at time zone 'Europe\/Istanbul'\)::date/i);
+});
+
+test('canlı sorgu bütçesine gelecekteki maçlar katılmaz',()=>{
+  const sql=fs.readFileSync(midnightBudgetFixFile,'utf8');
+  assert.match(sql,/where\s+p_now\s*>=\s*p\.kickoff\s+and\s+p\.kickoff\s*\+\s*interval\s+'4 hours'\s*>\s*p_now/i);
 });

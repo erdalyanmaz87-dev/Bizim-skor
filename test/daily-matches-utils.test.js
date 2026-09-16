@@ -69,6 +69,23 @@ test('canlı skoru yalnız müsabaka türü ve fikstür kimliği birlikte eşle�
   assert.equal(merged[2].live,null);
 });
 
+test('23.00 maçını gece yarısından sonra bitene kadar yeni gün maçlarının önünde tutar',()=>{
+  const rows=[
+    {id:10,competition:'champions_league',home_team:'Galatasaray',away_team:'Liverpool',kickoff:'2026-09-16T20:00:00Z',live:{status:'2H',elapsed:74,home_score:1,away_score:1,fetched_at:'2026-09-16T21:28:00Z'}},
+    {id:11,competition:'super_lig',home_team:'Fenerbahçe',away_team:'Samsunspor',kickoff:'2026-09-17T18:00:00Z',live:null}
+  ];
+  assert.deepEqual(selectDailyMatches(rows,new Date('2026-09-16T21:30:00Z')).matches.map(x=>x.id),[10]);
+});
+
+test('gece biten maçı bir saat tutar sonra yeni günün maçlarına geçer',()=>{
+  const rows=[
+    {id:10,competition:'champions_league',home_team:'Galatasaray',away_team:'Liverpool',kickoff:'2026-09-16T20:00:00Z',live:{status:'FT',home_score:2,away_score:1,fetched_at:'2026-09-16T21:55:00Z'}},
+    {id:11,competition:'super_lig',home_team:'Fenerbahçe',away_team:'Samsunspor',kickoff:'2026-09-17T18:00:00Z',live:null}
+  ];
+  assert.deepEqual(selectDailyMatches(rows,new Date('2026-09-16T22:30:00Z')).matches.map(x=>x.id),[10]);
+  assert.deepEqual(selectDailyMatches(rows,new Date('2026-09-16T22:56:00Z')).matches.map(x=>x.id),[11]);
+});
+
 test('günün maçında kayıtlı tahmini müsabaka türüne göre gösterir',()=>{
   setPredictions([{competition:'champions_league',fixture_id:2,home_score:3,away_score:1}]);
   const result=selectDailyMatches([

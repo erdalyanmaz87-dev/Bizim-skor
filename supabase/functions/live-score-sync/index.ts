@@ -1,20 +1,9 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-import {normalizeApiFootballFixture,matchScheduledProviderFixture,matchUnlinkedLiveFixtures,extractProviderTeamNames,adaptivePollIntervalMinutes,shouldAdaptivePoll} from './core.mjs';
+import {normalizeApiFootballFixture,matchScheduledProviderFixture,matchUnlinkedLiveFixtures,extractProviderTeamNames,adaptivePollIntervalMinutes,shouldAdaptivePoll,isWithinLiveTrackingWindow} from './core.mjs';
 
 const API_BASE='https://v3.football.api-sports.io';
 const API_URL=`${API_BASE}/fixtures?live=all`;
 const json=(status:number,body:unknown)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json'}});
-
-function istanbulDayRange(now=new Date()){
-  const date=now.toLocaleDateString('en-CA',{timeZone:'Europe/Istanbul'});
-  const start=new Date(`${date}T00:00:00+03:00`);
-  return{start:start.toISOString(),end:new Date(start.getTime()+24*60*60*1000).toISOString()};
-}
-
-function inLiveWindow(fixture:any,now=Date.now()){
-  const kickoff=new Date(fixture?.kickoff).getTime();
-  return Number.isFinite(kickoff)&&now>=kickoff&&now<kickoff+2*60*60*1000;
-}
 
 function equalSecret(left:string|null,right:string){
   if(!left||!right||left.length!==right.length)return false;
@@ -155,17 +144,18 @@ Deno.serve(async(req:Request)=>{
     if(linksResult.error)throw linksResult.error;
     const links=new Map((linksResult.data||[]).map((row:any)=>[Number(row.provider_fixture_id),row]));
     const internalLinkKeys=new Set((linksResult.data||[]).map((row:any)=>`${row.competition}:${row.fixture_id}`));
-    const range=istanbulDayRange();
+    const now=Date.now();
+    const discoveryStart=new Date(now-4*60*60*1000).toISOString();
+    const discoveryEnd=new Date(now).toISOString();
     const [superResult,championsResult]=await Promise.all([
-      sb.from('fixtures').select('id,home_team,away_team,kickoff').gte('kickoff',range.start).lt('kickoff',range.end),
-      sb.from('champions_league_fixtures').select('id,home_team,away_team,kickoff').gte('kickoff',range.start).lt('kickoff',range.end)
+      sb.from('fixtures').select('id,home_team,away_team,kickoff').gte('kickoff',discoveryStart).lte('kickoff',discoveryEnd),
+      sb.from('champions_league_fixtures').select('id,home_team,away_team,kickoff').gte('kickoff',discoveryStart).lte('kickoff',discoveryEnd)
     ]);
     if(superResult.error||championsResult.error)throw(superResult.error||championsResult.error);
-    const now=Date.now();
     const unlinked=[
       ...(superResult.data||[]).map((row:any)=>({...row,competition:'super_lig'})),
       ...(championsResult.data||[]).map((row:any)=>({...row,competition:'champions_league'}))
-    ].filter((row:any)=>inLiveWindow(row,now)&&!internalLinkKeys.has(`${row.competition}:${row.id}`));
+    ].filter((row:any)=>isWithinLiveTrackingWindow(row,new Date(now))&&!internalLinkKeys.has(`${row.competition}:${row.id}`));
     const unusedProviderRows=(payload?.response||[]).filter((raw:any)=>!links.has(Number(raw?.fixture?.id)));
     const discovered=matchUnlinkedLiveFixtures(unlinked,unusedProviderRows);
     if(discovered.length){
