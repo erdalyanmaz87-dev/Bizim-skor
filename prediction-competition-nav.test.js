@@ -13,7 +13,8 @@ const championsMarkup=nav.predictionCompetitionMarkup('championsPred');
 assert.match(championsMarkup,/data-prediction-competition="championsPred"[^>]*aria-current="page"/);
 
 function fakeDoc(){
-  const sections={pred:{id:'pred'},championsPred:{id:'championsPred'},nationsPred:{id:'nationsPred'}};
+  const makeSection=id=>({id,insertAdjacentElement:()=>{}});
+  const sections={pred:makeSection('pred'),championsPred:makeSection('championsPred'),nationsPred:makeSection('nationsPred')};
   const selector={dataset:{bound:'1'},parentElement:sections.pred,querySelectorAll:()=>[],addEventListener:()=>{}};
   return {
     getElementById:id=>id==='bsPredictionCompetitionNav'?selector:(id==='bsPredictionCompetitionStyles'?{}:sections[id]||null),
