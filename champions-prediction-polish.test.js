@@ -19,6 +19,14 @@ assert.strictEqual(polish.canonicalLogoName('Leipzig'),'RB Leipzig');
 assert.strictEqual(polish.canonicalLogoName('Bayern Münih'),'Bayern Munchen');
 assert.strictEqual(polish.canonicalLogoName('Stuttgart'),'VfB Stuttgart');
 
+const brandedRoma={
+  querySelector(selector){return selector==='.bs-team-name'?{textContent:'Roma'}:null},
+  textContent:'RRoma'
+};
+assert.strictEqual(polish.readTeamName(brandedRoma),'Roma','fallback initial must not prefix team name');
+const plainRoma={querySelector(){return null},textContent:'Roma'};
+assert.strictEqual(polish.readTeamName(plainRoma),'Roma');
+
 const order=loader.scriptOrder();
 assert(order.includes('champions-prediction-polish.js'),'CL polish layer must be loaded');
 assert(order.indexOf('robot-prediction-ui.js')<order.indexOf('champions-prediction-polish.js'),'CL polish must load after SkorBot UI');
