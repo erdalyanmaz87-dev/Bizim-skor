@@ -5,8 +5,17 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   let observer=null,polishing=false;
   const TIME_RE=/^\s*(\d{1,2}[.:]\d{2})\s*/;
+  const LOGO_NAME_ALIASES={
+    'slavia prag':'Slavia Praha',
+    'leipzig':'RB Leipzig',
+    'bayern munih':'Bayern Munchen',
+    'stuttgart':'VfB Stuttgart'
+  };
 
+  function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+  function teamKey(value){return String(value??'').trim().toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
   function cleanTeamName(value){return String(value??'').replace(TIME_RE,'').trim()}
+  function canonicalLogoName(value){const clean=cleanTeamName(value);return LOGO_NAME_ALIASES[teamKey(clean)]||clean}
   function groupByKickoffTime(items){
     const groups=[];
     for(const item of items||[]){
@@ -18,13 +27,17 @@
     return groups;
   }
   function teamMarkup(name){
-    const clean=cleanTeamName(name);
-    return root?.BizimSkorBrandAssets?.teamMarkup?.(clean)||clean;
+    const clean=cleanTeamName(name),lookup=canonicalLogoName(clean),assets=root?.BizimSkorBrandAssets;
+    if(!assets)return esc(clean);
+    const url=assets.teamLogoUrl?.(lookup),slug=assets.teamSlug?.(lookup);
+    if(!url||!slug)return assets.teamMarkup?.(clean)||esc(clean);
+    const initials=clean.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
+    return `<span class="bs-team-brand" data-team-slug="${esc(slug)}"><img class="bs-team-logo" src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="bs-team-fallback" hidden aria-hidden="true">${esc(initials)}</span><span class="bs-team-name">${esc(clean)}</span></span>`;
   }
   function ensureStyles(doc){
     if(!doc||doc.getElementById('bsChampionsPredictionPolishStyles'))return;
     const style=doc.createElement('style');style.id='bsChampionsPredictionPolishStyles';
-    style.textContent='.champions-time-group{margin:12px 0 7px;padding:7px 11px;border-radius:10px;background:#e0e7ff;color:#3730a3;font:900 13px/1.1 system-ui,-apple-system,sans-serif;letter-spacing:.2px}.champions-match .t{min-width:0;line-height:1.2;overflow-wrap:anywhere}.champions-match .t .bs-team{display:flex;align-items:center;gap:6px;min-width:0}.champions-match .t .bs-team img,.champions-match .t img{width:28px;height:28px;object-fit:contain;flex:0 0 28px}.champions-match .t .bs-team-name{min-width:0}html[data-theme="dark"] .champions-time-group{background:#1e1b4b;color:#c7d2fe}@media(max-width:430px){.champions-time-group{margin-top:10px}.champions-match .t{font-size:12px}.champions-match .t .bs-team img,.champions-match .t img{width:25px;height:25px;flex-basis:25px}}';
+    style.textContent='.champions-time-group{margin:12px 0 7px;padding:7px 11px;border-radius:10px;background:#e0e7ff;color:#3730a3;font:900 13px/1.1 system-ui,-apple-system,sans-serif;letter-spacing:.2px}.champions-match .t{min-width:0;line-height:1.2;overflow-wrap:anywhere}.champions-match .t .bs-team-brand{display:flex;align-items:center;gap:6px;min-width:0}.champions-match .t.home .bs-team-brand{justify-content:flex-end}.champions-match .t .bs-team-logo,.champions-match .t img{width:28px;height:28px;object-fit:contain;flex:0 0 28px}.champions-match .t .bs-team-name{min-width:0}html[data-theme="dark"] .champions-time-group{background:#1e1b4b;color:#c7d2fe}@media(max-width:430px){.champions-time-group{margin-top:10px}.champions-match .t{font-size:12px}.champions-match .t .bs-team-logo,.champions-match .t img{width:25px;height:25px;flex-basis:25px}}';
     doc.head?.appendChild(style);
   }
   function rowTime(row){return String(row?.querySelector?.('.home .small')?.textContent||'').trim()}
@@ -49,7 +62,7 @@
     if(!doc||polishing)return false;
     const box=doc.getElementById?.('championsFixtures');if(!box)return false;
     const pending=[...box.querySelectorAll?.('.champions-match')||[]].filter(row=>row.dataset?.clPolished!=='1');
-    if(!pending.length){decorateRobot();return false}
+    if(!pending.length)return false;
     polishing=true;
     try{
       ensureStyles(doc);
@@ -79,5 +92,5 @@
     doc.addEventListener?.('click',event=>{if(event.target?.closest?.('[data-prediction-competition="championsPred"]'))root?.setTimeout?.(run,250)});
     run();return true;
   }
-  return Object.freeze({cleanTeamName,groupByKickoffTime,polish,mount});
+  return Object.freeze({cleanTeamName,canonicalLogoName,groupByKickoffTime,polish,mount});
 });
