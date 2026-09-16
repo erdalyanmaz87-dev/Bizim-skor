@@ -38,8 +38,8 @@ assert.deepStrictEqual(legacy,[]);
 
 function fakeSimpleNavigationDoc(){
   const hidden={contains:name=>name==='hide'};
-  const pred={id:'pred',classList:hidden,insertAdjacentElement:()=>{throw new Error('legacy league nav must not be inserted in simplified navigation')}};
-  const selector={removeCalled:false,remove(){this.removeCalled=true},dataset:{bound:'1'},querySelectorAll:()=>[],addEventListener:()=>{}};
+  const pred={id:'pred',classList:hidden,insertAdjacentElement:()=>{throw new Error('existing league nav should stay mounted')}};
+  const selector={removeCalled:false,remove(){this.removeCalled=true},dataset:{bound:'1'},parentElement:pred,querySelectorAll:()=>[],addEventListener:()=>{}};
   return {
     selector,
     body:{classList:{contains:name=>name==='bs-simple-nav-ready'}},
@@ -53,8 +53,8 @@ function fakeSimpleNavigationDoc(){
 }
 
 const simpleDoc=fakeSimpleNavigationDoc();
-assert.strictEqual(nav.ensureNav(simpleDoc),false,'sade menü açıkken eski lig seçici render edilmemeli');
-assert.strictEqual(simpleDoc.selector.removeCalled,true,'önceden kalmış eski lig seçici temizlenmeli');
+assert.strictEqual(nav.ensureNav(simpleDoc),true,'sade menü açıkken de lig seçici render edilmeli');
+assert.strictEqual(simpleDoc.selector.removeCalled,false,'lig seçici sade menüde kaldırılmamalı');
 
 delete global.BizimSkorScreenNavigationRuntime;
 delete global.BizimSkorChampionsUI;
