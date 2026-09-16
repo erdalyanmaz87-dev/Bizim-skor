@@ -10,6 +10,8 @@ assert.strictEqual(nav.bottomTargetForTab('championsRanking'),'menu');
 assert.strictEqual(nav.bottomTargetForTab('chat'),'menu');
 assert.deepStrictEqual(nav.predictionProgress([]),{complete:0,total:0,percent:0});
 assert.deepStrictEqual(nav.predictionProgress([true,false,true,false,false]),{complete:2,total:5,percent:40});
+assert.deepStrictEqual(nav.featurePanelState(true),{transform:'translate(-50%,0)',opacity:'1'});
+assert.deepStrictEqual(nav.featurePanelState(false),{transform:'translate(-50%,calc(100% + 100px))',opacity:'0'});
 
 const groups=nav.groupedItems(['arena','championsRanking','nationsRanking','general','live','resultsWeek','footballCenter','friendLeagues','history','rules','chat']);
 assert.deepStrictEqual(groups.map(group=>group.title),['Sıralamalar','Futbol','Sosyal','Hesabım','Bilgi']);
