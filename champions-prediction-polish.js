@@ -16,6 +16,10 @@
   function teamKey(value){return String(value??'').trim().toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
   function cleanTeamName(value){return String(value??'').replace(TIME_RE,'').trim()}
   function canonicalLogoName(value){const clean=cleanTeamName(value);return LOGO_NAME_ALIASES[teamKey(clean)]||clean}
+  function readTeamName(node){
+    const branded=node?.querySelector?.('.bs-team-name')?.textContent;
+    return cleanTeamName(branded!=null?branded:node?.textContent||'');
+  }
   function groupByKickoffTime(items){
     const groups=[];
     for(const item of items||[]){
@@ -34,6 +38,18 @@
     const initials=clean.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
     return `<span class="bs-team-brand" data-team-slug="${esc(slug)}"><img class="bs-team-logo" src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="bs-team-fallback" hidden aria-hidden="true">${esc(initials)}</span><span class="bs-team-name">${esc(clean)}</span></span>`;
   }
+  function needsAliasLogoRepair(node,name){
+    if(!node||!LOGO_NAME_ALIASES[teamKey(name)])return false;
+    return !node.querySelector?.('.bs-team-logo');
+  }
+  function ensureTeamBrand(node,name){
+    if(!node||!name)return false;
+    const hasBrand=!!node.querySelector?.('.bs-team-brand');
+    if(hasBrand&&!needsAliasLogoRepair(node,name))return false;
+    node.innerHTML=teamMarkup(name);
+    if(node.dataset)node.dataset.bsBrandTeam='1';
+    return true;
+  }
   function ensureStyles(doc){
     if(!doc||doc.getElementById('bsChampionsPredictionPolishStyles'))return;
     const style=doc.createElement('style');style.id='bsChampionsPredictionPolishStyles';
@@ -47,13 +63,14 @@
   }
   function polishRow(row){
     if(!row||row.dataset?.clPolished==='1')return null;
-    const home=row.querySelector?.('.t.home'),away=row.querySelectorAll?.('.t')?.[1];
+    const teams=row.querySelectorAll?.('.t')||[];
+    const home=row.querySelector?.('.t.home')||teams[0],away=teams[teams.length-1];
     const time=rowTime(row);
-    const homeName=cleanTeamName(home?.textContent||'');
-    const awayName=cleanTeamName(away?.textContent||'');
+    const homeName=readTeamName(home);
+    const awayName=readTeamName(away);
     removeInlineTime(home);
-    if(home&&homeName)home.innerHTML=teamMarkup(homeName);
-    if(away&&awayName)away.innerHTML=teamMarkup(awayName);
+    ensureTeamBrand(home,homeName);
+    ensureTeamBrand(away,awayName);
     if(row.dataset)row.dataset.clPolished='1';
     return{row,time};
   }
@@ -92,5 +109,5 @@
     doc.addEventListener?.('click',event=>{if(event.target?.closest?.('[data-prediction-competition="championsPred"]'))root?.setTimeout?.(run,250)});
     run();return true;
   }
-  return Object.freeze({cleanTeamName,canonicalLogoName,groupByKickoffTime,polish,mount});
+  return Object.freeze({cleanTeamName,canonicalLogoName,readTeamName,groupByKickoffTime,polish,mount});
 });
