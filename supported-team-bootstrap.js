@@ -11,7 +11,9 @@
     try{
       await load(document,'brand-assets.js','bsSupportedTeamBrandAssetsScript');
       await load(document,'supported-team-ui.js','bsSupportedTeamUiScript');
-      await load(document,'supported-team-ranking-logos.js','bsSupportedTeamRankingLogosScript');
+      await load(document,'player-identity.js','bsPlayerIdentityScript');
+      await root.BizimSkorPlayerIdentity?.loadContext?.();
+      await load(document,'player-identity-render-hooks.js','bsPlayerIdentityRenderHooksScript');
       await load(document,'admin-supported-team-stats.js','bsSupportedTeamAdminStatsScript');
       return true;
     }catch(error){started=false;console.warn('supported team bootstrap',error);return false}
