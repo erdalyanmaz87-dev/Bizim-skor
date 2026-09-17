@@ -19,5 +19,7 @@ assert.ok(html.includes('data-supported-team-code="galatasaray"'),'takım kartla
 const logo=feature.playerLogoMarkup('galatasaray','Galatasaray');
 assert.ok(logo.includes('bs-supported-team-logo'),'oyuncu logosu sınıfı olmalı');
 assert.ok(logo.includes('<img'),'logo görseli üretilmeli');
+assert.ok(feature.logoUrl('kocaelispor').includes('kocaelispor'),'Kocaelispor logo URL olmalı');
+assert.ok(feature.logoUrl('erzurumspor').includes('erzurumspor'),'Erzurumspor logo URL olmalı');
 
 console.log('supported-team-ui ok');
