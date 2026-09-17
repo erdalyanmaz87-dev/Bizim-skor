@@ -64,9 +64,14 @@
     if(doc.getElementById('bsPredictionCompetitionScript'))return true;
     const script=doc.createElement('script');script.id='bsPredictionCompetitionScript';script.src='prediction-competition-nav.js';script.defer=true;script.onload=()=>root?.BizimSkorPredictionCompetitionNav?.mount?.(doc);doc.head.appendChild(script);return true;
   }
+  function ensureIntegrationLoader(doc){
+    if(!doc)return false;
+    if(doc.getElementById('bsUiIntegrationLoaderScript'))return true;
+    const script=doc.createElement('script');script.id='bsUiIntegrationLoaderScript';script.src='ui-integration-loader.js';script.defer=true;doc.head.appendChild(script);return true;
+  }
   function mount(doc=typeof document!=='undefined'?document:null,storage=root?.localStorage){
     if(!doc)return false;
-    applyTheme(readTheme(storage),doc);ensureExtraStyles(doc);ensurePredictionCompetitionScript(doc);
+    applyTheme(readTheme(storage),doc);ensureExtraStyles(doc);ensurePredictionCompetitionScript(doc);ensureIntegrationLoader(doc);
     const headerReady=ensureHeaderHost(doc,storage);
     const host=doc.getElementById?.('conn');
     if(!headerReady&&host){host.className='bs-theme-host';renderToggle(host,storage,doc)}
@@ -85,5 +90,5 @@
     error.textContent='Bağlantı hatası: '+String(message||'Bilinmeyen hata');
     return true;
   }
-  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,adminLegacyHideCss,ensureAdminMenu,ensurePredictionCompetitionScript,mount,showConnectionError});
+  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,adminLegacyHideCss,ensureAdminMenu,ensurePredictionCompetitionScript,ensureIntegrationLoader,mount,showConnectionError});
 });
