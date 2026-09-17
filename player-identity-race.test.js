@@ -1,0 +1,10 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('player-identity.js','utf8');
+assert(src.includes('CACHE_KEY'),'oyuncu-takım eşleşmesi yerel cache kullanmalı');
+assert(src.includes('hydrateLabels'),'veri geç gelirse mevcut oyuncu etiketleri bir kez tamamlanmalı');
+assert(src.includes('bs-player-label'),'logo oyuncu adı etiketinin parçası olmalı');
+assert(src.includes('playerLabel'),'tek oyuncu etiketi fonksiyonu kullanılmalı');
+assert(src.includes('localStorage'),'cache senkron okunmalı');
+assert(!src.includes('MutationObserver'),'global DOM gözlemcisi kullanılmamalı');
+console.log('race-free player identity contract ok');
