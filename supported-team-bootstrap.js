@@ -9,6 +9,7 @@
     if(!root.sb){setTimeout(start,500);return false}
     started=true;
     try{
+      await load(document,'brand-assets.js','bsSupportedTeamBrandAssetsScript');
       await load(document,'supported-team-ui.js','bsSupportedTeamUiScript');
       await load(document,'supported-team-ranking-logos.js','bsSupportedTeamRankingLogosScript');
       await load(document,'admin-supported-team-stats.js','bsSupportedTeamAdminStatsScript');
