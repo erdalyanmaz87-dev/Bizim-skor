@@ -56,3 +56,10 @@ test('Hafta Sıralaması sırası puan > davet > tam skor > doğru sonuç > kay�
   assert.deepEqual(ranked.map(r=>r.name),['B','A']);
   assert.deepEqual(ranked.map(r=>r.rank),[1,2]);
 });
+
+test('Hafta Sıralaması oyuncu adını kayıtlı takım logosuyla üretir',()=>{
+  const source=fs.readFileSync('weekly-ranking-score-fix.js','utf8');
+  assert.match(source,/BizimSkorPlayerIdentity\?\.nameOnly\?\.\(name\)/);
+  assert.match(source,/await root\.BizimSkorPlayerIdentity\?\.loadContext\?\.\(\)/);
+  assert.doesNotMatch(source,/>\$\{esc\(r\.name\)\}<\/button>/);
+});
