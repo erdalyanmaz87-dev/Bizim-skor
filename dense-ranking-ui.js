@@ -25,10 +25,12 @@
       })));
     }
 
+    function identity(name){return window.BizimSkorPlayerIdentity?.markup?.(name)||esc(name)}
+
     renderScoreTable=function(targetId,ps,rs){
       const rows=denseRows(scoreRows(ps,rs));
       document.getElementById(targetId).innerHTML=rows.length
-        ?`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th><th>⚽</th></tr>${rows.map(r=>`<tr><td>${r.rank===1?'🥇 1':r.rank===2?'🥈 2':r.rank===3?'🥉 3':r.rank}</td><td>${esc(r.name)}</td><td><b>${r.pts}</b></td><td>${r.ex}</td><td>${r.cr}</td></tr>`).join('')}</table>`
+        ?`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th><th>⚽</th></tr>${rows.map(r=>`<tr><td>${r.rank===1?'🥇 1':r.rank===2?'🥈 2':r.rank===3?'🥉 3':r.rank}</td><td>${identity(r.name)}</td><td><b>${r.pts}</b></td><td>${r.ex}</td><td>${r.cr}</td></tr>`).join('')}</table>`
         :'Henüz puan oluşmadı.';
     };
 
@@ -50,7 +52,7 @@
       const rsq=await sb.from('results').select('*');
       if(rsq.error)throw rsq.error;
       const rows=denseRows(scoreRows(ps,rsq.data||[]));
-      document.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map(r=>`<tr><td>${r.rank===1?'🥇 1':r.rank===2?'🥈 2':r.rank===3?'🥉 3':r.rank}</td><td>${esc(r.name)}</td><td><b>${r.pts}</b></td><td>${r.ex}</td></tr>`).join('')}</table>`;
+      document.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map(r=>`<tr><td>${r.rank===1?'🥇 1':r.rank===2?'🥈 2':r.rank===3?'🥉 3':r.rank}</td><td>${identity(r.name)}</td><td><b>${r.pts}</b></td><td>${r.ex}</td></tr>`).join('')}</table>`;
     };
   });
 })();
