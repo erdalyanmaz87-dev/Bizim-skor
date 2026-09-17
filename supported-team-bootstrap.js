@@ -10,6 +10,7 @@
     started=true;
     try{
       await load(document,'supported-team-ui.js','bsSupportedTeamUiScript');
+      await load(document,'supported-team-ranking-logos.js','bsSupportedTeamRankingLogosScript');
       await load(document,'admin-supported-team-stats.js','bsSupportedTeamAdminStatsScript');
       return true;
     }catch(error){started=false;console.warn('supported team bootstrap',error);return false}
