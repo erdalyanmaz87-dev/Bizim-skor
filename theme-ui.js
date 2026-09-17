@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const STORAGE_KEY='bizimSkorTheme';
   const COLORS={light:'#071633',dark:'#020617'};
-  let waitingForDocument=false,observerStarted=false;
+  let waitingForDocument=false,observerStarted=false,teamBootstrapLoaded=false;
 
   function normalizeTheme(value){return value==='dark'?'dark':'light'}
   function readTheme(storage=root?.localStorage){try{return normalizeTheme(storage?.getItem(STORAGE_KEY))}catch(_){return'light'}}
@@ -64,9 +64,14 @@
     if(doc.getElementById('bsPredictionCompetitionScript'))return true;
     const script=doc.createElement('script');script.id='bsPredictionCompetitionScript';script.src='prediction-competition-nav.js';script.defer=true;script.onload=()=>root?.BizimSkorPredictionCompetitionNav?.mount?.(doc);doc.head.appendChild(script);return true;
   }
+  function ensureSupportedTeamBootstrap(doc){
+    if(!doc||teamBootstrapLoaded||doc.getElementById('bsSupportedTeamBootstrapScript'))return false;
+    teamBootstrapLoaded=true;
+    const script=doc.createElement('script');script.id='bsSupportedTeamBootstrapScript';script.src='supported-team-bootstrap.js';script.defer=true;doc.head.appendChild(script);return true;
+  }
   function mount(doc=typeof document!=='undefined'?document:null,storage=root?.localStorage){
     if(!doc)return false;
-    applyTheme(readTheme(storage),doc);ensureExtraStyles(doc);ensurePredictionCompetitionScript(doc);
+    applyTheme(readTheme(storage),doc);ensureExtraStyles(doc);ensurePredictionCompetitionScript(doc);ensureSupportedTeamBootstrap(doc);
     const headerReady=ensureHeaderHost(doc,storage);
     const host=doc.getElementById?.('conn');
     if(!headerReady&&host){host.className='bs-theme-host';renderToggle(host,storage,doc)}
@@ -85,5 +90,5 @@
     error.textContent='Bağlantı hatası: '+String(message||'Bilinmeyen hata');
     return true;
   }
-  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,adminLegacyHideCss,ensureAdminMenu,ensurePredictionCompetitionScript,mount,showConnectionError});
+  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,adminLegacyHideCss,ensureAdminMenu,ensurePredictionCompetitionScript,ensureSupportedTeamBootstrap,mount,showConnectionError});
 });
