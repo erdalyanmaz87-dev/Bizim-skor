@@ -1,6 +1,23 @@
 const fs=require('fs');
 const assert=require('assert');
 const bootstrap=fs.readFileSync('supported-team-bootstrap.js','utf8');
+const supported=fs.readFileSync('supported-team-ui.js','utf8');
 assert(bootstrap.includes("'player-identity.js'"),'player identity renderer bootstrap üzerinden yüklenmeli');
+assert(bootstrap.includes("'player-identity-render-hooks.js'"),'ana sayfa render hookları bootstrap üzerinden yüklenmeli');
 assert(!bootstrap.includes("'supported-team-ranking-logos.js'"),'sonradan DOM tarayan logo katmanı bootstrapta olmamalı');
-const identity=fs.readFileSync('player
+assert(!supported.includes('new MutationObserver'),'takım seçimi modülü tüm sayfayı izlememeli');
+const identity=fs.readFileSync('player-identity.js','utf8');
+assert(identity.includes('get_supported_team_context')||identity.includes('loadContext'),'oyuncu-takım eşleşmesi kalıcı bağlamdan alınmalı');
+assert(identity.includes('function markup'),'oyuncu adı render edilirken logo+isim aynı markup içinde üretilmeli');
+assert(identity.includes('bs-supported-team-logo'),'takım logosu oyuncu kimliğinin parçası olmalı');
+assert(!identity.includes('MutationObserver'),'kimlik renderer DOM taraması yapmamalı');
+const hooks=fs.readFileSync('player-identity-render-hooks.js','utf8');
+assert(hooks.includes('renderScoreTable'),'Süper Lig sıralama rendererı kimlik çıktısını kullanmalı');
+assert(hooks.includes('renderFriendLeagueRanking'),'arkadaş ligi sıralaması kimlik çıktısını kullanmalı');
+const general=fs.readFileSync('general-ranking-weekly-total.js','utf8');
+const champions=fs.readFileSync('champions-league-ui.js','utf8');
+const nations=fs.readFileSync('nations-league-ui.js','utf8');
+const arena=fs.readFileSync('league-system-ui.js','utf8');
+const museum=fs.readFileSync('player-museum.js','utf8');
+for(const [name,src] of Object.entries({general,champions,nations,arena,museum})) assert(src.includes('BizimSkorPlayerIdentity'),name+' oyuncu adı doğrudan kimlik rendererından gelmeli');
+console.log('render-time player identity contract ok');
