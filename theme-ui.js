@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const STORAGE_KEY='bizimSkorTheme';
   const COLORS={light:'#071633',dark:'#020617'};
-  let waitingForDocument=false,observerStarted=false;
+  let waitingForDocument=false,observerStarted=false,supportedTeamBundleStarted=false;
 
   function normalizeTheme(value){return value==='dark'?'dark':'light'}
   function readTheme(storage=root?.localStorage){try{return normalizeTheme(storage?.getItem(STORAGE_KEY))}catch(_){return'light'}}
@@ -64,14 +64,30 @@
     if(doc.getElementById('bsPredictionCompetitionScript'))return true;
     const script=doc.createElement('script');script.id='bsPredictionCompetitionScript';script.src='prediction-competition-nav.js';script.defer=true;script.onload=()=>root?.BizimSkorPredictionCompetitionNav?.mount?.(doc);doc.head.appendChild(script);return true;
   }
-  function ensureIntegrationLoader(doc){
-    if(!doc)return false;
-    if(doc.getElementById('bsUiIntegrationLoaderScript'))return true;
-    const script=doc.createElement('script');script.id='bsUiIntegrationLoaderScript';script.src='ui-integration-loader.js';script.defer=true;doc.head.appendChild(script);return true;
+  function loadIsolatedScript(doc,src,id){
+    return new Promise((resolve,reject)=>{
+      if(doc.getElementById(id)||[...doc.scripts].some(s=>(s.getAttribute('src')||'').split('?')[0].endsWith(src)))return resolve();
+      const script=doc.createElement('script');script.id=id;script.src=src;script.defer=true;script.onload=resolve;script.onerror=()=>reject(new Error(src+' yüklenemedi'));doc.body.appendChild(script);
+    });
+  }
+  function ensureSupportedTeamBundle(doc){
+    if(!doc||supportedTeamBundleStarted)return false;
+    supportedTeamBundleStarted=true;
+    const start=async()=>{
+      try{
+        try{if(typeof sb!=='undefined')root.sb=sb}catch(_){}
+        await loadIsolatedScript(doc,'brand-assets.js','bsSupportedTeamBrandAssets');
+        await loadIsolatedScript(doc,'supported-team-ui.js','bsSupportedTeamUiScript');
+        await loadIsolatedScript(doc,'museum-team-logo-fix.js','bsSupportedTeamLogoFixScript');
+        await loadIsolatedScript(doc,'admin-supported-team-stats.js','bsSupportedTeamAdminStatsScript');
+      }catch(e){console.warn('supported team bundle',e)}
+    };
+    if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',()=>setTimeout(start,0),{once:true});else setTimeout(start,0);
+    return true;
   }
   function mount(doc=typeof document!=='undefined'?document:null,storage=root?.localStorage){
     if(!doc)return false;
-    applyTheme(readTheme(storage),doc);ensureExtraStyles(doc);ensurePredictionCompetitionScript(doc);ensureIntegrationLoader(doc);
+    applyTheme(readTheme(storage),doc);ensureExtraStyles(doc);ensurePredictionCompetitionScript(doc);ensureSupportedTeamBundle(doc);
     const headerReady=ensureHeaderHost(doc,storage);
     const host=doc.getElementById?.('conn');
     if(!headerReady&&host){host.className='bs-theme-host';renderToggle(host,storage,doc)}
@@ -90,5 +106,5 @@
     error.textContent='Bağlantı hatası: '+String(message||'Bilinmeyen hata');
     return true;
   }
-  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,adminLegacyHideCss,ensureAdminMenu,ensurePredictionCompetitionScript,ensureIntegrationLoader,mount,showConnectionError});
+  return Object.freeze({normalizeTheme,readTheme,applyTheme,toggleMarkup,changeTheme,renderToggle,ensureHeaderHost,adminLegacyHideCss,ensureAdminMenu,ensurePredictionCompetitionScript,ensureSupportedTeamBundle,mount,showConnectionError});
 });
