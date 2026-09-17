@@ -26,8 +26,13 @@
   const byCode=new Map(TEAMS.map(x=>[x.code,x]));
   const norm=v=>String(v??'').trim().toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c');
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const LOGO_OVERRIDES=Object.freeze({
+    kocaelispor:'https://kocaelispor.com.tr/images/upload/7cad04d86cb9f4219a0e635b47121d2f.png',
+    erzurumspor:'https://erzurumsporfk.org/wp-content/uploads/2022/08/cropped-ERZURUMSPOR-FK-kopya-3.png'
+  });
   function logoUrl(code){
     const team=byCode.get(code);if(!team)return'';
+    if(LOGO_OVERRIDES[code])return LOGO_OVERRIDES[code];
     const branded=root.BizimSkorBrandAssets?.teamLogoUrl?.(team.name);if(branded)return branded;
     const slug=code==='goztepe-izmir'?'goztepe-izmir':code==='amed-sk'?'amed':code==='corum-fk'?'corum':code;
     return `https://football-logos.cc/logos/turkey/256x256/${slug}.png`;
@@ -47,5 +52,5 @@
   async function refresh(doc){const ctx=await loadContext();if(!ctx)return;const map=contextMap(ctx);decorateRankings(doc,map);if(!ctx.current_team)ensureModal(doc).classList.remove('hide')}
   async function saveChoice(doc,code){const token=root.localStorage?.getItem('bizimSkorFriendToken');if(!token)return;const q=await root.sb.rpc('set_supported_team_once',{p_token:token,p_team_code:code});if(q.error)throw q.error;cachedContext=null;const ctx=await loadContext();ensureModal(doc).classList.add('hide');decorateRankings(doc,contextMap(ctx))}
   function mount(doc=typeof document!=='undefined'?document:null){if(!doc)return false;ensureStyle(doc);const modal=ensureModal(doc);let selected='';modal.addEventListener('click',async e=>{const choice=e.target.closest?.('[data-supported-team-code]');if(choice){selected=choice.dataset.supportedTeamCode;modal.querySelectorAll('[data-supported-team-code]').forEach(x=>x.classList.toggle('selected',x===choice));modal.querySelector('[data-supported-team-save]').disabled=false;return}if(e.target.closest?.('[data-supported-team-save]')&&selected){const status=modal.querySelector('[data-supported-team-status]'),save=modal.querySelector('[data-supported-team-save]');save.disabled=true;status.textContent='Kaydediliyor…';try{await saveChoice(doc,selected);status.textContent=''}catch(err){status.textContent=err?.message||'Takım kaydedilemedi.';save.disabled=false}}});const run=()=>refresh(doc).catch(e=>console.warn('supported team',e));setTimeout(run,600);let timer=null;new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>{if(cachedContext)decorateRankings(doc,contextMap(cachedContext));else run()},80)}).observe(doc.body,{childList:true,subtree:true});root.addEventListener?.('focus',()=>{if(cachedContext)decorateRankings(doc,contextMap(cachedContext))});return true}
-  return Object.freeze({TEAMS,normalizeTeamMap,playerLogoMarkup,teamPickerMarkup,decorateRankings,contextMap,mount});
+  return Object.freeze({TEAMS,LOGO_OVERRIDES,logoUrl,normalizeTeamMap,playerLogoMarkup,teamPickerMarkup,decorateRankings,contextMap,mount});
 });
