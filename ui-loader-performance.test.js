@@ -1,0 +1,11 @@
+const fs=require('fs');
+const assert=require('assert');
+const loader=fs.readFileSync('ui-integration-loader.js','utf8');
+const reopen=fs.readFileSync('prediction-status-reopen-fix.js','utf8');
+assert(loader.includes('criticalScripts'),'kritik UI scriptleri ayrı yüklenmeli');
+assert(loader.includes('deferredScripts'),'ikincil scriptler ayrı yüklenmeli');
+assert(loader.indexOf("'prediction-week-cards.js'")<loader.indexOf("'invite-growth-utils.js'"),'Tahmin Durumu kartları davet modüllerinden önce yüklenmeli');
+assert(loader.includes('requestIdleCallback')||loader.includes('setTimeout'),'ikincil yükleme ilk çizim sonrasına bırakılmalı');
+assert(!reopen.includes("observer.observe(doc.body,{subtree:true"),'Tahmin Durumu tüm body altını izlememeli');
+assert(reopen.includes("observer.observe(layer"),'observer yalnız Tahmin Durumu katmanını izlemeli');
+console.log('ui loader performance contract ok');
