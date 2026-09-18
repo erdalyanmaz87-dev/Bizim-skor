@@ -1,0 +1,10 @@
+const fs=require('fs');
+const assert=require('assert');
+const loader=fs.readFileSync('ui-integration-loader.js','utf8');
+const ui=fs.existsSync('arena-season1-rules-ui.js')?fs.readFileSync('arena-season1-rules-ui.js','utf8'):'';
+assert(loader.includes("'arena-season1-rules-ui.js'"),'Arena sezon 1 kural arayüzü yüklenmeli');
+assert(ui.includes('Kural gereği küme düşürüldü'),'Zorunlu düşme açıklaması oyuncu satırında gösterilmeli');
+assert(ui.includes('4 Süper Lig haftasının en az 2'),'2/4 Süper Lig katılım kuralı açıklanmalı');
+assert(ui.includes('ortalamaya katılır, tur sayısına katılmaz'),'Şampiyonlar Ligi ve Uluslar Ligi katkısı doğru açıklanmalı');
+assert(ui.includes("promotion_status==='forced_relegation'"),'Backend zorunlu düşme durumu UI tarafından tanınmalı');
+console.log('Arena season 1 rules UI contract ok');
