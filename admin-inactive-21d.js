@@ -6,16 +6,28 @@
     try{return new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}
     catch(_){return 'Giriş kaydı bilinmiyor'}
   }
+  function summaryCard(label,value,attr){return `<b ${attr}>${label} <strong>${Number(value||0)}</strong></b>`}
   function replaceSummary(body,summary={}){
-    const cards=[...body.querySelectorAll('.bs-admin-stats-grid>b')];
-    const active=Number(summary.total_players??summary.active_players??0);
-    const participation=Number(summary.participation??0);
-    if(cards[0])cards[0].innerHTML=`Aktif Oyuncu <strong>${active}</strong>`;
-    const participationCard=cards.find(card=>String(card.textContent||'').trim().startsWith('Katılım'));
-    if(participationCard)participationCard.innerHTML=`Aktif Katılım <strong>%${participation}</strong>`;
+    const grid=body.querySelector('.bs-admin-stats-grid');
+    if(!grid)return false;
+    grid.querySelectorAll('[data-admin-activity-card]').forEach(x=>x.remove());
+    const total=Number(summary.total_registered??summary.total_players??0);
+    const inactive=Number(summary.inactive_21d??0);
+    const active=Number(summary.total_players??summary.active_players??Math.max(0,total-inactive));
+    grid.insertAdjacentHTML('afterbegin',summaryCard('Toplam Oyuncu',total,'data-admin-activity-card="total"')+summaryCard('21 Gündür Oyuna Girmeyen',inactive,'data-admin-activity-card="inactive"')+summaryCard('Aktif Oyuncu',active,'data-admin-activity-card="active"'));
+    const oldTotal=[...grid.querySelectorAll('b')].find(card=>!card.hasAttribute('data-admin-activity-card')&&String(card.textContent||'').trim().startsWith('Toplam Oyuncu'));
+    oldTotal?.remove();
+    const participationCard=[...grid.querySelectorAll('b')].find(card=>String(card.textContent||'').trim().startsWith('Katılım')||String(card.textContent||'').trim().startsWith('Aktif Katılım'));
+    if(participationCard)participationCard.innerHTML=`Aktif Katılım <strong>%${Number(summary.participation??0)}</strong>`;
+    return true;
+  }
+  function listMarkup(id,rows=[]){
+    const items=rows.map((x,i)=>`<div${i>=6?' class="bs-admin-stats-extra"':''}><button type="button" class="bs-admin-player" data-admin-player="${esc(x.player_name)}"><b>${esc(x.player_name)}</b><span>${esc(lastActivityText(x.last_activity))}</span></button></div>`).join('');
+    return `<div id="${id}" class="bs-admin-stats-list compact bs-admin-stats-columns">${items||'<p>Bu grupta oyuncu yok.</p>'}</div>${rows.length>6?`<button type="button" class="bs-admin-stats-toggle" data-admin-stats-toggle="${id}" aria-expanded="false">Tümünü Göster (${rows.length})</button>`:''}`;
   }
   function inactiveMarkup(rows=[]){
-    return `<section class="bs-admin-stats-group" data-admin-inactive-21d><h3>3 Haftadır Oyuna Girmeyenler <small>(${rows.length})</small></h3><div class="bs-admin-stats-list compact bs-admin-stats-columns">${rows.length?rows.map(x=>`<div><button type="button" class="bs-admin-player" data-admin-player="${esc(x.player_name)}"><b>${esc(x.player_name)}</b><span>${esc(lastActivityText(x.last_activity))}</span></button></div>`).join(''):'<p>Bu grupta oyuncu yok.</p>'}</div></section>`;
+    const id='list-21-gundur-oyuna-girmeyenler';
+    return `<section class="bs-admin-stats-group" data-admin-inactive-21d><h3>21 Gündür Oyuna Girmeyenler <small>(${rows.length})</small></h3>${listMarkup(id,rows)}</section>`;
   }
   function apply(body,data={}){
     if(!body)return false;
@@ -48,7 +60,7 @@
     },true);
     return true;
   }
-  const api=Object.freeze({lastActivityText,replaceSummary,inactiveMarkup,apply,waitForBody,refresh,mount});
+  const api=Object.freeze({lastActivityText,summaryCard,replaceSummary,listMarkup,inactiveMarkup,apply,waitForBody,refresh,mount});
   root.BizimSkorAdminInactive21d=api;
   if(typeof document!=='undefined')mount(document);
   if(typeof module==='object'&&module.exports)module.exports=api;
