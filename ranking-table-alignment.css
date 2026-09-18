@@ -1,0 +1,98 @@
+.bs-screen-content table th:nth-child(2),
+.bs-screen-content table td:nth-child(2),
+#weeklyRankingBoard table th:nth-child(2),
+#weeklyRankingBoard table td:nth-child(2),
+#championsWeeklyRankingBoard table th:nth-child(2),
+#championsWeeklyRankingBoard table td:nth-child(2),
+#championsRankingBoard table th:nth-child(2),
+#championsRankingBoard table td:nth-child(2),
+#nationsRankingBoard table th:nth-child(2),
+#nationsRankingBoard table td:nth-child(2),
+#generalBoard table th:nth-child(2),
+#generalBoard table td:nth-child(2),
+#sezuBoard table th:nth-child(2),
+#sezuBoard table td:nth-child(2),
+#board table th:nth-child(2),
+#board table td:nth-child(2){
+  text-align:left!important;
+  padding-left:20px!important;
+  padding-right:12px!important;
+}
+
+.bs-screen-content table th:first-child,
+.bs-screen-content table td:first-child,
+#weeklyRankingBoard table th:first-child,
+#weeklyRankingBoard table td:first-child,
+#championsWeeklyRankingBoard table th:first-child,
+#championsWeeklyRankingBoard table td:first-child,
+#championsRankingBoard table th:first-child,
+#championsRankingBoard table td:first-child,
+#nationsRankingBoard table th:first-child,
+#nationsRankingBoard table td:first-child,
+#generalBoard table th:first-child,
+#generalBoard table td:first-child,
+#sezuBoard table th:first-child,
+#sezuBoard table td:first-child,
+#board table th:first-child,
+#board table td:first-child{
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  text-align:center!important;
+}
+
+.bs-screen-content table td:nth-child(2) .bs-player-profile-link,
+#weeklyRankingBoard table td:nth-child(2) .bs-player-profile-link,
+#championsWeeklyRankingBoard table td:nth-child(2) .bs-player-profile-link,
+#championsRankingBoard table td:nth-child(2) .bs-player-profile-link,
+#nationsRankingBoard table td:nth-child(2) .bs-player-profile-link,
+#generalBoard table td:nth-child(2) .bs-player-profile-link,
+#sezuBoard table td:nth-child(2) .bs-player-profile-link,
+#board table td:nth-child(2) .bs-player-profile-link{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  text-align:left!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+@media(max-width:430px){
+  .bs-screen-content table th:first-child,
+  .bs-screen-content table td:first-child,
+  #weeklyRankingBoard table th:first-child,
+  #weeklyRankingBoard table td:first-child,
+  #championsWeeklyRankingBoard table th:first-child,
+  #championsWeeklyRankingBoard table td:first-child,
+  #championsRankingBoard table th:first-child,
+  #championsRankingBoard table td:first-child,
+  #nationsRankingBoard table th:first-child,
+  #nationsRankingBoard table td:first-child,
+  #generalBoard table th:first-child,
+  #generalBoard table td:first-child,
+  #sezuBoard table th:first-child,
+  #sezuBoard table td:first-child,
+  #board table th:first-child,
+  #board table td:first-child{
+    width:64px!important;
+    min-width:64px!important;
+    max-width:64px!important;
+  }
+  .bs-screen-content table th:nth-child(2),
+  .bs-screen-content table td:nth-child(2),
+  #weeklyRankingBoard table th:nth-child(2),
+  #weeklyRankingBoard table td:nth-child(2),
+  #championsWeeklyRankingBoard table th:nth-child(2),
+  #championsWeeklyRankingBoard table td:nth-child(2),
+  #championsRankingBoard table th:nth-child(2),
+  #championsRankingBoard table td:nth-child(2),
+  #nationsRankingBoard table th:nth-child(2),
+  #nationsRankingBoard table td:nth-child(2),
+  #generalBoard table th:nth-child(2),
+  #generalBoard table td:nth-child(2),
+  #sezuBoard table th:nth-child(2),
+  #sezuBoard table td:nth-child(2),
+  #board table th:nth-child(2),
+  #board table td:nth-child(2){padding-left:16px!important;}
+}
