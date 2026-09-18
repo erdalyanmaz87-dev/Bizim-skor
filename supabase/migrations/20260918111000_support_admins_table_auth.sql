@@ -1,4 +1,4 @@
--- Admin authorization must be table-backed so Erdal and İpek share the same permissions.
+-- Admin authorization is table-backed so Erdal and İpek share the same permissions.
 insert into public.support_admins(player_id)
 select p.id from public.players p
 where lower(p.name) in (lower('Erdal'),lower('İpek'))
@@ -14,7 +14,7 @@ as $function$
     select 1
     from public.support_admins sa
     join public.players p on p.id=sa.player_id
-    where p.id=public.friend_session_player_id(p_token)
+    where lower(p.name)=lower(coalesce(public.friend_session_player(p_token),''))
       and coalesce(p.is_active,true)
   )
 $function$;
