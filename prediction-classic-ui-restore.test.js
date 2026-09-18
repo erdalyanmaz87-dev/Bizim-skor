@@ -1,0 +1,10 @@
+const fs=require('fs');
+const assert=require('assert');
+const loader=fs.readFileSync('ui-integration-loader.js','utf8');
+assert(!loader.includes("'prediction-bottom-sheet.js'"),'Yeni alttan açılan tahmin paneli yüklenmemeli');
+assert(!loader.includes("'prediction-bottom-sheet-visibility-fix.js'"),'Bottom-sheet görünürlük düzeltmesi artık yüklenmemeli');
+assert(loader.includes("'robot-prediction-ui.js'"),'SkorBot arayüzü korunmalı');
+assert(loader.includes("'match-statistics-ui.js'"),'İstatistik düğmeleri korunmalı');
+assert(loader.includes("'champions-prediction-polish.js'"),'Şampiyonlar Ligi tahmin ekranı korunmalı');
+assert(loader.includes("'nations-league-ui.js'"),'Uluslar Ligi tahmin ekranı korunmalı');
+console.log('classic prediction UI restore contract ok');
