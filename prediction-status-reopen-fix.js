@@ -46,11 +46,12 @@
       if(nav?.dataset.simpleNav==='home'||nav?.dataset.simpleNav==='pred')root.setTimeout?.(()=>sync(doc),0);
       if(event.target?.closest?.('[data-simple-feature-close]'))root.setTimeout?.(()=>sync(doc),0);
     },true);
-    if(root.MutationObserver){
+    const layer=doc.getElementById('bsSimpleFeatureLayer');
+    if(root.MutationObserver&&layer){
       const observer=new root.MutationObserver(mutations=>{
-        if(mutations.some(m=>m.type==='attributes'&&m.attributeName==='class'&&m.target?.id==='bsSimpleFeatureLayer'))resync();
+        if(mutations.some(m=>m.type==='attributes'&&m.attributeName==='class'))resync();
       });
-      observer.observe(doc.body,{subtree:true,attributes:true,attributeFilter:['class']});
+      observer.observe(layer,{attributes:true,attributeFilter:['class']});
       doc.__bsPredictionStatusReopenObserver=observer;
     }
     root.setTimeout?.(()=>sync(doc),0);
