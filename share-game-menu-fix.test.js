@@ -9,6 +9,11 @@ assert.match(html,/Arkadaş Ligine Davet Et/);
 assert.strictEqual(fix.isShareGameAction({dataset:{simpleAccount:'shareGame'}}),true);
 assert.strictEqual(fix.isShareGameAction({dataset:{simpleAccount:'support'}}),false);
 
+const css=fix.styleMarkup();
+assert.match(css,/\.bs-share-menu-modal-backdrop\{[^}]*z-index:0/,'backdrop must stay below dialog panel');
+assert.match(css,/\.bs-share-menu-modal-panel\{[^}]*z-index:1/,'dialog panel must be explicitly above backdrop on iOS/PWA');
+assert.match(css,/isolation:isolate/,'modal must create a stable stacking context');
+
 const order=loader.scriptOrder();
 assert(order.includes('share-game-menu-fix.js'),'share menu fix must be loaded');
 assert(order.indexOf('share-game.js')<order.indexOf('share-game-menu-fix.js'),'share menu fix must load after share-game.js');
