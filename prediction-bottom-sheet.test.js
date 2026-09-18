@@ -1,0 +1,12 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.existsSync('prediction-bottom-sheet.js')?fs.readFileSync('prediction-bottom-sheet.js','utf8'):'';
+assert(src.includes('Tahmin Yap'),'bottom sheet title missing');
+assert(src.includes('SkorBot Önerisi'),'SkorBot action missing');
+assert(src.includes('İstatistik'),'statistics action missing');
+assert(src.includes('Fırsat Maçı'),'opportunity badge missing');
+assert(src.includes('data-bs-score-minus'),'minus controls missing');
+assert(src.includes('data-bs-score-plus'),'plus controls missing');
+assert(src.includes("getElementById('save')"),'must reuse existing save flow');
+assert(src.includes("querySelectorAll('#fx .m')"),'must enhance existing Super Lig rows');
+console.log('prediction bottom sheet contract ok');
