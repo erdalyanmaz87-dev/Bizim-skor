@@ -1,0 +1,10 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('live-score-ui.js','utf8');
+assert(src.includes("'ipek'"),'İpek canlı skor yönetici görünürlüğüne dahil olmalı');
+assert(!src.includes('Yalnızca Erdal yönetici hesabında görünür'),'canlı skor kartı tek yönetici adına bağlı görünmemeli');
+const migration=fs.readFileSync('supabase/migrations/20260918111000_support_admins_table_auth.sql','utf8');
+assert(migration.includes('support_admins'),'admin yetkisi support_admins tablosundan gelmeli');
+assert(migration.includes("lower('İpek')"),'İpek admin listesine eklenmeli');
+assert(migration.includes('friend_session_player(p_token)'),'admin oturumu mevcut session resolver ile doğrulanmalı');
+console.log('Ipek admin contract ok');
