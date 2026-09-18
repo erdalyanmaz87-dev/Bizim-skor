@@ -1,0 +1,16 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.existsSync('prediction-bottom-sheet.js')?fs.readFileSync('prediction-bottom-sheet.js','utf8'):'';
+assert(src.includes('Tahmin Yap'),'bottom sheet title missing');
+assert(src.includes('SkorBot Önerisi'),'SkorBot action missing');
+assert(src.includes('İstatistik'),'statistics action missing');
+assert(src.includes('Fırsat Maçı'),'opportunity badge missing');
+assert(src.includes('data-bs-score-minus'),'minus controls missing');
+assert(src.includes('data-bs-score-plus'),'plus controls missing');
+assert(src.includes('data-bs-prediction-open'),'explicit prediction entry button missing');
+assert(src.includes('Tahmin Gir'),'prediction entry label missing');
+assert(src.includes("getElementById('save')"),'must reuse existing save flow');
+assert(src.includes("querySelectorAll('#fx .m')"),'must enhance existing Super Lig rows');
+assert(src.includes("row.querySelector('[data-bs-prediction-open]')"),'row must open only from explicit button');
+assert(!src.includes("row.addEventListener('click'"),'team/row click must not open prediction sheet');
+console.log('prediction bottom sheet contract ok');
