@@ -8,6 +8,9 @@
       ?{transform:'translate(-50%, 0)',opacity:'1',visibility:'visible'}
       :{transform:'translate(-50%, calc(100% + 100px))',opacity:'0',visibility:'hidden'};
   }
+  function shouldResyncForClick(simpleNav,simpleAccount){
+    return simpleNav==='predictionStatus'||simpleAccount==='inviteChampion';
+  }
   function applyState(doc,open){
     const layer=doc?.getElementById?.('bsSimpleFeatureLayer');
     const panel=layer?.querySelector?.('.bs-simple-feature-panel');
@@ -42,7 +45,8 @@
     };
     doc.addEventListener('click',event=>{
       const nav=event.target?.closest?.('[data-simple-nav]');
-      if(nav?.dataset.simpleNav==='predictionStatus')resync();
+      const account=event.target?.closest?.('[data-simple-account]');
+      if(shouldResyncForClick(nav?.dataset?.simpleNav,account?.dataset?.simpleAccount))resync();
       if(nav?.dataset.simpleNav==='home'||nav?.dataset.simpleNav==='pred')root.setTimeout?.(()=>sync(doc),0);
       if(event.target?.closest?.('[data-simple-feature-close]'))root.setTimeout?.(()=>sync(doc),0);
     },true);
@@ -57,5 +61,5 @@
     root.setTimeout?.(()=>sync(doc),0);
     return true;
   }
-  return Object.freeze({panelVisualState,applyState,sync,mount});
+  return Object.freeze({panelVisualState,shouldResyncForClick,applyState,sync,mount});
 });

@@ -13,6 +13,9 @@ assert.deepStrictEqual(nav.predictionProgress([]),{complete:0,total:0,percent:0}
 assert.deepStrictEqual(nav.predictionProgress([true,false,true,false,false]),{complete:2,total:5,percent:40});
 assert.deepStrictEqual(reopen.panelVisualState(true),{transform:'translate(-50%, 0)',opacity:'1',visibility:'visible'});
 assert.deepStrictEqual(reopen.panelVisualState(false),{transform:'translate(-50%, calc(100% + 100px))',opacity:'0',visibility:'hidden'});
+assert.strictEqual(reopen.shouldResyncForClick('predictionStatus',''),true);
+assert.strictEqual(reopen.shouldResyncForClick('menu','inviteChampion'),true);
+assert.strictEqual(reopen.shouldResyncForClick('menu','support'),false);
 
 const groups=nav.groupedItems(['arena','championsRanking','nationsRanking','general','live','resultsWeek','footballCenter','friendLeagues','history','rules','chat']);
 assert.deepStrictEqual(groups.map(group=>group.title),['Sıralamalar','Futbol','Sosyal','Hesabım','Bilgi']);
