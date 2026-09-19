@@ -40,16 +40,29 @@
       return true;
     }catch(e){console.warn('admin weekly participation',e);return false;}
   }
+  function ensureVisible(doc,run){
+    let attempts=0;
+    const tick=()=>{
+      const modal=doc.getElementById('adminStatisticsModal');
+      if(!modal||modal.classList.contains('hide'))return false;
+      attempts+=1;
+      run();
+      return attempts<20;
+    };
+    tick();
+    const id=setInterval(()=>{if(!tick())clearInterval(id)},250);
+    return id;
+  }
   function mount(doc=typeof document!=='undefined'?document:null){
     if(!doc)return false;
     let busy=false;
     const run=()=>{if(busy)return;busy=true;Promise.resolve(enhance(doc)).finally(()=>busy=false)};
-    doc.addEventListener('click',e=>{if(e.target.closest?.('#openAdminStatistics'))setTimeout(run,250)},true);
+    doc.addEventListener('click',e=>{if(e.target.closest?.('#openAdminStatistics'))setTimeout(()=>ensureVisible(doc,run),50)},true);
     let timer=null;
     new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>{const modal=doc.getElementById('adminStatisticsModal');if(modal&&!modal.classList.contains('hide'))run()},120)}).observe(doc.body,{childList:true,subtree:true});
     const modal=doc.getElementById('adminStatisticsModal');
-    if(modal&&!modal.classList.contains('hide'))setTimeout(run,0);
+    if(modal&&!modal.classList.contains('hide'))setTimeout(()=>ensureVisible(doc,run),0);
     return true;
   }
-  return Object.freeze({render,load,enhance,mount});
+  return Object.freeze({render,load,enhance,ensureVisible,mount});
 });
