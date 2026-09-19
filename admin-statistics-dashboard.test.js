@@ -41,6 +41,21 @@ const completionHtml=dashboard.render({
  ]
 });
 assert(completionHtml.indexOf('En Son Tamamlayan')<completionHtml.indexOf('Önce Tamamlayan'),'güncel hafta tahmin yapanlar en son tamamlayan en üstte olmalı');
+const participationHtml=dashboard.render({
+ summary:{total_players:89,participation:78},
+ players:[],
+ weekly_participation:[
+  {week:3,completed:43,total_players:48,participation:89.6},
+  {week:4,completed:55,total_players:64,participation:85.9},
+  {week:5,completed:65,total_players:79,participation:82.3},
+  {week:6,completed:63,total_players:83,participation:75.9},
+  {week:7,completed:69,total_players:89,participation:77.5}
+ ]
+});
+assert(participationHtml.includes('Haftalara Göre Katılım'),'katılım geçmişi başlığı görünmeli');
+assert(participationHtml.includes('5. Hafta')&&participationHtml.includes('%82.3'),'haftalık oran grafikte görünmeli');
+assert(participationHtml.includes('7. Hafta')&&participationHtml.includes('%77.5'),'güncel hafta grafikte görünmeli');
+assert(participationHtml.includes('65 / 79'),'tamamlayan / toplam oyuncu bilgisi görünmeli');
 const card=dashboard.renderPlayerCard({
  name:'Ayşe',
  prediction:{saved:9,total:9,completed:true},
