@@ -1,3 +1,4 @@
+const fs=require('fs');
 const assert=require('assert');
 const feature=require('./admin-weekly-participation.js');
 const html=feature.render([
@@ -14,4 +15,7 @@ assert(html.includes('65 / 79'));
 assert(html.includes('7. Hafta'));
 assert(html.includes('%77.5'));
 assert(html.includes('data-admin-weekly-participation'));
+const source=fs.readFileSync('admin-weekly-participation.js','utf8');
+assert(source.includes('ensureVisible'),'grafik yönetici özeti açıldıktan sonra görünür olana kadar yeniden denenmeli');
+assert(source.includes('setInterval'),'geç yüklenen yönetici özeti için kısa süreli görünürlük kontrolü olmalı');
 console.log('admin weekly participation render ok');
