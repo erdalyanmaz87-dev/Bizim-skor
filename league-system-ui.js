@@ -45,8 +45,8 @@
   }
   function rowClass(row,size,targets){
     const classes=['league-row'],zone=zoneFor(row,size,targets);
-    if(zone==='promotion'||row.promotion_status==='promotion')classes.push('league-promotion-zone');
-    if(zone==='relegation'||row.promotion_status==='relegation')classes.push('league-relegation-zone');
+    if(zone==='promotion')classes.push('league-promotion-zone');
+    if(zone==='relegation')classes.push('league-relegation-zone');
     if(row.promotion_status==='championship')classes.push('league-championship-zone');
     if(zone==='promotion'&&Number(row.league_rank)===Number(targets.promotion))classes.push('league-promotion-boundary');
     if(zone==='relegation'&&Number(row.league_rank)===size-Number(targets.relegation)+1)classes.push('league-relegation-boundary');
