@@ -5,6 +5,7 @@ assert.strictEqual(src.split('async function loadAll(').length-1,1);
 assert(src.includes('admin-statistics-utils.js'));
 assert(src.includes('admin-statistics-dashboard.js'));
 assert(src.includes('admin-inactive-21d.js'));
+assert(src.includes('admin-weekly-participation.js'));
 assert(src.indexOf('admin-statistics-dashboard.js')<src.indexOf('admin-inactive-21d.js'));
 assert(src.includes('admin-statistics-dashboard.css'));
 console.log('admin statistics loader ok');
