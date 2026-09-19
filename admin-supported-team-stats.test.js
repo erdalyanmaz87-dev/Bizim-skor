@@ -5,6 +5,10 @@ const unselected=Array.from({length:7},(_,i)=>({player_name:`Secmeyen${i+1}`,sup
 const html=feature.render({selected_count:selected.length,unselected_count:unselected.length,selected,unselected});
 assert(html.includes('Takım Seçen'));
 assert(html.includes('Takım Seçmeyen'));
+assert(html.includes('Takım Dağılımı'));
+assert(html.includes('Galatasaray'));
+assert(html.includes('4 kişi'));
+assert(html.includes('Fenerbahçe'));
 assert(html.includes('data-admin-stats-toggle'));
 assert(html.includes('Tümünü Göster (8)'));
 assert(html.includes('Tümünü Göster (7)'));
