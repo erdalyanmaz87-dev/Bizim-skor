@@ -10,4 +10,7 @@ assert(ui.includes('0 puan'),'Erişilebilir ama kaçırılan turun sıfır puan 
 assert(ui.includes('ortalamaya katılır, tur sayısına katılmaz'),'Şampiyonlar Ligi ve Uluslar Ligi katkısı doğru açıklanmalı');
 assert(!ui.includes('7. Süper Lig haftasında hiç tahmin yapmayan'),'Eski 7. hafta özel düşme kuralı kaldırılmalı');
 assert(ui.includes('rounds_needed'),'Oyuncuya canlı minimum katılım durumu gösterilmeli');
+assert(ui.includes("filter(row=>row.promotion_status==='promotion').length"),'Yükselme alanı backenddeki aktif kontenjan sayısından türetilmeli');
+assert(ui.includes("Number(record.league_rank)<=promotionSlots"),'Yeşil alan yalnız mutlak lig sırası kontenjan içindeyse uygulanmalı');
+assert(ui.includes("row.classList.toggle('league-promotion-zone',inPromotionZone)"),'Eski uygunluk bazlı yeşil sınıfı mutlak sıra kuralıyla düzeltilmeli');
 console.log('Arena fair-access rules UI contract ok');
