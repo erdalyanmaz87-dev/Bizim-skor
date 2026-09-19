@@ -88,3 +88,11 @@ test('şampiyonlar ligi dönemi özel kart etiketini değiştirir',()=>{
   assert.equal(model.specialLabel,'Şampiyonlar Ligi Sıralaması');
   assert.equal(model.specialRank,3);
 });
+
+test('arena kartı lig adı sıra ve puanı gösterir',()=>{
+  const profile=require('./player-profile.js');
+  const arena=profile.buildArenaModel({league_code:'gold',league_rank:2,performance_score:84.5});
+  assert.deepEqual(arena,{leagueCode:'gold',leagueLabel:'Arena Altın Ligi',rank:2,score:84.5});
+  assert.match(profile.arenaMarkup(arena),/Arena Altın Ligi • 2\./);
+  assert.match(profile.arenaMarkup(arena),/Puan: 84,50/);
+});
