@@ -13,7 +13,7 @@
 #adminLiveScorePanel,#dailyMatches,#bsHomeDashboard{position:relative;isolation:isolate}#adminLiveScorePanel>* ,#dailyMatches>* ,#bsHomeDashboard>*{position:relative;z-index:1}
 #bsHomeDashboard .bs-home-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;overflow:visible!important;padding:0!important}
 #bsHomeDashboard .bs-home-stat{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;width:auto!important;min-height:216px!important;padding:13px 7px 9px!important;border-radius:17px!important;background:linear-gradient(155deg,rgba(11,45,91,.98),rgba(4,24,53,.99))!important;border:1px solid rgba(46,145,255,.82)!important;color:#fff!important;box-shadow:inset 0 0 26px rgba(24,105,213,.08)}
-#bsHomeDashboard .bs-home-stat.general,#bsHomeDashboard .bs-home-stat.nations,#bsHomeDashboard .bs-home-stat.admin-statistics{display:none!important}
+#bsHomeDashboard .bs-home-stat.admin-statistics{display:none!important}
 #bsHomeDashboard .bs-home-stat>span:first-child{min-height:30px;display:flex!important;align-items:center!important;justify-content:center!important;color:#f3f8ff!important;font-size:10px!important;line-height:1.15!important;font-weight:800!important;text-align:center!important}
 #bsHomeDashboard .bs-home-stat>.bs-competition-brand{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;min-height:82px;margin:0 auto 5px!important;gap:5px!important}
 #bsHomeDashboard .bs-home-stat>.bs-competition-brand .bs-competition-logo{width:62px!important;height:62px!important;max-width:100%;object-fit:contain!important;opacity:1!important}
