@@ -6,4 +6,8 @@ assert(loader.includes("loadStyle('ranking-table-alignment.css')"),'Ranking hiza
 assert(css.includes('td:nth-child(2)'),'Katılımcı sütunu ortak hizalanmalı');
 assert(css.includes('text-align:left!important'),'Katılımcı isimleri sola hizalanmalı');
 assert(css.includes('padding-left:20px!important'),'Sıra numarasından yeterli boşluk bırakılmalı');
+assert(css.includes('white-space:normal!important'),'Mobilde oyuncu adı tek satıra zorlanmamalı');
+assert(css.includes('-webkit-line-clamp:2'),'Uzun oyuncu adları en fazla iki satırda gösterilmeli');
+assert(css.includes('overflow-wrap:anywhere'),'Uzun kullanıcı adları taşmadan sarılabilmeli');
+assert(css.includes('width:40px!important'),'Skor/ikon sütunları katılımcı alanına yer bırakacak kadar dar olmalı');
 console.log('ranking alignment contract ok');
