@@ -110,11 +110,11 @@
   #championsWeeklyRankingBoard table td:first-child,
   #nationsWeeklyRankingBoard table th:first-child,
   #nationsWeeklyRankingBoard table td:first-child{
-    width:52px!important;
-    min-width:52px!important;
-    max-width:52px!important;
-    padding-left:4px!important;
-    padding-right:4px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    padding-left:3px!important;
+    padding-right:3px!important;
   }
   #weeklyRankingBoard table th:nth-child(2),
   #weeklyRankingBoard table td:nth-child(2),
@@ -124,7 +124,7 @@
   #nationsWeeklyRankingBoard table td:nth-child(2){
     width:auto!important;
     min-width:0!important;
-    padding-left:8px!important;
+    padding-left:6px!important;
     padding-right:4px!important;
   }
   #weeklyRankingBoard table th:nth-child(n+3),
@@ -133,18 +133,24 @@
   #championsWeeklyRankingBoard table td:nth-child(n+3),
   #nationsWeeklyRankingBoard table th:nth-child(n+3),
   #nationsWeeklyRankingBoard table td:nth-child(n+3){
-    width:44px!important;
-    padding-left:3px!important;
-    padding-right:3px!important;
+    width:40px!important;
+    padding-left:2px!important;
+    padding-right:2px!important;
     text-align:center!important;
   }
   #weeklyRankingBoard table td:nth-child(2) .bs-player-profile-link,
   #championsWeeklyRankingBoard table td:nth-child(2) .bs-player-profile-link,
   #nationsWeeklyRankingBoard table td:nth-child(2) .bs-player-profile-link{
+    display:-webkit-box!important;
+    -webkit-box-orient:vertical!important;
+    -webkit-line-clamp:2!important;
     min-width:0!important;
     max-width:100%!important;
+    white-space:normal!important;
     overflow:hidden!important;
-    text-overflow:ellipsis!important;
-    white-space:nowrap!important;
+    text-overflow:clip!important;
+    overflow-wrap:anywhere!important;
+    word-break:break-word!important;
+    line-height:1.15!important;
   }
 }
