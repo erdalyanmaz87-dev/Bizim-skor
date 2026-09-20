@@ -13,6 +13,12 @@ assert.match(konyaspor,/konyaspor-logo-footylogos\.svg/);
 assert.match(konyaspor,/TÜMOSAN KONYASPOR/);
 assert.match(brand.teamMarkup('Bilinmeyen Takım'),/bs-team-fallback/);
 
+const netherlands=brand.nationalTeamMarkup('Hollanda');
+assert.match(netherlands,/class="bs-team-fallback bs-national-flag"/,'milli takım rozeti bayrak olmalı');
+assert.equal((netherlands.match(/🇳🇱/g)||[]).length,1,'bayrak yalnızca bir kez görünmeli');
+assert.doesNotMatch(netherlands,/<img\b/,'milli takım görünümü harici arma yüklememeli');
+assert.match(netherlands,/data-country-flag-ignore/,'ülke adının yanına ikinci bayrak eklenmemeli');
+
 assert.strictEqual(brand.teamSlug('GALATASARAY A.Ş.'),'galatasaray');
 assert.strictEqual(brand.teamSlug('AMED SPORTİF FAALİYETLER'),'amed-sk');
 assert.strictEqual(brand.teamSlug('ARCA ÇORUM FK'),'corum-fk');

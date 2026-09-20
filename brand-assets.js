@@ -89,6 +89,15 @@
     'hollanda':'netherlands','netherlands':'netherlands','norvec':'norway','norway':'norway','ukrayna':'ukraine','ukraine':'ukraine','cekya':'czech-republic','czech republic':'czech-republic',
     'slovakya':'slovakia','slovakia':'slovakia','yunanistan':'greece','greece':'greece','avusturya':'austria','austria':'austria','azerbaycan':'azerbaijan','azerbaijan':'azerbaijan'
   };
+  const NATIONAL_FLAGS={
+    'turkiye':'🇹🇷','almanya':'🇩🇪','hollanda':'🇳🇱','sirbistan':'🇷🇸','yunanistan':'🇬🇷','norvec':'🇳🇴','danimarka':'🇩🇰','portekiz':'🇵🇹','galler':'🏴',
+    'ingiltere':'🇬🇧','iskocya':'🏴','irlanda':'🇮🇪','kuzey irlanda':'🇬🇧','fransa':'🇫🇷','ispanya':'🇪🇸','italya':'🇮🇹','belcika':'🇧🇪','isvicre':'🇨🇭',
+    'avusturya':'🇦🇹','polonya':'🇵🇱','cekya':'🇨🇿','slovakya':'🇸🇰','slovenya':'🇸🇮','hirvatistan':'🇭🇷','bosna hersek':'🇧🇦','karadag':'🇲🇪',
+    'kuzey makedonya':'🇲🇰','arnavutluk':'🇦🇱','romanya':'🇷🇴','bulgaristan':'🇧🇬','macaristan':'🇭🇺','ukrayna':'🇺🇦','isvec':'🇸🇪','finlandiya':'🇫🇮',
+    'izlanda':'🇮🇸','estonya':'🇪🇪','letonya':'🇱🇻','litvanya':'🇱🇹','luksemburg':'🇱🇺','malta':'🇲🇹','kibris':'🇨🇾','gurcistan':'🇬🇪','ermenistan':'🇦🇲',
+    'azerbaycan':'🇦🇿','moldova':'🇲🇩','belarus':'🇧🇾','kosova':'🇽🇰','israil':'🇮🇱','faroe adalari':'🇫🇴','cebelitarik':'🇬🇮','san marino':'🇸🇲',
+    'andorra':'🇦🇩','liechtenstein':'🇱🇮','kazakistan':'🇰🇿'
+  };
   const COMPETITIONS={
     champions:{file:'uefa-champions-league-logo-footylogos.svg',src:'https://commons.wikimedia.org/wiki/Special:Redirect/file/UEFA_Champions_League_Logo_Wordmark.svg'},
     super:{file:'super-lig-turkey-logo-footylogos.svg',src:'https://football-logos.cc/logos/turkey/256x256/super-lig.png'},
@@ -98,7 +107,7 @@
   function teamLogoUrl(name){const slug=teamSlug(name);if(!slug)return null;const meta=TEAM_META[slug];if(!meta)return null;return meta[2]||`https://football-logos.cc/logos/${meta[0]}/256x256/${meta[1]}.png`}
   function nationalTeamLogoUrl(name){const k=key(name),country=COUNTRY_ALIASES[k]||k.replace(/ /g,'-');return country?`https://football-logos.cc/logos/${country}/256x256/${country}-national-team.png`:null}
   function fallbackMarkup(name,cls='bs-team-fallback'){const label=String(name||'?').trim();const initials=label.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';return `<span class="${cls}" aria-hidden="true">${esc(initials)}</span>`}
-  function nationalTeamMarkup(name){const url=nationalTeamLogoUrl(name);if(!url)return `<span class="bs-team-brand">${fallbackMarkup(name)}<span class="bs-team-name">${esc(name)}</span></span>`;return `<span class="bs-team-brand"><img class="bs-team-logo" src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="bs-team-fallback" hidden aria-hidden="true">${esc(String(name||'?').trim().slice(0,2).toUpperCase())}</span><span class="bs-team-name">${esc(name)}</span></span>`}
+  function nationalTeamMarkup(name){const flag=NATIONAL_FLAGS[key(name)]||'🏳️';return `<span class="bs-team-brand"><span class="bs-team-fallback bs-national-flag" aria-hidden="true">${flag}</span><span class="bs-team-name" data-country-flag-ignore>${esc(name)}</span></span>`}
   function teamMarkup(name,options={}){const slug=teamSlug(name),url=teamLogoUrl(name);if(!slug||!url)return `<span class="bs-team-brand">${fallbackMarkup(name)}<span class="bs-team-name">${esc(name)}</span></span>`;const file=`${slug}-logo-footylogos.svg`;return `<span class="bs-team-brand" data-team-slug="${esc(slug)}"><img class="bs-team-logo" src="${esc(url)}" data-logo-file="${file}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="bs-team-fallback" hidden aria-hidden="true">${esc(String(name||'?').trim().slice(0,2).toUpperCase())}</span><span class="bs-team-name">${esc(name)}</span></span>`}
   function competitionLogoMarkup(kind,label=''){const cfg=COMPETITIONS[kind];if(!cfg)return fallbackMarkup(label,'bs-competition-fallback');return `<span class="bs-competition-brand"><img class="bs-competition-logo" src="${esc(cfg.src)}" data-logo-file="${cfg.file}" alt="${esc(label)}" loading="lazy" referrerpolicy="no-referrer"><span>${esc(label)}</span></span>`}
   return Object.freeze({key,teamSlug,teamLogoUrl,nationalTeamLogoUrl,nationalTeamMarkup,teamMarkup,competitionLogoMarkup,fallbackMarkup,TEAM_META,COMPETITIONS});
