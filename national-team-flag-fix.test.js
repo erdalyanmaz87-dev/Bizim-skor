@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+global.BizimSkorBrandAssets=Object.freeze({marker:1,nationalTeamMarkup:name=>`old:${name}`});
+const fix=require('./national-team-flag-fix');
+assert.equal(fix.flagFor('Galler'),'🏴󠁧󠁢󠁷󠁬󠁳󠁿');
+assert.equal(fix.flagFor('Wales'),'🏴󠁧󠁢󠁷󠁬󠁳󠁿');
+assert.equal(fix.flagFor('İngiltere'),'🏴󠁧󠁢󠁥󠁮󠁧󠁿');
+assert.equal(fix.flagFor('England'),'🏴󠁧󠁢󠁥󠁮󠁧󠁿');
+assert.equal(fix.patchBrandAssets(),true);
+assert.equal(global.BizimSkorBrandAssets.marker,1);
+assert.match(global.BizimSkorBrandAssets.nationalTeamMarkup('Galler'),/Galler/);
+assert.match(global.BizimSkorBrandAssets.nationalTeamMarkup('İngiltere'),/İngiltere/);
+console.log('national team flag fix tests passed');
