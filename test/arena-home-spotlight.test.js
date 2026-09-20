@@ -27,4 +27,5 @@ test('Arena özeti ana sayfada Günün Maçlarından önce öne çıkarılır',(
   assert.equal(result.summaryHost.parentNode,result.spotlight);
   assert.match(result.spotlight.innerHTML,/Arena Ligleri/);
   assert.match(result.spotlight.innerHTML,/1\. Sezon/);
+  assert.doesNotMatch(result.spotlight.innerHTML,/EN ÖNEMLİ YARIŞMA/);
 });

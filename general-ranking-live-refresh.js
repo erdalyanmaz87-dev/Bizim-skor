@@ -86,7 +86,7 @@
       spotlight=doc.createElement('div');
       spotlight.id='homeArenaSpotlight';
       spotlight.className='c home-arena-spotlight';
-      spotlight.innerHTML='<div class="home-arena-heading"><div><div class="home-arena-eyebrow">EN ÖNEMLİ YARIŞMA</div><h2>🏟️ Arena Ligleri</h2></div><span>1. Sezon • 19 Ekim’e kadar</span></div>';
+      spotlight.innerHTML='<div class="home-arena-heading"><div><h2>🏟️ Arena Ligleri</h2></div><span>1. Sezon • 19 Ekim’e kadar</span></div>';
       if(!summaryHost){
         summaryHost=doc.createElement('div');
         summaryHost.id='personalLeagueSummary';
