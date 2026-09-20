@@ -2,14 +2,14 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const Live=require('./super-ranking-movement-live');
 
-test('genel siralamada onceki ve mevcut sira farkindan hareket hesaplar',()=>{
-  assert.deepEqual(Live.movement(25,21),{direction:'up',amount:4});
-  assert.deepEqual(Live.movement(21,22),{direction:'down',amount:1});
+test('genel siralamada onceki ve mevcut siradan hareket yonunu hesaplar',()=>{
+  assert.deepEqual(Live.movement(25,21),{direction:'up'});
+  assert.deepEqual(Live.movement(21,22),{direction:'down'});
   assert.equal(Live.movement(10,10),null);
 });
 
 test('haftalik hareket sadece sonucun ait oldugu hafta icin uygulanir',()=>{
-  assert.deepEqual(Live.movementForContext({scope:'weekly',resultWeek:5,selectedWeek:5,beforeRank:26,currentRank:19}),{direction:'up',amount:7});
+  assert.deepEqual(Live.movementForContext({scope:'weekly',resultWeek:5,selectedWeek:5,beforeRank:26,currentRank:19}),{direction:'up'});
   assert.equal(Live.movementForContext({scope:'weekly',resultWeek:5,selectedWeek:4,beforeRank:26,currentRank:19}),null);
 });
 
@@ -30,6 +30,14 @@ test('hafta secici ekranda yoksa basliktan haftayi bulur',()=>{
     return null;
   }};
   assert.equal(Live.selectedWeek(doc),5);
+});
+
+test('hareket rozeti sadece yon okunu gosterir',()=>{
+  let html='';
+  const node={classList:{add(){}},querySelector(){return null},insertAdjacentHTML(_where,value){html=value}};
+  Live.reconcile(node,{direction:'up'},null);
+  assert.match(html,/>▲<\/span>/);
+  assert.doesNotMatch(html,/▲\s+\d/);
 });
 
 test('hareket stillerini ana yardimci yuklenmese bile kendi basina garanti eder',()=>{
