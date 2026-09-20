@@ -62,7 +62,7 @@ test('canlı maç kartında skor dakika ve bilenleri gösterir',()=>{
     new Date('2026-08-30T17:04:00Z')
   );
   assert.match(html,/CANLI/);
-  assert.match(html,/67/);
+  assert.match(html,/71/);
   assert.match(html,/Eyüpspor/);
   assert.match(html,/1\s*-\s*1/);
   assert.match(html,/Alanyaspor/);

@@ -38,7 +38,7 @@ test('tahmin ekranı ortak robot önerisi ve maç istatistikleri araçlarını k
   assert.match(robot,/robot-prediction-button/);
   assert.match(robot,/competition\(settings\)/);
   assert.match(stats,/match-stats-button/);
-  assert.match(stats,/#championsFixtures \\.champions-match/);
+  assert.match(stats,/\['#championsFixtures \.champions-match',championsFixtures,'champions'\]/);
 });
 
 
@@ -47,10 +47,10 @@ test('Şampiyonlar Ligi maç araçları ortak yatay düzeni yalnız bir kez kull
   const robot=read('robot-prediction-ui.js');
   const stats=read('match-statistics-ui.js');
   assert.doesNotMatch(champions,/data-champions-robot|champions-tools|Robotun Önerisi: \$\{/);
-  assert.match(robot,/button\.textContent='🤖 Robotun Önerisi'/);
+  assert.match(robot,/button\.textContent='🤖 SkorBot’un Önerisi'/);
   assert.match(robot,/\.match-stats-button\{grid-column:1\/4/);
   assert.match(robot,/\.robot-prediction-button\{grid-column:4\/6/);
-  assert.match(stats,/#championsFixtures \.champions-match/);
+  assert.match(stats,/\['#championsFixtures \.champions-match',championsFixtures,'champions'\]/);
 });
 
 test('Şampiyonlar Ligi istatistik düğmesi kendi istatistik RPCsini kullanır',()=>{

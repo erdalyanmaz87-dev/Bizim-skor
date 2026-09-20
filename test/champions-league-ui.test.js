@@ -46,9 +46,9 @@ test('Şampiyonlar Ligi sıralaması Süper Lig tablolarını kullanmaz',()=>{
 
 test('Şampiyonlar Ligi haftalık sıralama mevcut haftalık sıralama sekmesine eklenir',()=>{
   assert.match(ui,/function mountWeeklyRankingPanel\(\)/);
-  assert.match(ui,/id="weeklyRankingCompetitionSwitch"/);
+  assert.match(ui,/switcher\.id='weeklyRankingCompetitionSwitch'/);
   assert.match(ui,/data-weekly-competition="champions_league"/);
-  assert.match(ui,/id="championsWeeklyRankingPanel"/);
+  assert.match(ui,/panel\.id='championsWeeklyRankingPanel'/);
   assert.match(ui,/id="championsWeeklyRankingBoard"/);
   assert.match(ui,/get_champions_league_weekly_ranking/);
 });

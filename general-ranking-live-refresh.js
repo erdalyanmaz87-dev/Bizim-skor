@@ -78,18 +78,33 @@
     return{arenaTab,arenaSection};
   }
 
+  function ensureHomeArenaSpotlight(doc=root.document){
+    if(!doc)return{};
+    let spotlight=doc.getElementById('homeArenaSpotlight');
+    let summaryHost=doc.getElementById('personalLeagueSummary');
+    if(!spotlight){
+      spotlight=doc.createElement('div');
+      spotlight.id='homeArenaSpotlight';
+      spotlight.className='c home-arena-spotlight';
+      spotlight.innerHTML='<div class="home-arena-heading"><div><div class="home-arena-eyebrow">EN ÖNEMLİ YARIŞMA</div><h2>🏟️ Arena Ligleri</h2></div><span>1. Sezon • 19 Ekim’e kadar</span></div>';
+      if(!summaryHost){
+        summaryHost=doc.createElement('div');
+        summaryHost.id='personalLeagueSummary';
+        summaryHost.innerHTML='<p class="small">Arena bilgileri yükleniyor…</p>';
+      }
+      spotlight.appendChild(summaryHost);
+      const daily=doc.getElementById('dailyMatches'),home=doc.getElementById('home');
+      if(daily)daily.insertAdjacentElement('beforebegin',spotlight);
+      else home?.prepend(spotlight);
+    }else if(summaryHost&&summaryHost.parentNode!==spotlight)spotlight.appendChild(summaryHost);
+    return{spotlight,summaryHost};
+  }
+
   function ensureLeagueMountPoints(){
     const doc=root.document;
     if(!doc)return{};
 
-    const known=doc.getElementById('knownPlayer');
-    let summaryHost=doc.getElementById('personalLeagueSummary');
-    if(known&&!summaryHost){
-      summaryHost=doc.createElement('div');
-      summaryHost.id='personalLeagueSummary';
-      summaryHost.style.marginTop='10px';
-      known.appendChild(summaryHost);
-    }
+    const{summaryHost}=ensureHomeArenaSpotlight(doc);
 
     const{arenaSection}=ensureArenaNavigation();
     let detailHost=doc.getElementById('leagueSystemPanel');
@@ -173,5 +188,5 @@
       ).subscribe();
     return true;
   }
-  return Object.freeze({mount,removeLeakedNewlineText,mountLeagues,ensureArenaNavigation,ensureLeagueMountPoints,scheduleLeagueMount});
+  return Object.freeze({mount,removeLeakedNewlineText,mountLeagues,ensureArenaNavigation,ensureHomeArenaSpotlight,ensureLeagueMountPoints,scheduleLeagueMount});
 });

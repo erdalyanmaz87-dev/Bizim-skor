@@ -15,8 +15,8 @@ test('haftalik hareket sadece sonucun ait oldugu hafta icin uygulanir',()=>{
 
 test('rpcnin scope kolonunu kapsam olarak indeksler',()=>{
   const idx=Live.indexRows([
-    {scope:'general',week:5,player_name:'Kat',before_rank:25},
-    {scope:'weekly',week:5,player_name:'Kat',before_rank:26}
+    {context_id:'general:all',scope:'general',week:5,player_name:'Kat',before_rank:25},
+    {context_id:'weekly:5',scope:'weekly',week:5,player_name:'Kat',before_rank:26}
   ]);
   assert.equal(idx.general.get('kat').beforeRank,25);
   assert.equal(idx.weekly.get('kat').beforeRank,26);

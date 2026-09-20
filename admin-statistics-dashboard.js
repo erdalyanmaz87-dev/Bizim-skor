@@ -64,7 +64,11 @@
     latestData = data || {};
     const s = data?.summary || {},
       all = data?.players || [],
-      completed = data?.completed || all.filter((x) => x.completed),
+      completed = [...(data?.completed || all.filter((x) => x.completed))].sort((a, b) => {
+        const aTime = Date.parse(a.completed_at || '') || 0,
+          bTime = Date.parse(b.completed_at || '') || 0;
+        return bTime - aTime;
+      }),
       incomplete = data?.incomplete || all.filter((x) => !x.completed),
       today =
         data?.today || all.filter((x) => Number(x.today_launch_count || 0) > 0),

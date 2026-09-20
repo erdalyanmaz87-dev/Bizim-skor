@@ -7,7 +7,8 @@ assert.strictEqual(ui.pickHistoryWeek([2,3,4],null),4);
 assert.strictEqual(typeof ui.buildHistoryGroups,'function');
 assert.deepStrictEqual(ui.buildHistoryGroups([2,3,4],[1,2]),{
  super:{title:'🇹🇷 Süper Lig',weeks:[2,3,4]},
- champions:{title:'⭐ Şampiyonlar Ligi',weeks:[1,2]}
+ champions:{title:'⭐ Şampiyonlar Ligi',weeks:[1,2]},
+ nations:{title:'🇪🇺 UEFA Uluslar Ligi',weeks:[]}
 });
 assert.deepStrictEqual(ui.buildHistoryGroups([2,3],[]).champions.weeks,[]);
 assert.deepStrictEqual(ui.championsWeeksThrough(1),[1]);

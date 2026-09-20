@@ -7,6 +7,6 @@ assert(sql.includes('arena_accessible_rounds'),'Oyuncu bazlı erişilebilir turl
 assert(sql.includes('p.created_at <= r.lock_time'),'Kayıt öncesi kapanmış turlar hesaba girmemeli');
 assert(sql.includes("coalesce(rp.performance_score,0)"),'Erişilebilir ama kaçırılan tur 0 puan sayılmalı');
 assert(sql.includes("count(*) filter(where ar.competition='super_lig' and ar.has_performance)"),'Minimum iki Süper Lig katılımı gerçek tamamlanan turlardan sayılmalı');
-assert(sql.includes('CREATE OR REPLACE FUNCTION public.arena_forced_relegation'),'Eski özel zorunlu düşme fonksiyonu yeni kurala göre güncellenmeli');
+assert(/create or replace function public\.arena_forced_relegation/i.test(sql),'Eski özel zorunlu düşme fonksiyonu yeni kurala göre güncellenmeli');
 assert(!sql.includes('week+2'),'7. hafta özel düşme kuralı migration içinde bulunmamalı');
 console.log('Arena fair accessible scoring contract ok');
