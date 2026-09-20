@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const flags=require('./country-flags-ui');
+assert.equal(flags.flagForCountry('Hollanda'),'🇳🇱');
+assert.equal(flags.flagForCountry('Almanya'),'🇩🇪');
+assert.equal(flags.flagForCountry('Sırbistan'),'🇷🇸');
+assert.equal(flags.flagForCountry('Yunanistan'),'🇬🇷');
+assert.equal(flags.flagForCountry('Norveç'),'🇳🇴');
+assert.equal(flags.flagForCountry('Danimarka'),'🇩🇰');
+assert.equal(flags.flagForCountry('Portekiz'),'🇵🇹');
+assert.equal(flags.flagForCountry('Galler'),'🏴');
+assert.equal(flags.flagForCountry('Türkiye'),'🇹🇷');
+assert.equal(flags.flagForCountry('Galatasaray'),'');
+assert.match(flags.decoratePlainText('Hollanda - Almanya'),/🇳🇱 Hollanda - 🇩🇪 Almanya/);
+assert.equal(flags.decoratePlainText('🇳🇱 Hollanda - 🇩🇪 Almanya'),'🇳🇱 Hollanda - 🇩🇪 Almanya');
+assert.equal(flags.decoratePlainText('Norveç - Danimarka'),'🇳🇴 Norveç - 🇩🇰 Danimarka');
+console.log('country flag tests passed');
