@@ -11,4 +11,6 @@ const picked=Robot.pickRandomEmpty(rows,2,()=>0);
 assert.strictEqual(picked.length,2);
 assert(picked.every(x=>x.fixtureId!==2));
 assert.strictEqual(Robot.pickRandomEmpty(rows,0,()=>0).length,0);
-console.log('robot prediction limits ok');
+assert.deepStrictEqual(Robot.suggest({home:{rank:1,form:['W','W','W','W','W'],goalsFor:12,goalsAgainst:2},away:{rank:18,form:['L','L','L','L','L'],goalsFor:2,goalsAgainst:11}}),{homeScore:3,awayScore:0});
+assert.deepStrictEqual(Robot.suggest({home:{rank:10,form:['D','D','D','D','D'],goalsFor:9,goalsAgainst:8},away:{rank:10,form:['D','D','D','D','D'],goalsFor:9,goalsAgainst:8}}),{homeScore:2,awayScore:2});
+console.log('robot prediction rules ok');
