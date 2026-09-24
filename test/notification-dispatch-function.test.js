@@ -19,7 +19,13 @@ test('tam skor bildirimi oyuncu ve cihaz bazında tekilleştirilir',()=>{
 test('eksik tahminlere 24 ve 3 saat hatırlatması hazırlanır',()=>{
   assert.match(source,/reminderThreshold/);
   assert.match(source,/predictionIsComplete/);
-  assert.match(source,/24 saat|3 saat/);
+  assert.match(source,/reminderCopy/);
+});
+
+test('hatırlatma dağıtıcısı üç yarışmanın ortak planını kullanır',()=>{
+  assert.match(source,/reminderCompetitions/);
+  assert.match(source,/reminderEventKey/);
+  assert.match(source,/reminderCopy/);
 });
 
 test('geçersiz cihaz uç noktaları temizlenir',()=>{

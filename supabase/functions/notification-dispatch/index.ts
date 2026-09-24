@@ -1,6 +1,6 @@
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { reminderThreshold, predictionIsComplete, exactScoreReached, deliveryKey } from "./core.mjs";
+import { reminderThreshold, reminderCompetitions, reminderEventKey, reminderCopy, predictionIsComplete, exactScoreReached, deliveryKey } from "./core.mjs";
 
 const sb=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const jsonHeaders={"content-type":"application/json"};
@@ -45,24 +45,29 @@ Deno.serve(async(req:Request)=>{
     const subscriptions=(subscriptionsResult.data||[]).filter(s=>s.player_name);
     let sent=0,failed=0;
 
-    const now=new Date(),until=new Date(now.getTime()+24*60*60*1000).toISOString();
-    const fixturesResult=await sb.from('fixtures').select('id,week,kickoff').gt('kickoff',now.toISOString()).lte('kickoff',until).order('kickoff');
-    if(fixturesResult.error)throw fixturesResult.error;
-    const weeks=new Map<number,any[]>();
-    for(const fixture of fixturesResult.data||[]){const list=weeks.get(Number(fixture.week))||[];list.push(fixture);weeks.set(Number(fixture.week),list)}
-    for(const [week,fixtures] of weeks){
-      const firstKickoff=new Date(fixtures[0].kickoff),hours=(firstKickoff.getTime()-now.getTime())/3600000,threshold=reminderThreshold(hours);
-      if(!threshold)continue;
-      const allFixtures=await sb.from('fixtures').select('id').eq('week',week);
-      if(allFixtures.error)throw allFixtures.error;
-      const fixtureIds=(allFixtures.data||[]).map(f=>f.id),predictions=fixtureIds.length?await sb.from('predictions').select('player_name,fixture_id').in('fixture_id',fixtureIds):{data:[],error:null};
-      if(predictions.error)throw predictions.error;
-      const counts=new Map<string,number>();
-      for(const prediction of predictions.data||[]){const key=normalize(prediction.player_name);counts.set(key,(counts.get(key)||0)+1)}
-      for(const subscription of subscriptions){
-        if(predictionIsComplete(counts.get(normalize(subscription.player_name))||0,fixtureIds.length))continue;
-        const label=threshold==='24h'?'24 saat':'3 saat';
-        try{if(await deliver(subscription,`reminder:${week}:${threshold}`,'prediction_reminder',`${week}. Hafta tahminlerini unutma!`,`Tahminlerin ${label} sonra, ilk maç başladığında kapanacak.`))sent++}catch{failed++}
+    const now=new Date(),nowIso=now.toISOString(),until=new Date(now.getTime()+24*60*60*1000).toISOString();
+    for(const competition of reminderCompetitions()){
+      const candidates=await sb.from(competition.fixtureTable).select('id,season,week,kickoff').gt('kickoff',nowIso).lte('kickoff',until).order('kickoff');
+      if(candidates.error)throw candidates.error;
+      const weeks=new Map<string,{season:string,week:number}>();
+      for(const fixture of candidates.data||[]){
+        const season=String(fixture.season||''),week=Number(fixture.week),key=`${season}:${week}`;
+        if(season&&week>0&&!weeks.has(key))weeks.set(key,{season,week});
+      }
+      for(const {season,week} of weeks.values()){
+        const allFixtures=await sb.from(competition.fixtureTable).select('id,kickoff').eq('season',season).eq('week',week).order('kickoff');
+        if(allFixtures.error)throw allFixtures.error;
+        const fixtures=allFixtures.data||[],firstKickoff=new Date(fixtures[0]?.kickoff),hours=(firstKickoff.getTime()-now.getTime())/3600000,threshold=reminderThreshold(hours);
+        if(!threshold)continue;
+        const fixtureIds=fixtures.map(f=>f.id),predictions=fixtureIds.length?await sb.from(competition.predictionTable).select('player_name,fixture_id').in('fixture_id',fixtureIds):{data:[],error:null};
+        if(predictions.error)throw predictions.error;
+        const counts=new Map<string,number>();
+        for(const prediction of predictions.data||[]){const key=normalize(prediction.player_name);counts.set(key,(counts.get(key)||0)+1)}
+        const copy=reminderCopy(competition.label,week,threshold),eventKey=reminderEventKey(competition.code,season,week,threshold);
+        for(const subscription of subscriptions){
+          if(predictionIsComplete(counts.get(normalize(subscription.player_name))||0,fixtureIds.length))continue;
+          try{if(await deliver(subscription,eventKey,'prediction_reminder',copy.title,copy.body))sent++}catch{failed++}
+        }
       }
     }
 
