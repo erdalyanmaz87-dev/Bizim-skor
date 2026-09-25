@@ -27,6 +27,14 @@ assert.strictEqual(ui.rankingTabForCard('sezu'),'sezu');
 assert.strictEqual(ui.rankingTabForCard('general'),'general');
 assert.strictEqual(ui.rankingTabForCard('rate'),null);
 
+const statusNodes=Object.fromEntries(['bsWeekRank','bsChampionsRank','bsNationsRank','bsGeneralRank','bsCorrectRate'].map(id=>[id,{textContent:'—',setAttribute(name,value){this[name]=value},removeAttribute(name){delete this[name]}}]));
+ui.setDashboardStatus('Yükleniyor…',true,{getElementById:id=>statusNodes[id]});
+assert.strictEqual(statusNodes.bsWeekRank.textContent,'Yükleniyor…');
+assert.strictEqual(statusNodes.bsWeekRank['aria-busy'],'true');
+ui.setDashboardStatus('Giriş yapınca görünecek',false,{getElementById:id=>statusNodes[id]});
+assert.strictEqual(statusNodes.bsWeekRank.textContent,'Giriş yapınca görünecek');
+assert.strictEqual(statusNodes.bsWeekRank['aria-busy'],undefined);
+
 const nodes={
  personalWeekRank:{textContent:'8.'},personalGeneralRank:{textContent:'10.'},
  personalWeekRankLabel:{textContent:'4. Hafta Süper Lig Sıralaması'},
