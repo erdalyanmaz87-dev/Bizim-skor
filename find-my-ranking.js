@@ -3,7 +3,7 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else{root.BizimSkorFindMyRanking=api;api.mount()}
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
-  const BOARD_IDS=['weeklyRankingBoard','sezuBoard','generalBoard','championsRankingBoard','friendLeagueRanking'];
+  const BOARD_IDS=['weeklyRankingBoard','sezuBoard','generalBoard','championsRankingBoard','nationsRankingBoard','friendLeagueRanking'];
 
   function normalizePlayer(value){
     return String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('tr-TR')
