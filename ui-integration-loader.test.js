@@ -8,12 +8,13 @@ assert(order.indexOf('national-team-flag-fix.js')<order.indexOf('brand-visual-ui
 assert(order.indexOf('ranking-movement.js')<order.indexOf('home-prediction-priority.js'));
 assert(order.indexOf('home-prediction-priority.js')<order.indexOf('prediction-week-cards.js'));
 assert(order.includes('find-my-ranking.js'));
+assert(order.includes('score-input-focus.js'));
 assert(order.indexOf('prediction-week-cards.js')<order.indexOf('home-dashboard-ui.js'));
 assert(order.indexOf('prediction-week-cards.js')<order.indexOf('match-statistics-ui.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('chat-unread-indicator.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('share-game.js'));
 assert(order.indexOf('fixture-ui.js')<order.indexOf('fixture-week-strip.js'));
-assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20260921-opportunity-week8-v1');
-assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20260921-opportunity-week8-v1');
-assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20260921-opportunity-week8-v1');
+assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20260925-nations-profile-focus-v1');
+assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20260925-nations-profile-focus-v1');
+assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20260925-nations-profile-focus-v1');
 console.log('ui-integration-loader ok');
