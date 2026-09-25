@@ -9,12 +9,14 @@ assert(order.indexOf('ranking-movement.js')<order.indexOf('home-prediction-prior
 assert(order.indexOf('home-prediction-priority.js')<order.indexOf('prediction-week-cards.js'));
 assert(order.includes('find-my-ranking.js'));
 assert(order.includes('score-input-focus.js'));
+assert(order.includes('partial-predictions-ui.js'));
+assert(order.indexOf('nations-league-ui.js')<order.indexOf('partial-predictions-ui.js'));
 assert(order.indexOf('prediction-week-cards.js')<order.indexOf('home-dashboard-ui.js'));
 assert(order.indexOf('prediction-week-cards.js')<order.indexOf('match-statistics-ui.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('chat-unread-indicator.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('share-game.js'));
 assert(order.indexOf('fixture-ui.js')<order.indexOf('fixture-week-strip.js'));
-assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20260925-startup-syntax-fix-v1');
-assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20260925-startup-syntax-fix-v1');
-assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20260925-startup-syntax-fix-v1');
+assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20260925-partial-predictions-v1');
+assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20260925-partial-predictions-v1');
+assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20260925-partial-predictions-v1');
 console.log('ui-integration-loader ok');
