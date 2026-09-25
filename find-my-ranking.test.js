@@ -9,7 +9,7 @@ test('oyuncu adını Türkçe karakter ve boşluk farklarından bağımsız eşl
 
 test('yalnız desteklenen sıralama alanlarını hedefler',()=>{
   assert.deepEqual(ui.rankingBoardIds(),[
-    'weeklyRankingBoard','sezuBoard','generalBoard','championsRankingBoard','friendLeagueRanking'
+    'weeklyRankingBoard','sezuBoard','generalBoard','championsRankingBoard','nationsRankingBoard','friendLeagueRanking'
   ]);
 });
 
