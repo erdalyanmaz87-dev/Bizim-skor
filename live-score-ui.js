@@ -6,7 +6,7 @@
   const LIVE=new Set(['1H','HT','2H','ET','BT','P']);
   const TERMINAL=new Set(['FT','AET','PEN']);
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'
   })[char]);
 
   function isLiveStatus(status){return LIVE.has(String(status||'').toUpperCase())}
@@ -56,7 +56,7 @@
     if(!integer(elapsed)||elapsed<0||elapsed>130)return{ok:false,message:'Dakika 0 ile 130 arasında olmalıdır.'};
     return{ok:true,fixtureId,homeScore,awayScore,elapsed};
   }
-  function competitionLabel(competition){return String(competition||'')==='champions_league'?'Şampiyonlar Ligi':'Süper Lig'}
+  function competitionLabel(competition){const key=String(competition||'');if(key==='champions_league'||key==='champions')return'Şampiyonlar Ligi';if(key==='nations_league'||key==='nations')return'Uluslar Ligi';return'Süper Lig'}
   function rowKey(row){return `${row?.competition||'super_lig'}:${row?.fixture_id}`}
   function createAdminDraftMap(rows=[]){
     return new Map((Array.isArray(rows)?rows:[]).map(r=>[rowKey(r),{
