@@ -20,5 +20,7 @@
   function openOpportunityMenu(){ensureMenuLayer();const layer=document.getElementById('oppMenuLayer');if(layer)layer.style.display='block'}
   function mountOpportunityMenu(){const drawer=document.getElementById('bsSimpleNavDrawer');if(!drawer)return;const football=drawer.querySelector('[data-simple-nav-group="football"]');if(!football||football.querySelector('[data-opportunity-menu]'))return;const row=document.createElement('button');row.type='button';row.className='bs-simple-row';row.dataset.opportunityMenu='1';row.innerHTML='<span aria-hidden="true">🔥</span><b>Fırsat Maçları</b><span class="bs-simple-chevron" aria-hidden="true">›</span>';row.onclick=e=>{e.preventDefault();e.stopPropagation();drawer.querySelector('[data-simple-close]')?.click();setTimeout(openOpportunityMenu,30)};football.appendChild(row)}
   function refresh(){mountStyles();patchScoring();markRows();ensureMenuLayer();mountOpportunityMenu()}
+  window.BizimSkorOpportunityUI=Object.freeze({open:openOpportunityMenu,refresh,mountOpportunityMenu});
+  document.addEventListener('click',event=>{if(event.target?.closest?.('[data-simple-nav="menu"]')){setTimeout(mountOpportunityMenu,0);setTimeout(mountOpportunityMenu,60);setTimeout(mountOpportunityMenu,180)}});
   window.addEventListener('load',()=>{refresh();setTimeout(refresh,500);setTimeout(refresh,1500)});new MutationObserver(()=>{markRows();mountOpportunityMenu()}).observe(document.documentElement,{childList:true,subtree:true});
 })();
