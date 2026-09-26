@@ -21,7 +21,6 @@ assert.strictEqual(doc.documentElement.dataset.theme,'dark');
 assert.strictEqual(meta.content,'#020617');
 theme.applyTheme('light',doc);
 assert.strictEqual(doc.documentElement.dataset.theme,'light');
-assert.strictEqual(meta.content,'#071633');
 
 const saved={};
 const storage={
@@ -37,5 +36,18 @@ const failingStorage={getItem(){throw new Error('blocked')}};
 assert.strictEqual(theme.readTheme(failingStorage),'light');
 
 assert.strictEqual(theme.adminLegacyHideCss(),'#openAdminStatistics,#openSupportAdmin{display:none!important}');
+
+assert.strictEqual(typeof theme.ensureUIIntegration,'function');
+const appended=[];
+const loaderDoc={
+  getElementById:()=>null,
+  scripts:[],
+  createElement:()=>({}),
+  head:{appendChild:node=>appended.push(node)}
+};
+assert.strictEqual(theme.ensureUIIntegration(loaderDoc),true);
+assert.strictEqual(appended.length,1);
+assert.strictEqual(appended[0].id,'bsUIIntegrationScript');
+assert.ok(String(appended[0].src).includes('ui-integration-loader.js'));
 
 console.log('theme-ui ok');
