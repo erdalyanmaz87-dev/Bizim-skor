@@ -26,6 +26,9 @@ const brandedRoma={
 assert.strictEqual(polish.readTeamName(brandedRoma),'Roma','fallback initial must not prefix team name');
 const plainRoma={querySelector(){return null},textContent:'Roma'};
 assert.strictEqual(polish.readTeamName(plainRoma),'Roma');
+assert.strictEqual(polish.brandNeedsRepair('22.00Arsenal','Arsenal',false,true),true,'time-prefixed brand must be rebuilt with the real team logo');
+assert.strictEqual(polish.brandNeedsRepair('Club Brugge','Club Brugge',false,true),true,'known team fallback must be replaced by its logo');
+assert.strictEqual(polish.brandNeedsRepair('Barcelona','Barcelona',true,true),false);
 
 const order=loader.scriptOrder();
 assert(order.includes('champions-prediction-polish.js'),'CL polish layer must be loaded');
