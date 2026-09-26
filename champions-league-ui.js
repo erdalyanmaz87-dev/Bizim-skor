@@ -17,7 +17,7 @@
     mountWeeklyRankingPanel();
     document.querySelector('[data-tab="live"]')?.addEventListener('click',()=>setTimeout(()=>{mountWeeklyRankingPanel();if(weeklyCompetition==='champions_league')setWeeklyCompetition('champions_league')},250));
   }
-  function openPrediction(){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section').forEach(x=>x.classList.add('hide'));document.getElementById('championsPred')?.classList.remove('hide');return loadPrediction()}
+  function openPrediction(){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section').forEach(x=>x.classList.add('hide'));document.getElementById('championsPred')?.classList.remove('hide');window.dispatchEvent?.(new Event('bizimskor:champions-prediction-opened'));if(window.BizimSkorActivePredictionWeekSelector)return Promise.resolve();return loadPrediction()}
   function currentWeek(){return week}
   function timeText(value){return new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value)).replace(':','.')}
   function rowFixture(row){return{...row,id:Number(row.fixture_id)}}
