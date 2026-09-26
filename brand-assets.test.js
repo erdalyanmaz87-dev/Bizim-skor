@@ -22,4 +22,8 @@ assert.match(netherlands,/data-country-flag-ignore/,'ülke adının yanına ikin
 assert.strictEqual(brand.teamSlug('GALATASARAY A.Ş.'),'galatasaray');
 assert.strictEqual(brand.teamSlug('AMED SPORTİF FAALİYETLER'),'amed-sk');
 assert.strictEqual(brand.teamSlug('ARCA ÇORUM FK'),'corum-fk');
+['Bayern Münih','Bodo/Glimt','Leipzig','Slavia Prag','Stuttgart'].forEach(name=>{
+  assert.ok(brand.teamSlug(name),`${name} logo eşlemesi bulunmalı`);
+  assert.match(brand.teamMarkup(name),/<img class="bs-team-logo"/,`${name} gerçek logo ile çizilmeli`);
+});
 console.log('brand assets ok');
