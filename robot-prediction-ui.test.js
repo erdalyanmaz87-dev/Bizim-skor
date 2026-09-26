@@ -5,4 +5,5 @@ assert.ok(source.includes('.match-stats-button{grid-column:1/3!important;width:1
 assert.ok(source.includes('.robot-prediction-button{grid-column:4/6;width:100%'));
 assert.ok(source.includes('justify-self:stretch'));
 assert.ok(source.includes('align-self:center'));
+assert.ok(!source.includes('}\\\\n  async function decorate'), 'SkorBot scriptinde literal \\n kalmamalı');
 console.log('robot prediction button alignment ok');
