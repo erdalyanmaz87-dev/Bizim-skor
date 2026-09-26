@@ -38,14 +38,14 @@
     const initials=clean.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'?';
     return `<span class="bs-team-brand" data-team-slug="${esc(slug)}"><img class="bs-team-logo" src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="bs-team-fallback" hidden aria-hidden="true">${esc(initials)}</span><span class="bs-team-name">${esc(clean)}</span></span>`;
   }
-  function needsAliasLogoRepair(node,name){
-    if(!node||!LOGO_NAME_ALIASES[teamKey(name)])return false;
-    return !node.querySelector?.('.bs-team-logo');
+  function brandNeedsRepair(renderedName,name,hasLogo,hasKnownLogo){
+    const clean=cleanTeamName(name),rendered=cleanTeamName(renderedName);
+    return rendered!==clean||(!hasLogo&&hasKnownLogo);
   }
   function ensureTeamBrand(node,name){
     if(!node||!name)return false;
-    const hasBrand=!!node.querySelector?.('.bs-team-brand');
-    if(hasBrand&&!needsAliasLogoRepair(node,name))return false;
+    const brand=node.querySelector?.('.bs-team-brand'),rendered=brand?.querySelector?.('.bs-team-name')?.textContent||'',hasLogo=!!brand?.querySelector?.('.bs-team-logo'),lookup=canonicalLogoName(name),hasKnownLogo=!!root?.BizimSkorBrandAssets?.teamLogoUrl?.(lookup);
+    if(brand&&!brandNeedsRepair(rendered,name,hasLogo,hasKnownLogo))return false;
     node.innerHTML=teamMarkup(name);
     if(node.dataset)node.dataset.bsBrandTeam='1';
     return true;
@@ -109,5 +109,5 @@
     doc.addEventListener?.('click',event=>{if(event.target?.closest?.('[data-prediction-competition="championsPred"]'))root?.setTimeout?.(run,250)});
     run();return true;
   }
-  return Object.freeze({cleanTeamName,canonicalLogoName,readTeamName,groupByKickoffTime,polish,mount});
+  return Object.freeze({cleanTeamName,canonicalLogoName,readTeamName,brandNeedsRepair,groupByKickoffTime,polish,mount});
 });
