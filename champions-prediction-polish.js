@@ -39,7 +39,7 @@
     return `<span class="bs-team-brand" data-team-slug="${esc(slug)}"><img class="bs-team-logo" src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="bs-team-fallback" hidden aria-hidden="true">${esc(initials)}</span><span class="bs-team-name">${esc(clean)}</span></span>`;
   }
   function brandNeedsRepair(renderedName,name,hasLogo,hasKnownLogo){
-    const clean=cleanTeamName(name),rendered=cleanTeamName(renderedName);
+    const clean=cleanTeamName(name),rendered=String(renderedName||'').trim();
     return rendered!==clean||(!hasLogo&&hasKnownLogo);
   }
   function ensureTeamBrand(node,name){
@@ -78,8 +78,9 @@
   function polish(doc=typeof document!=='undefined'?document:null){
     if(!doc||polishing)return false;
     const box=doc.getElementById?.('championsFixtures');if(!box)return false;
+    let repaired=false;[...box.querySelectorAll?.('.champions-match')||[]].forEach(row=>{const teams=row.querySelectorAll?.('.t')||[],home=row.querySelector?.('.t.home')||teams[0],away=teams[teams.length-1];repaired=ensureTeamBrand(home,readTeamName(home))||repaired;repaired=ensureTeamBrand(away,readTeamName(away))||repaired});
     const pending=[...box.querySelectorAll?.('.champions-match')||[]].filter(row=>row.dataset?.clPolished!=='1');
-    if(!pending.length)return false;
+    if(!pending.length)return repaired;
     polishing=true;
     try{
       ensureStyles(doc);
