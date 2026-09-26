@@ -24,7 +24,7 @@
     'corum fk':'corum-fk','arca corum fk':'corum-fk','corum':'corum-fk',
     'kocaelispor':'kocaelispor','erzurumspor':'erzurumspor','erzurumspor fk':'erzurumspor',
     'paris saint germain':'paris-saint-germain','paris saint germain psg':'paris-saint-germain','psg':'paris-saint-germain',
-    'bayern munich':'bayern-munchen','bayern munchen':'bayern-munchen','fc bayern munchen':'bayern-munchen',
+    'bayern munich':'bayern-munchen','bayern munchen':'bayern-munchen','bayern munih':'bayern-munchen','fc bayern munchen':'bayern-munchen',
     'real madrid':'real-madrid','real madrid cf':'real-madrid','liverpool':'liverpool','liverpool fc':'liverpool',
     'inter':'inter','inter milan':'inter','fc internazionale':'inter','manchester city':'manchester-city','manchester city fc':'manchester-city',
     'arsenal':'arsenal','arsenal fc':'arsenal','barcelona':'barcelona','fc barcelona':'barcelona','atletico madrid':'atletico-madrid','atletico de madrid':'atletico-madrid',
@@ -32,9 +32,9 @@
     'aston villa':'aston-villa','aston villa fc':'aston-villa','porto':'fc-porto','fc porto':'fc-porto','manchester united':'manchester-united','manchester united fc':'manchester-united',
     'club brugge':'club-brugge','club brugge kv':'club-brugge','real betis':'real-betis','real betis balompie':'real-betis',
     'psv':'psv','psv eindhoven':'psv','feyenoord':'feyenoord','lille':'lille','lille osc':'lille','bodo glimt':'bodo-glimt','bod glimt':'bodo-glimt','fk bodo glimt':'bodo-glimt','fk bod glimt':'bodo-glimt',
-    'napoli':'napoli','ssc napoli':'napoli','rb leipzig':'rb-leipzig','rasenballsport leipzig':'rb-leipzig','villarreal':'villarreal','villarreal cf':'villarreal',
-    'shakhtar':'shakhtar-donetsk','shakhtar donetsk':'shakhtar-donetsk','fc shakhtar donetsk':'shakhtar-donetsk','slavia praha':'slavia-praha','slavia prague':'slavia-praha',
-    'slovan bratislava':'slovan-bratislava','sk slovan bratislava':'slovan-bratislava','vfb stuttgart':'vfb-stuttgart','aek athens':'aek-athens','aek':'aek-athens',
+    'napoli':'napoli','ssc napoli':'napoli','rb leipzig':'rb-leipzig','leipzig':'rb-leipzig','rasenballsport leipzig':'rb-leipzig','villarreal':'villarreal','villarreal cf':'villarreal',
+    'shakhtar':'shakhtar-donetsk','shakhtar donetsk':'shakhtar-donetsk','fc shakhtar donetsk':'shakhtar-donetsk','slavia praha':'slavia-praha','slavia prag':'slavia-praha','slavia prague':'slavia-praha',
+    'slovan bratislava':'slovan-bratislava','sk slovan bratislava':'slovan-bratislava','vfb stuttgart':'vfb-stuttgart','stuttgart':'vfb-stuttgart','aek athens':'aek-athens','aek':'aek-athens',
     'lask':'lask','lask linz':'lask','como 1907':'como-1907','como':'como-1907','rc lens':'rc-lens','lens':'rc-lens','viking fk':'viking-fk','viking':'viking-fk','sabah':'sabah','sabah fk':'sabah'
   };
   const TEAM_META={
