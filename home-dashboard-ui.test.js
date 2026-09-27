@@ -6,6 +6,15 @@ assert.deepStrictEqual(ui.resultSummary([
  {home_score:0,away_score:1,real_home:1,real_away:0},
  {home_score:3,away_score:2,real_home:null,real_away:null}
 ]),{correct:2,total:3,percent:67});
+const competitionRows={super:[{home_score:2,away_score:1,real_home:1,real_away:0}],champions:[{home_score:1,away_score:1,real_home:2,real_away:2}],nations:[{home_score:0,away_score:1,real_home:1,real_away:0},{home_score:2,away_score:1,real_home:null,real_away:null}]};
+assert.deepStrictEqual(ui.competitionResultSummary(competitionRows),{
+  super:{correct:1,total:1,percent:100},champions:{correct:1,total:1,percent:100},nations:{correct:0,total:1,percent:0},general:{correct:2,total:3,percent:67}
+});
+const rateMarkup=ui.rateMarkup(ui.competitionResultSummary(competitionRows));
+assert.match(rateMarkup,/Süper Lig.*1\/1.*%100/s);
+assert.match(rateMarkup,/Şampiyonlar Ligi.*1\/1.*%100/s);
+assert.match(rateMarkup,/Uluslar Ligi.*0\/1.*%0/s);
+assert.match(rateMarkup,/Genel.*2\/3.*%67/s);
 assert.strictEqual(ui.rankChange(8,11),'↑3');
 assert.strictEqual(ui.rankChange(11,8),'↓3');
 assert.strictEqual(ui.rankChange(8,8),'—');
