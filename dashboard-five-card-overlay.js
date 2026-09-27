@@ -33,6 +33,15 @@
 #bsHomeDashboard .bs-home-stat.nations{order:3}
 #bsHomeDashboard .bs-home-stat.league{order:4}
 #bsHomeDashboard .bs-home-stat.rate{order:5}
+#bsHomeDashboard .bs-home-stat.rate:has(.bs-rate-breakdown){min-height:240px!important;justify-content:flex-start!important}
+#bsHomeDashboard .bs-home-stat.rate .bs-rate-detail-breakdown{padding:5px!important;margin-top:auto;width:100%}
+#bsHomeDashboard .bs-rate-breakdown{display:flex;flex-direction:column;gap:2px;width:100%;font:700 12px/1.25 system-ui,-apple-system,sans-serif}
+#bsHomeDashboard .bs-rate-row{display:flex;justify-content:space-between;align-items:center;gap:5px;padding:7px 3px;border-bottom:1px solid rgba(157,199,255,.2);white-space:nowrap}
+#bsHomeDashboard .bs-rate-row span{display:block!important;text-align:left;color:#d8e6fb!important;font-size:11px!important}
+#bsHomeDashboard .bs-rate-row strong{font-size:12px;color:#fff}
+#bsHomeDashboard .bs-rate-row em{font-style:normal;color:#46e88d;margin-left:2px}
+#bsHomeDashboard .bs-rate-row.general{border:0;border-radius:7px;background:rgba(31,111,210,.35);padding:9px 5px;margin-top:2px}
+#bsHomeDashboard .bs-rate-row.general span,#bsHomeDashboard .bs-rate-row.general strong{font-size:14px!important}
 #bsHomeDashboard .bs-home-stat.admin-statistics{display:none!important}
 #bsHomeDashboard .bs-home-stat.general,#bsHomeDashboard .bs-home-stat.nations{display:flex!important}
 #bsHomeDashboard .bs-home-stat.general>.bs-competition-brand .bs-competition-logo,
