@@ -5,6 +5,7 @@
   const token=()=>root.localStorage?.getItem('bizimSkorFriendToken')||'';
   const uniqueWeeks=rows=>[...new Set((rows||[]).map(row=>Number(row.week)).filter(Number.isFinite))].sort((a,b)=>a-b);
   const openWeeks=checks=>(checks||[]).filter(item=>item.rows.length&&!item.rows.some(row=>row.is_locked)).map(item=>item.week).slice(0,2);
+  const latestWeeks=checks=>root.BizimSkorTwoWeek?.selectLatestWeeks?.(checks,2)??(checks||[]).filter(item=>item.rows.length).map(item=>item.week).slice(-2);
   const optionMarkup=weeks=>weeks.map(week=>`<option value="${week}">${week}. Hafta • Tahmine Açık</option>`).join('');
 
   function ensureStyles(){
@@ -27,7 +28,7 @@
     if(available.error)throw available.error;
     const weeks=uniqueWeeks(available.data||[]);
     const checks=await Promise.all(weeks.map(async week=>{const q=await root.sb.rpc('get_nations_league_week',{p_token:pToken,p_season:SEASON,p_week:week});if(q.error)throw q.error;return{week,rows:q.data||[]}}));
-    return openWeeks(checks);
+    return latestWeeks(checks);
   }
 
   function championPicker(){

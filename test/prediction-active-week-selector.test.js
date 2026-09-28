@@ -18,10 +18,9 @@ test('Şampiyonlar Ligi ve Uluslar Ligi tahmin ekranlarına hafta seçici ekler'
   assert.match(patch,/get_nations_league_available_weeks/);
 });
 
-test('hafta seçici yalnız kilitlenmemiş tahmin haftalarını gösterir',()=>{
+test('hafta seçici en güncel iki tahmin haftasını sırayla gösterir',()=>{
   assert.match(patch,/is_locked/);
-  assert.match(patch,/Tahmine Açık/);
-  assert.match(patch,/openWeeks/);
+  assert.match(patch,/selectLatestWeeks/);
 });
 
 test('aynı anda iki açık hafta varsa ikisi de seçilebilir',()=>{

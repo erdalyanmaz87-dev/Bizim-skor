@@ -12,6 +12,15 @@
     return weeks.slice(-Math.max(0,limit));
   }
 
+  function selectLatestWeeks(checks,limit=2){
+    return [...new Set((checks||[])
+      .filter(item=>(item?.rows||[]).length)
+      .map(item=>+item.week)
+      .filter(Number.isFinite))]
+      .sort((a,b)=>a-b)
+      .slice(-Math.max(0,limit));
+  }
+
   function firstKickoff(fixtures,week){
     const values=(fixtures||[])
       .filter(fixture=>+fixture.week===+week)
@@ -49,5 +58,5 @@
     };
   }
 
-  return{selectVisibleWeeks,isWeekLocked,defaultPredictionWeek,predictionOpportunityBadge,summarizeFixturePrediction};
+  return{selectVisibleWeeks,selectLatestWeeks,isWeekLocked,defaultPredictionWeek,predictionOpportunityBadge,summarizeFixturePrediction};
 });
