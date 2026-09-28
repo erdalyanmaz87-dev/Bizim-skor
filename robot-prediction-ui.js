@@ -19,7 +19,7 @@
     throw new Error('Bu maç için SkorBot tahmini henüz hazır değil.')
   }
   function superFixtures(){return root.BizimSkorPredictionContext?.().fixtures||[]}
-  function championsFixtures(){return root.BizimSkorChampionsUI?.getFixtures?.()||[]}
+  function championsFixtures(){const apiRows=root.BizimSkorChampionsUI?.getFixtures?.()||[];const domRows=[...document.querySelectorAll('#championsFixtures .champions-match')].map(row=>domFixture(row,'champions')).filter(Boolean);if(domRows.length)return domRows;return apiRows}
   function nationsFixtures(){return root.BizimSkorNationsUI?.getFixtures?.()||[]}
   function domFixture(row,kind){const prefix=kind==='nations'?'nlh':kind==='champions'?'clh':null;if(!prefix)return null;const input=row?.querySelector?.(`input[id^="${prefix}"]`),match=String(input?.id||'').match(/\d+/);return match?{id:Number(match[0])}:null}
   function normalize(settings){if(!settings)return null;const rows=settings.rows||[],fixtures=settings.fixtures||[];if(fixtures.length===rows.length&&fixtures.length)return settings;if(settings.kind==='super')return settings;const merged=rows.map((row,index)=>fixtures[index]||domFixture(row,settings.kind)).filter(Boolean);return{...settings,fixtures:merged}}
