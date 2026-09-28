@@ -6,6 +6,15 @@ test('en yeni iki haftayı artan sırayla seçer',()=>{
   assert.deepEqual(U.selectVisibleWeeks([{week:2},{week:3},{week:4},{week:4}]),[3,4]);
 });
 
+test('Uluslar Ligi tahmininde biten 1. haftayı çıkarıp açık 2 ve 3. haftayı gösterir',()=>{
+  const checks=[
+    {week:1,rows:[{is_locked:true}]},
+    {week:2,rows:[{is_locked:true}]},
+    {week:3,rows:[{is_locked:false}]}
+  ];
+  assert.deepEqual(U.selectLatestWeeks(checks),[2,3]);
+});
+
 test('haftalar kendi ilk maçlarında bağımsız kilitlenir',()=>{
   const fixtures=[
     {week:3,kickoff:'2026-08-28T18:30:00Z'},

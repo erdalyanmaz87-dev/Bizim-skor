@@ -14,9 +14,10 @@ test('oynanmamış Süper Lig ve Uluslar Ligi fırsatları listede kalır',()=>{
   assert.equal(rows.some(x=>x.key==='super:49'),true);
   assert.equal(rows.some(x=>x.key==='nations:9006'),true);
   assert.equal(rows.some(x=>x.key==='nations:9014'),true);
+  assert.equal(rows.some(x=>x.key==='nations:9022'),true);
 });
 
 test('aktif fırsatlar tarih sırasıyla döner',()=>{
   const rows=Card.activeMatches(new Set(['champions:3']));
-  assert.deepEqual(rows.map(x=>x.key),['super:44','super:49','nations:9006','nations:9014']);
+  assert.deepEqual(rows.map(x=>x.key),['super:44','super:49','nations:9006','nations:9014','nations:9022']);
 });
