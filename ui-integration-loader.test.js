@@ -16,7 +16,7 @@ assert(order.indexOf('prediction-week-cards.js')<order.indexOf('match-statistics
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('chat-unread-indicator.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('share-game.js'));
 assert(order.indexOf('fixture-ui.js')<order.indexOf('fixture-week-strip.js'));
-assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20260925-partial-predictions-v1');
-assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20260925-partial-predictions-v1');
-assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20260925-partial-predictions-v1');
+assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20260928-nations-week3-v1');
+assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20260928-nations-week3-v1');
+assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20260928-nations-week3-v1');
 console.log('ui-integration-loader ok');
