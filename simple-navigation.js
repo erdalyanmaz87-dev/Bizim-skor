@@ -135,7 +135,8 @@
     if(event.key!=='Tab')return;const focusable=[...drawer.querySelectorAll('button:not([disabled]),[tabindex="0"]')].filter(node=>node.offsetParent!==null);if(!focusable.length)return;const first=focusable[0],last=focusable[focusable.length-1];if(event.shiftKey&&doc.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&doc.activeElement===last){event.preventDefault();first.focus()}
   }
   function handleFeatureKeydown(doc,event){const layer=doc.getElementById('bsSimpleFeatureLayer');if(layer?.classList.contains('is-open')&&event.key==='Escape'){event.preventDefault();closeFeature(doc)}}
-  function bindBottom(doc){doc.querySelectorAll('[data-simple-nav]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.simpleNav;if(key==='home'||key==='pred'){findOriginalTab(doc,key)?.click();setBottomActive(doc,key);closeDrawer(doc);closeFeature(doc);return}if(key==='predictionStatus'){openFeature(doc,key);return}openDrawer(doc,'menu')}))}
+  function closeTransientLayers(doc){closeDrawer(doc);closeFeature(doc);root.BizimSkorPredictionBottomSheet?.close?.();doc.querySelectorAll('.bs-pred-sheet-layer.open').forEach(layer=>layer.classList.remove('open'));doc.body.style.overflow='';doc.body.classList.remove('bs-simple-menu-open')}
+  function bindBottom(doc){doc.querySelectorAll('[data-simple-nav]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.simpleNav;closeTransientLayers(doc);if(key==='home'||key==='pred'){findOriginalTab(doc,key)?.click();setBottomActive(doc,key);return}if(key==='predictionStatus'){openFeature(doc,key);return}openDrawer(doc,'menu')}))}
   function mount(doc=typeof document!=='undefined'?document:null){
     if(!doc||doc.getElementById('bsSimpleBottomNav'))return false;
     if(!doc.getElementById('bsSimpleNavigationStyles'))doc.head.insertAdjacentHTML('beforeend',styleMarkup());
@@ -147,5 +148,5 @@
     }
     setTimeout(()=>{syncPredictionStatus(doc);moveInviteShell(doc);decorateHeader(doc)},1000);setTimeout(()=>{syncPredictionStatus(doc);moveInviteShell(doc);decorateHeader(doc)},2400);root?.addEventListener?.('bizimskor:session-ready',()=>setTimeout(()=>{renderDrawer(doc);moveInviteShell(doc);syncPredictionStatus(doc);decorateHeader(doc)},500));return true;
   }
-  return Object.freeze({canonicalTab,preferredTabNames,bottomTargetForTab,predictionProgress,groupedItems,bottomMarkup,drawerMarkup,featureMarkup,styleMarkup,availableTabs,findOriginalTab,currentOriginalTab,mount,openDrawer,closeDrawer,openFeature,closeFeature,placeThemeNextToName});
+  return Object.freeze({canonicalTab,preferredTabNames,bottomTargetForTab,predictionProgress,groupedItems,bottomMarkup,drawerMarkup,featureMarkup,styleMarkup,availableTabs,findOriginalTab,currentOriginalTab,mount,openDrawer,closeDrawer,openFeature,closeFeature,closeTransientLayers,placeThemeNextToName});
 });
