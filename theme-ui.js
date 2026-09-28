@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const STORAGE_KEY='bizimSkorTheme';
   const COLORS={light:'#071633',dark:'#020617'};
-  const UI_INTEGRATION_VERSION='20260928-nations-week3-v1';
+  const UI_INTEGRATION_VERSION='20260928-nations-status-v2';
   let waitingForDocument=false,observerStarted=false,teamBootstrapLoaded=false;
 
   function normalizeTheme(value){return value==='dark'?'dark':'light'}
