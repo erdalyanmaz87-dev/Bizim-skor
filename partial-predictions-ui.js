@@ -23,7 +23,7 @@ function normalizePartialScores(fixtures,scores){
 function confirmationMessage(completed,total){return completed<total?`${completed}/${total} maç için tahmin yaptınız. ${total-completed} maç boş kalacak. Yine de kaydetmek istiyor musunuz?`:''}
 function contextFor(kind){
   if(kind==='super_lig'){const ctx=root.BizimSkorPredictionContext?.()||{};return{fixtures:ctx.fixtures||[],week:Number(ctx.week||root.selectedPredictionWeek||0)}}
-  if(kind==='champions_league'){const api=root.BizimSkorChampionsUI;return{fixtures:api?.getFixtures?.()||[],week:Number(api?.currentWeek?.()||2)}}
+  if(kind==='champions_league'){const api=root.BizimSkorChampionsUI,selected=Number(document.getElementById('championsPredictionWeekSelect')?.value||api?.currentWeek?.()||2),dom=[...document.querySelectorAll('#championsFixtures .champions-match')].map(row=>{const input=row.querySelector('input[id^="clh"]'),id=Number(String(input?.id||'').replace('clh',''));return Number.isFinite(id)?{id,fixture_id:id}:null}).filter(Boolean),apiFixtures=api?.getFixtures?.()||[];return{fixtures:dom.length?dom:apiFixtures,week:selected}}
   const api=root.BizimSkorNationsUI;return{fixtures:api?.getFixtures?.()||[],week:Number(api?.currentWeek?.()||1)}
 }
 function scoreRowsFromDom(kind,fixtures){const cfg=configs[kind];return(fixtures||[]).map((fixture,index)=>{const home=document.getElementById(cfg.home(fixture,index)),away=document.getElementById(cfg.away(fixture,index)),h=home?.value??'',a=away?.value??'';return{fixture_id:fixtureId(fixture),home_score:h,away_score:a,robot_applied:!!home&&!!away&&home.dataset.robotScore===String(h)&&away.dataset.robotScore===String(a)}})}
