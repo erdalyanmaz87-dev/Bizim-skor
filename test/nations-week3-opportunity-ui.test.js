@@ -11,6 +11,8 @@ test('Fransa - İtalya 3. hafta maçı Uluslar Ligi fırsat maçıdır',()=>{
 
 test('Fırsat Maçları ekranı Uluslar Ligi 3. haftada Fransa - İtalya maçını gösterir',()=>{
   const source=fs.readFileSync(path.join(__dirname,'../opportunity-match-ui.js'),'utf8');
+  assert.doesNotMatch(source,/UEFA Uluslar Ligi 1\. Hafta/);
+  assert.match(source,/UEFA Uluslar Ligi 2\. Hafta/);
   assert.match(source,/UEFA Uluslar Ligi 3\. Hafta/);
   assert.match(source,/Fransa/);
   assert.match(source,/İtalya/);

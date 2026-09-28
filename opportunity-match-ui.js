@@ -1,7 +1,6 @@
 (function(){
   const SUPER_MATCHES=[['Galatasaray','Kocaelispor'],['Trabzonspor','Galatasaray'],['Samsunspor','Trabzonspor'],['Trabzonspor','Beşiktaş']],CL_HOME='Manchester City',CL_AWAY='PSG',NATIONS_MATCHES=[['Türkiye','Fransa'],['Türkiye','İtalya'],['Fransa','İtalya']];
   const OPPORTUNITY_MENU=[
-    ['UEFA Uluslar Ligi 1. Hafta','Türkiye','Fransa'],
     ['UEFA Uluslar Ligi 2. Hafta','Türkiye','İtalya'],
     ['UEFA Uluslar Ligi 3. Hafta','Fransa','İtalya'],
     ['Süper Lig 7. Hafta','Samsunspor','Trabzonspor'],
