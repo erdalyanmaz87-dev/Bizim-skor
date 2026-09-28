@@ -3,15 +3,16 @@ const ui=require('./prediction-week-cards.js');
 const cards=ui.buildCards(
   [{week:5,complete:false,deadline:'2026-09-11T17:00:00Z'},{week:6,complete:false,deadline:'2026-09-18T17:00:00Z'}],
   {competition:'champions',week:1,complete:false,deadline:'2026-09-08T16:45:00Z'},
-  [{competition:'nations',week:1,complete:false,deadline:'2026-09-24T18:45:00Z'},{competition:'nations',week:2,complete:true,deadline:'2026-09-27T16:00:00Z'}]
+  [{competition:'nations',week:1,complete:false,deadline:'2026-09-24T18:45:00Z'},{competition:'nations',week:2,complete:true,deadline:'2026-09-27T16:00:00Z'},{competition:'nations',week:3,complete:false,deadline:'2026-10-01T18:45:00Z'}]
 );
-assert.deepStrictEqual(cards.map(x=>x.label),['Süper Lig 5. Hafta','Süper Lig 6. Hafta','Şampiyonlar Ligi 1. Hafta','UEFA Uluslar Ligi 1. Hafta','UEFA Uluslar Ligi 2. Hafta']);
+assert.deepStrictEqual(cards.map(x=>x.label),['Süper Lig 5. Hafta','Süper Lig 6. Hafta','Şampiyonlar Ligi 1. Hafta','UEFA Uluslar Ligi 2. Hafta','UEFA Uluslar Ligi 3. Hafta']);
 assert.strictEqual(cards[0].target.type,'league');
 assert.strictEqual(cards[1].target.week,6);
 assert.strictEqual(ui.selectionValue(cards[1]),'6');
 assert.strictEqual(cards[2].target.type,'champions');
 assert.strictEqual(cards[3].target.type,'nations');
-assert.strictEqual(cards[4].target.week,2);
+assert.strictEqual(cards[3].target.week,2);
+assert.strictEqual(cards[4].target.week,3);
 assert.deepStrictEqual(cards.map(x=>x.theme),['super','super','champions','nations','nations']);
 assert(ui.render(cards).includes('theme-super'));
 assert(ui.render(cards).includes('theme-champions'));
@@ -23,7 +24,8 @@ assert.strictEqual(ui.canEditBeforeWeekStart(Date.parse('2026-09-18T17:00:00Z'),
 assert.strictEqual(cards[0].deadline,'2026-09-11T17:00:00Z');
 assert.strictEqual(cards[1].deadline,'2026-09-18T17:00:00Z');
 assert.strictEqual(cards[2].deadline,'2026-09-08T16:45:00Z');
-assert.strictEqual(cards[3].deadline,'2026-09-24T18:45:00Z');
+assert.strictEqual(cards[3].deadline,'2026-09-27T16:00:00Z');
+assert.strictEqual(cards[4].deadline,'2026-10-01T18:45:00Z');
 assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-06T06:45:00Z'),'⏳ Tahmine son 2 gün 10 saat');
 assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-08T10:30:00Z'),'⏳ Tahmine son 7 saat');
 assert.strictEqual(ui.countdownText('2026-09-08T16:45:00Z','2026-09-08T16:03:30Z'),'⏳ Tahmine son 42 dakika');
