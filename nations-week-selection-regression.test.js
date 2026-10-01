@@ -18,3 +18,7 @@ test('opening another available week synchronizes the picker',async()=>{
  const h=harness();await h.api.openPrediction(4);
  assert.equal(h.calls.at(-1),4);assert.equal(h.select.value,'4');assert.match(h.title.textContent,/4\. Hafta/);
 });
+test('opening Nations through competition navigation without a week loads the selected week',async()=>{
+ const h=harness();await h.api.loadPrediction();
+ assert.equal(h.calls.at(-1),3);assert.equal(h.api.currentWeek(),3);assert.match(h.title.textContent,/3\. Hafta/);
+});
