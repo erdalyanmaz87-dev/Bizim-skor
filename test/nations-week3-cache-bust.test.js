@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 
 const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
-const version='20260928-opportunity-active-v3';
+const version='20261001-nations-week-selection-v4';
 
 test('Uluslar Ligi aktif tahmin kartları tüm UI yükleme zincirinin önbelleğini yeniler',()=>{
   assert.match(read('index.html'),new RegExp(`theme-ui\\.js\\?v=${version}`));
