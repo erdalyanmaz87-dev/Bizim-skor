@@ -7,7 +7,7 @@ assert.ok(order.includes('premium-reference-ui.js'),'premium reference layer mus
 assert.ok(order.indexOf('brand-assets.js')<order.indexOf('header-ui.js'),'brand assets must load before header UI');
 assert.ok(order.indexOf('header-ui.js')<order.indexOf('brand-visual-ui.js'),'header UI must exist before visual decorator');
 assert.ok(order.indexOf('brand-visual-ui.js')<order.indexOf('premium-reference-ui.js'),'premium reference layer must override brand visual base');
-assert.ok(order.indexOf('premium-reference-ui.js')<order.indexOf('ranking-movement.js'),'premium layer must mount before non-critical feature modules');
+assert.ok(order.indexOf('premium-reference-ui.js')<order.indexOf('week-strip.js'),'premium layer must mount before non-critical feature modules');
 assert.ok(order.indexOf('brand-visual-ui.js')<order.indexOf('home-dashboard-ui.js'),'visual decorator must observe dashboard as it is created');
 assert.ok(order.indexOf('brand-visual-ui.js')<order.indexOf('fixture-ui.js'),'visual decorator must observe fixtures as they are created');
 console.log('brand visual loader ok');
