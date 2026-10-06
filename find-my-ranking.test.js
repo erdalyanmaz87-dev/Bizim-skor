@@ -2,6 +2,17 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const ui=require('./find-my-ranking.js');
 
+test('gizlenen Süper Lig tablosunun araç çubuğu da gizlenir ve geri açılabilir',()=>{
+  let inserted;
+  const doc={getElementById:()=>null,createElement:()=>({children:[],appendChild(child){this.children.push(child)},addEventListener(){}})};
+  const board={id:'weeklyRankingBoard',style:{display:'none'},ownerDocument:doc,querySelectorAll:()=>[],insertAdjacentElement:(_position,node)=>{inserted=node}};
+  ui.enhanceBoard(board,'Erdal');
+  assert.equal(inserted.className,'bs-find-me-toolbar hide');
+  board.style.display='';
+  ui.enhanceBoard(board,'Erdal');
+  assert.equal(inserted.className,'bs-find-me-toolbar');
+});
+
 test('oyuncu adını Türkçe karakter ve boşluk farklarından bağımsız eşleştirir',()=>{
   assert.equal(ui.samePlayer('  İPEK ','ipek'),true);
   assert.equal(ui.samePlayer('Erdal','Emre'),false);

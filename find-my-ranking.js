@@ -41,7 +41,7 @@
     const doc=board.ownerDocument||root.document,id=toolbarId(board);
     doc.getElementById(id)?.remove?.();
     const toolbar=doc.createElement('div');
-    toolbar.id=id;toolbar.className='bs-find-me-toolbar';
+    toolbar.id=id;toolbar.className='bs-find-me-toolbar'+(board.style?.display==='none'?' hide':'');
     const homeButton=doc.createElement('button');
     homeButton.type='button';homeButton.className='bs-ranking-home-button';homeButton.textContent='🏠 Ana Menü';
     homeButton.addEventListener('click',()=>{
