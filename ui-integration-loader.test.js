@@ -20,7 +20,7 @@ assert(order.indexOf('prediction-week-cards.js')<order.indexOf('match-statistics
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('chat-unread-indicator.js'));
 assert(order.indexOf('horizontal-menu.js')<order.indexOf('share-game.js'));
 assert(order.indexOf('fixture-ui.js')<order.indexOf('fixture-week-strip.js'));
-assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20261002-save-reliability-v1');
-assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20261002-save-reliability-v1');
-assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20261002-save-reliability-v1');
+assert.strictEqual(loader.assetUrl('brand-assets.js'),'brand-assets.js?v=20261006-cup-find-me-v1');
+assert.strictEqual(loader.assetUrl('country-flags-ui.js'),'country-flags-ui.js?v=20261006-cup-find-me-v1');
+assert.strictEqual(loader.assetUrl('ranking-table-alignment.css'),'ranking-table-alignment.css?v=20261006-cup-find-me-v1');
 console.log('ui-integration-loader ok');
