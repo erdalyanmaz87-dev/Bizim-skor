@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const ui=require('./nations-league-ui.js');
 
 test('tahmin durumunda yalnızca en yeni iki Uluslar Ligi haftası kalır',()=>{
-  assert.deepEqual(ui.latestPredictionWeeks([3,1,2,2],2),[2,3]);
+  assert.deepEqual(ui.latestPredictionWeeks([6,3,1,5,2,4,6],2),[5,6]);
 });
 
 test('genel Uluslar Ligi profili sonuç girilmiş son haftayı açar',()=>{

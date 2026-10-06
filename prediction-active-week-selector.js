@@ -3,7 +3,7 @@
   let championLoadVersion=0,nationsLoadVersion=0;
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const token=()=>root.localStorage?.getItem('bizimSkorFriendToken')||'';
-  const uniqueWeeks=rows=>[...new Set((rows||[]).map(row=>Number(row.week)).filter(Number.isFinite))].sort((a,b)=>a-b);
+  const uniqueWeeks=rows=>[...new Set((rows||[]).map(row=>Number(typeof row==='object'&&row!==null?row.week:row)).filter(Number.isFinite))].sort((a,b)=>a-b);
   const openWeeks=checks=>(checks||[]).filter(item=>item.rows.length&&!item.rows.some(row=>row.is_locked)).map(item=>item.week).slice(0,2);
   const latestWeeks=checks=>root.BizimSkorTwoWeek?.selectLatestWeeks?.(checks,2)??(checks||[]).filter(item=>item.rows.length).map(item=>item.week).slice(-2);
   const optionMarkup=weeks=>weeks.map(week=>`<option value="${week}">${week}. Hafta • Tahmine Açık</option>`).join('');
@@ -82,10 +82,10 @@
 
   async function mountNationsSelector(){
     if(!document.getElementById('nationsPred')||!root.BizimSkorNationsUI)return;
-    const select=nationsPicker();if(!select||select.dataset.bound==='1')return;
-    select.dataset.bound='1';
+    const select=nationsPicker();if(!select||select.dataset.bound)return;
+    select.dataset.bound='loading';
     const requestVersion=++nationsLoadVersion;
-    try{const weeks=await fetchNationsWeeks();if(requestVersion!==nationsLoadVersion)return;select.innerHTML=optionMarkup(weeks);if(!weeks.length){select.innerHTML='<option>Şu anda açık hafta yok</option>';select.disabled=true;return}select.disabled=false;select.value=String(weeks[0]);select.addEventListener('change',()=>root.BizimSkorNationsUI.loadPrediction(Number(select.value)));await root.BizimSkorNationsUI.loadPrediction(weeks[0])}catch(error){console.warn('nations active week selector',error)}
+    try{const weeks=await fetchNationsWeeks();if(requestVersion!==nationsLoadVersion){select.dataset.bound='';return}select.innerHTML=optionMarkup(weeks);if(!weeks.length){select.innerHTML='<option>Şu anda açık hafta yok</option>';select.disabled=true;select.dataset.bound='';return}select.disabled=false;select.value=String(weeks[0]);select.addEventListener('change',()=>root.BizimSkorNationsUI.loadPrediction(Number(select.value)));select.dataset.bound='1';await root.BizimSkorNationsUI.loadPrediction(weeks[0])}catch(error){select.dataset.bound='';console.warn('nations active week selector',error)}
   }
 
   function refresh(){ensureStyles();mountChampionSelector();mountNationsSelector()}
