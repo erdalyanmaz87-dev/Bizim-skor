@@ -1,5 +1,9 @@
 (function(root){
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ASSISTANT_MANAGED_PLAYERS=new Set(['mertshen','mevlüt']);
+  const normalizedPlayerName=value=>String(value??'').trim().toLocaleLowerCase('tr-TR');
+  const isAssistantManagedPlayer=name=>ASSISTANT_MANAGED_PLAYERS.has(normalizedPlayerName(name));
+  const withoutAssistantManagedPlayers=rows=>(rows||[]).filter(row=>!isAssistantManagedPlayer(row?.player_name));
   const token=()=>String(root.localStorage?.getItem('bizimSkorFriendToken')||'');
   function lastActivityText(value){
     if(!value)return 'Henüz giriş kaydı yok';
@@ -31,10 +35,18 @@
   }
   function apply(body,data={}){
     if(!body)return false;
-    replaceSummary(body,data.summary||{});
+    const inactiveRows=data.inactive_21d||[];
+    const visibleInactiveRows=withoutAssistantManagedPlayers(inactiveRows);
+    const managedCount=inactiveRows.length-visibleInactiveRows.length;
+    const summary={...(data.summary||{})};
+    if(managedCount){
+      summary.inactive_21d=Math.max(0,Number(summary.inactive_21d||0)-managedCount);
+      summary.total_players=Number(summary.total_players||0)+managedCount;
+    }
+    replaceSummary(body,summary);
     body.querySelector('[data-admin-inactive-21d]')?.remove();
     const stats=body.querySelector('.bs-admin-stats');
-    if(stats)stats.insertAdjacentHTML('beforeend',inactiveMarkup(data.inactive_21d||[]));
+    if(stats)stats.insertAdjacentHTML('beforeend',inactiveMarkup(visibleInactiveRows));
     return true;
   }
   async function waitForBody(doc,tries=30){
@@ -60,7 +72,7 @@
     },true);
     return true;
   }
-  const api=Object.freeze({lastActivityText,summaryCard,replaceSummary,listMarkup,inactiveMarkup,apply,waitForBody,refresh,mount});
+  const api=Object.freeze({isAssistantManagedPlayer,withoutAssistantManagedPlayers,lastActivityText,summaryCard,replaceSummary,listMarkup,inactiveMarkup,apply,waitForBody,refresh,mount});
   root.BizimSkorAdminInactive21d=api;
   if(typeof document!=='undefined')mount(document);
   if(typeof module==='object'&&module.exports)module.exports=api;
