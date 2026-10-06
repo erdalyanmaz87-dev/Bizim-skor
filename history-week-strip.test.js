@@ -17,4 +17,7 @@ assert.deepStrictEqual(ui.championsWeeksThrough(0),[]);
 assert.match(ui.historyLeagueStripStyle(),/overflow-x:auto/);
 assert.match(ui.historyLeagueStripStyle(),/flex-wrap:nowrap/);
 assert.match(ui.historyLeagueStripStyle(),/flex:0 0 auto/);
+assert.strictEqual(ui.historyIsVisible({classList:{contains:name=>name==='hide'}}),false);
+assert.strictEqual(ui.historyIsVisible({classList:{contains:()=>false}}),true);
+assert.strictEqual(ui.historyIsVisible(null),false);
 console.log('history-week-strip ok');

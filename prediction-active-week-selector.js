@@ -24,10 +24,8 @@
 
   async function fetchNationsWeeks(){
     const pToken=token();if(!pToken)return[];
-    const available=await root.sb.rpc('get_nations_league_available_weeks',{p_token:pToken,p_season:SEASON});
-    if(available.error)throw available.error;
-    const weeks=uniqueWeeks(available.data||[]);
-    const checks=await Promise.all(weeks.map(async week=>{const q=await root.sb.rpc('get_nations_league_week',{p_token:pToken,p_season:SEASON,p_week:week});if(q.error)throw q.error;return{week,rows:q.data||[]}}));
+    const weeks=uniqueWeeks(await root.BizimSkorNationsUI.availableWeeks());
+    const checks=await Promise.all(weeks.map(async week=>({week,rows:await root.BizimSkorNationsUI.loadWeekRows(week)})));
     return latestWeeks(checks);
   }
 
