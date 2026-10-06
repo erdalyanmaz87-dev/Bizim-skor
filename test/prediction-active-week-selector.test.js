@@ -15,7 +15,7 @@ test('Şampiyonlar Ligi ve Uluslar Ligi tahmin ekranlarına hafta seçici ekler'
   assert.match(patch,/championsPredictionWeekSelect/);
   assert.match(patch,/nationsPredictionWeekSelect/);
   assert.match(patch,/get_champions_league_available_weeks/);
-  assert.match(patch,/get_nations_league_available_weeks/);
+  assert.match(patch,/BizimSkorNationsUI\.availableWeeks/);
 });
 
 test('hafta seçici en güncel iki tahmin haftasını sırayla gösterir',()=>{
@@ -27,4 +27,9 @@ test('aynı anda iki açık hafta varsa ikisi de seçilebilir',()=>{
   assert.match(patch,/slice\(0,2\)/);
   assert.match(patch,/change/);
   assert.match(patch,/loadPrediction/);
+});
+
+test('Uluslar Ligi hafta seçici ortak önbellekli veri kaynağını kullanır',()=>{
+  assert.match(patch,/BizimSkorNationsUI\.availableWeeks/);
+  assert.match(patch,/BizimSkorNationsUI\.loadWeekRows/);
 });

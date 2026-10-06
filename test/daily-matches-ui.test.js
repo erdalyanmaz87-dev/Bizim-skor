@@ -4,6 +4,11 @@ const fs=require('node:fs');
 const html=fs.readFileSync('index.html','utf8');
 const dailyLoader=html.slice(html.indexOf('async function loadDailyMatches()'),html.indexOf("window.addEventListener('load',loadDailyMatches)"));
 
+test('eşzamanlı günlük maç yenilemeleri tek sunucu isteğinde birleşir',()=>{
+  assert.match(html,/let dailyMatchesRequest=null/);
+  assert.match(dailyLoader,/if\(dailyMatchesRequest\)return dailyMatchesRequest/);
+});
+
 test('günlük maç kartı Ana Sayfa ekranının ilk kartıdır',()=>{
   const predictionStart=html.indexOf('<section id="home">');
   const dailyCard=html.indexOf('id="dailyMatches"');
