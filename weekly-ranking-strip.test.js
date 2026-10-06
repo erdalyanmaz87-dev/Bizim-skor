@@ -1,4 +1,5 @@
 const assert=require('assert');
+const fs=require('fs');
 const ui=require('./weekly-ranking-strip.js');
 assert.deepStrictEqual(ui.availableWeeks([{week:2},{week:4},{week:3},{week:4}]),[2,3,4]);
 assert.strictEqual(ui.currentWeek([2,3,4],4),4);
@@ -33,4 +34,7 @@ assert.match(summaries,/Türkiye 2 - 1 Fransa/);
 assert.match(summaries,/Doğru skor tahmini yapanlar:<\/b> Erdal/);
 assert.match(summaries,/Doğru sonucu bilen:<\/b> 2 kişi/);
 assert.match(ui.championsMatchSummariesMarkup([]),/Maçlar tamamlandıkça/);
+const source=fs.readFileSync('weekly-ranking-strip.js','utf8');
+const loadWeekly=source.match(/async function loadLeagueWeeklyRanking[\s\S]*?(?=\nfunction loadChampionsWeeklyRanking)/)?.[0]||'';
+assert.match(loadWeekly,/BizimSkorFindMyRanking\?\.refresh\?\.\(\)/);
 console.log('weekly-ranking-strip ok');

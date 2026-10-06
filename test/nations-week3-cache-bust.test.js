@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 
 const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
-const version='20261002-save-reliability-v1';
+const version='20261006-cup-find-me-v1';
 
 test('Uluslar Ligi aktif tahmin kartları tüm UI yükleme zincirinin önbelleğini yeniler',()=>{
   assert.match(read('index.html'),new RegExp(`theme-ui\\.js\\?v=${version}`));
