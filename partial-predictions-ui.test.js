@@ -68,3 +68,11 @@ test('ilerleme göstergesi için bütün sayfayı izleyen MutationObserver kulla
   const source=require('node:fs').readFileSync('./partial-predictions-ui.js','utf8');
   assert.doesNotMatch(source,/observer\.observe\(document\.documentElement/);
 });
+
+test('kayıt başarısı tek sunucu isteğiyle kesinleşir ve ağır yenileme bekletmez',()=>{
+  const source=require('node:fs').readFileSync('./partial-predictions-ui.js','utf8');
+  const save=source.slice(source.indexOf('async function saveKind('),source.indexOf('\nfunction kindForButton'));
+  assert.doesNotMatch(save,/validateSessionOwner\(/,'kayıttan önce ikinci bir ağ isteği yapılmamalı');
+  assert.doesNotMatch(save,/readBackSaved\(/,'kayıttan sonra üçüncü bir ağ isteği yapılmamalı');
+  assert.doesNotMatch(save,/await refreshAfterSave\(/,'başarı yanıtından sonra ağır ekran yenilemesi düğmeyi kilitlememeli');
+});
