@@ -21,5 +21,14 @@ function startIsolatedJobs(jobs,onError){
     return[name,task.catch(error=>{onError?.(name,error)})];
   }));
 }
-return Object.freeze({rememberedPlayer,showRememberedPlayer,showLoggedOut,primeRememberedPlayer,startIsolatedJobs});
+function createTrailingRefresh(job,options={}){
+  const delay=Number.isFinite(options.delay)?options.delay:350;
+  const setTimer=options.setTimeout||setTimeout,clearTimer=options.clearTimeout||clearTimeout;
+  let timer=null;
+  return function schedule(){
+    if(timer!==null)clearTimer(timer);
+    timer=setTimer(()=>{timer=null;try{Promise.resolve(job()).catch(error=>options.onError?.(error))}catch(error){options.onError?.(error)}},delay);
+  };
+}
+return Object.freeze({rememberedPlayer,showRememberedPlayer,showLoggedOut,primeRememberedPlayer,startIsolatedJobs,createTrailingRefresh});
 });

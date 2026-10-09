@@ -39,6 +39,20 @@ const jobs=startup.startIsolatedJobs({
 },(name,error)=>errors.push([name,error.message]));
 
 assert.deepStrictEqual(started,['week','live','player'],'başlangıç işleri birbirini beklemeden başlamalı');
+
+const timers=[];
+const cancelled=[];
+const runs=[];
+const schedule=startup.createTrailingRefresh(
+  ()=>runs.push('yenilendi'),
+  {delay:400,setTimeout:(fn,delay)=>{timers.push({fn,delay});return timers.length},clearTimeout:id=>cancelled.push(id)}
+);
+schedule();schedule();schedule();
+assert.deepStrictEqual(cancelled,[1,2],'aynı tahmin kaydının canlı olayları önceki yenilemeyi iptal etmeli');
+assert.strictEqual(timers[2].delay,400);
+timers[2].fn();
+assert.deepStrictEqual(runs,['yenilendi'],'dokuz satırlık kayıt tek yenilemeye birleşmeli');
+
 Promise.all([jobs.live,jobs.player]).then(async values=>{
   assert.deepStrictEqual(values,[undefined,'hazır'],'bir bölümün hatası diğer bölümün sonucunu engellememeli');
   assert.deepStrictEqual(errors,[['live','canlı hata']]);
