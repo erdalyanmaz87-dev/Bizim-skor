@@ -1,5 +1,5 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.BizimSkorOpportunity=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
-  const SUPER_FIXTURES=[{id:44,week:5},{id:49,week:6},{id:58,week:7},{id:118,week:8}],CHAMPIONS_FIXTURE_ID=33,CHAMPIONS_WEEK=2,NATIONS_WEEK1_FIXTURE_ID=9006,NATIONS_WEEK2_FIXTURE_ID=9014,NATIONS_WEEK3_FIXTURE_ID=9022,NATIONS_WEEK4_FIXTURE_ID=9030,NATIONS_WEEK5_FIXTURE_ID=9034,NATIONS_WEEK6_FIXTURE_ID=9044;
+  const SUPER_FIXTURES=[{id:30,week:4},{id:44,week:5},{id:49,week:6},{id:58,week:7},{id:118,week:8}],CHAMPIONS_FIXTURE_ID=33,CHAMPIONS_WEEK=2,NATIONS_WEEK1_FIXTURE_ID=9006,NATIONS_WEEK2_FIXTURE_ID=9014,NATIONS_WEEK3_FIXTURE_ID=9022,NATIONS_WEEK4_FIXTURE_ID=9030,NATIONS_WEEK5_FIXTURE_ID=9034,NATIONS_WEEK6_FIXTURE_ID=9044;
   const SUPER_FIXTURE_ID=118,SUPER_WEEK=8,registered={super_lig:new Set(),champions_league:new Set(),nations_league:new Set()};
   function register(rows){for(const row of rows||[]){registered[row.competition]?.add(Number(row.fixture_id))}}
   const outcome=(h,a)=>+h>+a?'1':+h<+a?'2':'X';
