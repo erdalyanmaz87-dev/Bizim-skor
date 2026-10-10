@@ -95,7 +95,14 @@
     }
     const counts={champions:0,elite:0,gold:0,silver:0,bronze:0};(countResult.data||[]).forEach(row=>{if(Object.hasOwn(counts,row.league_code))counts[row.league_code]=Number(row.player_count)||0});
     if(summaryHost)summaryHost.innerHTML=renderLeagueSummary(summary);if(!detailHost)return true;
-    async function loadLeague(code){const ownLeague=summary.league_code||'bronze',target=code||ownLeague;const tableResult=await sb.rpc('get_league_table',{p_token:token,p_league_code:target});if(tableResult.error)throw tableResult.error;const rows=tableResult.data||[];detailHost.innerHTML=renderLeagueShell({...summary,league_code:target,own_league_code:ownLeague},rows,counts);detailHost.querySelector('[data-league-rules]')?.addEventListener('click',()=>{const host=detailHost.querySelector('.league-rules-host');if(host)host.hidden=!host.hidden});detailHost.querySelectorAll('[data-league-code]').forEach(btn=>btn.addEventListener('click',()=>loadLeague(btn.dataset.leagueCode)))}
+    async function loadLeague(code){const ownLeague=summary.league_code||'bronze',target=code||ownLeague;const tableResult=await sb.rpc('get_league_table',{p_token:token,p_league_code:target});if(tableResult.error)throw tableResult.error;const rows=tableResult.data||[];detailHost.innerHTML=renderLeagueShell({...summary,league_code:target,own_league_code:ownLeague},rows,counts);detailHost.querySelector('[data-league-rules]')?.addEventListener('click',()=>{const host=detailHost.querySelector('.league-rules-host');if(host)host.hidden=!host.hidden});detailHost.querySelectorAll('[data-league-code]').forEach(btn=>btn.addEventListener('click',()=>loadLeague(btn.dataset.leagueCode)));
+      const doc=detailHost.ownerDocument||globalThis.document;
+      const rules=globalThis.BizimSkorArenaSeason1Rules;
+      rules?.correctRules?.(doc);
+      rules?.annotateRows?.(rows,doc,summary.period_no);
+      const logos=globalThis.BizimSkorSupportedTeamRankingLogos?.refresh?.(doc);
+      logos?.catch?.(error=>console.warn('Arena team logos',error));
+    }
     await loadLeague(summary.league_code||'bronze');return true;
   }
 
