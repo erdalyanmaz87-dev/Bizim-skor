@@ -28,6 +28,7 @@
 .bs-screen-content #pred .m .bs-team-name{display:block!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important;word-break:normal!important;font-size:11px!important;letter-spacing:-.15px!important}
 html:not([data-theme="dark"]) .saved,html:not([data-theme="dark"]) .savedrow{color:#0f172a!important}
 html[data-theme="dark"] .saved,html[data-theme="dark"] .savedrow{color:#0f172a!important}
+.champions-summary .savedrow,.champions-summary .savedrow>b{color:#fff!important}
 `;
     doc.head.appendChild(s);return true;
   }
@@ -70,7 +71,6 @@ html[data-theme="dark"] .saved,html[data-theme="dark"] .savedrow{color:#0f172a!i
       clearStaleTeamMarker(teams[teams.length-1]);
     });
     root.BizimSkorBrandVisualUI?.decoratePredictionTeams?.(doc);
-    root.BizimSkorBrandVisualUI?.decorate?.(doc);
     rows.forEach(row=>{
       const teams=row.querySelectorAll?.('.t')||[];
       if(teams.length<2)return;
@@ -99,10 +99,9 @@ html[data-theme="dark"] .saved,html[data-theme="dark"] .savedrow{color:#0f172a!i
         queued=true;
         (root.requestAnimationFrame||root.setTimeout)(()=>{queued=false;repairPredictionLogos(doc)},0);
       });
-      obs.observe(doc.body,{childList:true,subtree:true,characterData:true});
+      obs.observe(doc.body,{childList:true,subtree:true});
       doc.__bsPredictionVisibilityObserver=obs;
     }
-    doc.addEventListener('click',()=>root.setTimeout?.(()=>{bindWeekChanges(doc);repairPredictionLogos(doc)},0),true);
     root.addEventListener?.('focus',()=>scheduleRepair(doc));
     return true;
   }

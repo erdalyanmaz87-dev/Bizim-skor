@@ -10,4 +10,8 @@ assert.match(src,/white-space:nowrap!important/,'prediction team names must stay
 assert.match(src,/text-overflow:ellipsis!important/,'long team names must truncate cleanly instead of wrapping');
 assert.match(src,/erzurumsporfklogo\.png/,'Erzurumspor must have a stable crest override');
 assert.match(src,/Logo_Rizespor\.png/,'Rizespor must have a stable crest override');
+assert.match(src,/\.champions-summary \.savedrow[^`]*color:#fff!important/i,'Şampiyonlar Ligi koyu özet kartındaki kayıtlı skorlar beyaz ve okunur kalmalı');
+assert.doesNotMatch(src,/BizimSkorBrandVisualUI\?\.decorate\?\.\(doc\)/,'tahmin logosu onarımı her tıklamada tüm sayfayı yeniden süslememeli');
+assert.doesNotMatch(src,/observe\(doc\.body,\{childList:true,subtree:true,characterData:true\}\)/,'metin değişiklikleri pahalı tam sayfa onarım döngüsü başlatmamalı');
+assert.doesNotMatch(src,/doc\.addEventListener\('click',[^;]*repairPredictionLogos/s,'her sıradan tıklama tam tahmin logosu taraması çalıştırmamalı');
 console.log('prediction visibility/logo regression coverage ok');
