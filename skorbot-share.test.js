@@ -9,3 +9,8 @@ test('shared match uses the existing statistics and SkorBot suggestion',async()=
 test('invalid shared fixture id is rejected before reading data',async()=>{
  assert.equal(typeof share.getMatch,'function');await assert.rejects(()=>share.getMatch({},-1,{},{}));
 });
+test('match landing exposes a play button and does not autoplay before a tap',()=>{
+ const vm=require('node:vm'),fs=require('node:fs');let reads=0;const button={},ctx={module:{exports:{}},URLSearchParams,location:{search:'?skorbot=champions-22',pathname:'/gs-barca.html'},document:{readyState:'complete',getElementById:()=>button},BizimSkorMatchStatistics:{loadSnapshot:()=>{reads++;return Promise.reject(new Error('should wait'))}},alert(){}};
+ vm.runInNewContext(fs.readFileSync('skorbot-share.js','utf8'),ctx);ctx.module.exports.mount();
+ assert.equal(reads,0);assert.equal(typeof button.onclick,'function');
+});
