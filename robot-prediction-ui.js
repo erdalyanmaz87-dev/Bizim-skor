@@ -31,6 +31,13 @@
   function markedOnScreen(settings){return settings.fixtures.reduce((n,f,i)=>{const ids=settings.inputIds(f,i),h=document.getElementById(ids[0]),a=document.getElementById(ids[1]);return n+(h?.dataset.robotScore===h?.value&&a?.dataset.robotScore===a?.value?1:0)},0)}
   async function allowance(settings){const R=robot();settings=normalize(settings);if(!R||!settings||!settings.fixtures.length)return 0;await syncPersistedMarks(settings);return R.remainingRobotAllowance(settings.fixtures.length,markedOnScreen(settings))}
   async function applyOne(fixture,index,settings,onlyEmpty=false){const R=robot();settings=normalize(config())||normalize(settings);fixture=settings?.fixtures?.[index]||fixture;if(!R||!settings||!fixture)return false;const [homeId,awayId]=settings.inputIds(fixture,index),home=document.getElementById(homeId),away=document.getElementById(awayId);if(!home||!away||(onlyEmpty&&(home.value!==''||away.value!=='')))return false;if(await allowance(settings)<=0){alert(`SkorBot bu haftada en fazla ${R.robotLimit(settings.fixtures.length)} maçta kullanılabilir.`);return false}try{const value=await suggestion(fixture,settings);home.value=String(value.homeScore);away.value=String(value.awayScore);home.dataset.robotScore=home.value;away.dataset.robotScore=away.value;return true}catch(error){alert(error.message);return false}}
+  const scorerCache=new Map();
+  async function scorerPlayers(settings,name){
+    const comp=competition(settings);if(comp==='nations_league')return [];
+    if(!scorerCache.has(comp))scorerCache.set(comp,(async()=>{try{const q=await root.sb.rpc('get_football_center_snapshot',{p_competition:comp});if(q.error)return [];return (q.data||[]).filter(r=>['top_scorers','top_assists'].includes(r.category)).flatMap(r=>Array.isArray(r.payload)?r.payload:[]);}catch(_){return [];}})());
+    const rows=await scorerCache.get(comp),key=v=>root.BizimSkorBrandAssets?.teamSlug(v)||root.BizimSkorBrandAssets?.key(v)||String(v).trim().toLowerCase();
+    return [...new Set(rows.filter(r=>key(r.team)===key(name)).map(r=>r.player).filter(v=>typeof v==='string'&&v.trim()))].slice(0,5);
+  }
   async function animateOne(fixture,index,settings,button){
     settings=normalize(config())||normalize(settings);fixture=settings?.fixtures?.[index]||fixture;
     if(!fixture||!settings||!root.BizimSkorMatchAnimation)return;
@@ -39,7 +46,9 @@
     if(button){button.disabled=true;button.textContent='🤖 Maç hazırlanıyor…'}
     try{
       const score=await suggestion(fixture,settings);
-      root.BizimSkorMatchAnimation.open({home:team(teams[0],fixture.home_team||'Ev sahibi'),away:team(teams[teams.length-1],fixture.away_team||'Deplasman'),score,onApply:async()=>{
+      const home=team(teams[0],fixture.home_team||'Ev sahibi'),away=team(teams[teams.length-1],fixture.away_team||'Deplasman');
+      [home.players,away.players]=await Promise.all([scorerPlayers(settings,home.name),scorerPlayers(settings,away.name)]);
+      root.BizimSkorMatchAnimation.open({home,away,score,onApply:async()=>{
         const current=normalize(config());
         if(!row?.isConnected||current?.kind!==settings.kind||Number(current?.week)!==Number(settings.week)||Number(current?.fixtures?.[index]?.id)!==Number(fixture.id))throw new Error('Maç ekranı değişti. Bu maçın tahminini yeniden aç.');
         const ids=settings.inputIds(fixture,index);if(ids.some(id=>{const el=document.getElementById(id);return !el||el.disabled||el.readOnly}))throw new Error('Bu maç tahmin girişine kapalı.');

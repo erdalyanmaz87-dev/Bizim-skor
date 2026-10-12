@@ -25,3 +25,15 @@ test('invalid suggestions do not silently turn into another score', () => {
     assert.throws(()=>arena.plan(value));
   }
 });
+test('goals carry the correct team player, minute and running score',()=>{
+  const events=arena.plan({homeScore:2,awayScore:1},{home:{players:['Ev oyuncusu']},away:{players:['Konuk oyuncusu']}});
+  events.forEach((e,i)=>{assert.equal(e.scorer,e.side==='home'?'Ev oyuncusu':'Konuk oyuncusu');assert.equal(e.homeScore+e.awayScore,i+1);assert(e.minute>0&&e.minute<90);});
+});
+test('bank shot touches the wall twice before crossing into the goal',()=>{
+  assert.equal(typeof arena.bankPath,'function');
+  const path=arena.bankPath({x:-80,y:55,vx:123,vy:102},.7);
+  assert.equal(path.length,4);
+  for(const p of path.slice(1,3))assert(Math.abs(Math.hypot(p.x,p.y)-198)<.001);
+  const end=arena.pointOnPath(path,1);assert(Math.abs(Math.hypot(end.x,end.y)-250)<.001);
+  assert.deepEqual(arena.pointOnPath(path,0),path[0]);
+});
