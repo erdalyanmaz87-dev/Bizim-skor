@@ -60,6 +60,11 @@
         .replace(/[^a-z0-9]+/g, '-');
     return `<section class="bs-admin-stats-group"><h3>${esc(title)} <small>(${rows.length})</small></h3><div id="${id}" class="bs-admin-stats-list compact bs-admin-stats-columns">${rows.length ? rows.map((x, i) => `<div${i >= 6 ? ' class="bs-admin-stats-extra"' : ''}><button type="button" class="bs-admin-player" data-admin-player="${esc(x.player_name)}"><b>${esc(x.player_name)}</b><span>${esc(detail(x))}</span></button></div>`).join('') : '<p>Bu grupta oyuncu yok.</p>'}</div>${rows.length > 6 ? `<button type="button" class="bs-admin-stats-toggle" data-admin-stats-toggle="${id}" aria-expanded="false">Tümünü Göster (${rows.length})</button>` : ''}</section>`;
   }
+  function renderSkorbotUsage(usage) {
+    if(!usage)return '<section class="bs-admin-stats-group"><h3>⚽ Gol Animasyonu Kullanımı</h3><p>İstatistikler henüz kullanılamıyor.</p></section>';
+    const rows=usage.players||[];
+    return `<section class="bs-admin-stats-group"><h3>⚽ Gol Animasyonu Kullanımı</h3><p>Toplam oynatma: <b>${num(usage.total_plays)}</b> · Farklı oyuncu: <b>${num(usage.unique_players)}</b></p>${rows.length?rows.map(x=>`<div class="bs-admin-animation-row"><b>${esc(x.player_name)}</b><span>${Number(x.play_count||0)} oynatma</span></div>`).join(''):'<p>Henüz kayıtlı oynatma yok.</p>'}<p class="small">Veriler, kullanım takibi etkinleştirildikten sonrasını kapsar.</p></section>`;
+  }
   function render(data) {
     latestData = data || {};
     const s = data?.summary || {},
@@ -80,7 +85,7 @@
         data?.reminder_later ||
         all.filter((x) => x.reminder_response === 'later');
     const competitionLabel = data?.competition_label || '';
-    return `<div class="bs-admin-stats"><p class="small">${esc(data?.season || '')} ${competitionLabel ? `• ${esc(competitionLabel)}` : ''} ${data?.week ? `• ${Number(data.week)}. Hafta` : ''}</p><div class="bs-admin-stats-grid"><b>Toplam Oyuncu <strong>${num(s.total_players ?? all.length)}</strong></b><b>Bugün Gelen <strong>${num(s.active_today)}</strong></b><b>Yeni Kayıt <strong>${num(s.new_today)}</strong></b><b>Tahmin Yapan <strong>${num(s.completed)}</strong></b><b>Tahmin Yapmayan <strong>${num(s.incomplete)}</strong></b><b>Katılım <strong>${pct(s.participation)}</strong></b><b>Bildirim Açık <strong>${num(s.notifications_enabled)}</strong></b><b>24s Evet <strong>${num(s.reminder_yes)}</strong></b><b>24s Daha Sonra <strong>${num(s.reminder_later)}</strong></b><b>Uyarı Sonrası Tamamlayan <strong>${num(s.reminder_converted)}</strong></b></div>${list('Oyuna Girenler', today, (x) => `${trTime(x.today_first)}–${trTime(x.today_last)} · ${Number(x.today_launch_count || 0)} giriş`)}${list('Güncel Hafta Tahmin Yapanlar', completed, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç · Tamamladı`)}${list('Güncel Hafta Tahmin Yapmayanlar', incomplete, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç`)}${list('Bildirimleri Açanlar', notifications, (x) => 'Bildirim açık')}${list('24 Saat Uyarısı · Evet', reminderYes, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}${list('24 Saat Uyarısı · Daha Sonra', reminderLater, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}</div>`;
+    return `<div class="bs-admin-stats"><p class="small">${esc(data?.season || '')} ${competitionLabel ? `• ${esc(competitionLabel)}` : ''} ${data?.week ? `• ${Number(data.week)}. Hafta` : ''}</p><div class="bs-admin-stats-grid"><b>Toplam Oyuncu <strong>${num(s.total_players ?? all.length)}</strong></b><b>Bugün Gelen <strong>${num(s.active_today)}</strong></b><b>Yeni Kayıt <strong>${num(s.new_today)}</strong></b><b>Tahmin Yapan <strong>${num(s.completed)}</strong></b><b>Tahmin Yapmayan <strong>${num(s.incomplete)}</strong></b><b>Katılım <strong>${pct(s.participation)}</strong></b><b>Bildirim Açık <strong>${num(s.notifications_enabled)}</strong></b><b>24s Evet <strong>${num(s.reminder_yes)}</strong></b><b>24s Daha Sonra <strong>${num(s.reminder_later)}</strong></b><b>Uyarı Sonrası Tamamlayan <strong>${num(s.reminder_converted)}</strong></b></div>${renderSkorbotUsage(data?.skorbot_animation_usage)}${list('Oyuna Girenler', today, (x) => `${trTime(x.today_first)}–${trTime(x.today_last)} · ${Number(x.today_launch_count || 0)} giriş`)}${list('Güncel Hafta Tahmin Yapanlar', completed, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç · Tamamladı`)}${list('Güncel Hafta Tahmin Yapmayanlar', incomplete, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç`)}${list('Bildirimleri Açanlar', notifications, (x) => 'Bildirim açık')}${list('24 Saat Uyarısı · Evet', reminderYes, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}${list('24 Saat Uyarısı · Daha Sonra', reminderLater, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}</div>`;
   }
   const rank = (v) => (Number(v) > 0 ? `${Number(v)}.` : 'Katılmadı');
   const points = (v) => {
@@ -267,12 +272,12 @@
     };
   }
   async function load() {
-    try {
-      return await privileged();
-    } catch (e) {
-      console.warn('admin statistics privileged fallback', e);
-      return fallback();
-    }
+    let stats;
+    try { stats=await privileged(); }
+    catch(e) { console.warn('admin statistics privileged fallback',e); stats=await fallback(); }
+    try { stats.skorbot_animation_usage=await rpc('get_admin_skorbot_animation_stats',{p_token:token()}); }
+    catch(e) { console.warn('SkorBot statistics not available',e); }
+    return stats;
   }
   function nav() {
     return root?.BizimSkorScreenNavigationRuntime;
@@ -316,6 +321,7 @@
     const style = doc.createElement('style');
     style.textContent =
       '.bs-admin-stats-group{margin-top:14px}.bs-admin-stats-group h3{margin:0 0 7px}.bs-admin-stats-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.bs-admin-stats-columns>div{min-width:0;padding:0;border-radius:10px;background:#f8fafc}.bs-admin-player{width:100%;height:100%;padding:8px;text-align:left;background:transparent;color:#0f172a}.bs-admin-player b,.bs-admin-player span{display:block;overflow:hidden;text-overflow:ellipsis}.bs-admin-player span{font-size:11px;color:#64748b;margin-top:2px}.bs-admin-stats-list:not(.expanded) .bs-admin-stats-extra{display:none}.bs-admin-stats-toggle{width:100%;margin-top:7px;padding:8px;background:#e2e8f0;color:#0f172a}.bs-admin-player-modal{position:fixed;inset:0;z-index:10060;display:flex;align-items:flex-end;justify-content:center}.bs-admin-player-modal.hide{display:none}.bs-admin-player-backdrop{position:absolute;inset:0;background:rgba(3,12,28,.64)}.bs-admin-player-card{position:relative;width:min(100%,560px);max-height:88vh;overflow:auto;background:#f8fafc;border-radius:24px 24px 0 0;padding:20px;color:#0f172a}.bs-admin-player-head{display:flex;justify-content:space-between}.bs-admin-player-head span{font-size:11px;letter-spacing:2px;color:#64748b;font-weight:900}.bs-admin-player-head h2{margin:4px 0 14px}.bs-admin-player-head button{width:38px;height:38px;border-radius:50%;font-size:24px}.bs-admin-player-prediction{display:flex;justify-content:space-between;gap:8px;padding:12px;border-radius:14px;background:#eaf2ff}.bs-admin-player-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.bs-admin-player-grid>div{padding:12px 8px;border:1px solid #dbe3ee;border-radius:14px;text-align:center;background:#fff}.bs-admin-player-grid span,.bs-admin-player-grid small{display:block;font-size:11px;color:#64748b}.bs-admin-player-grid b{display:block;font-size:17px;margin:5px 0}@media(max-width:360px){.bs-admin-stats-columns,.bs-admin-player-grid{grid-template-columns:1fr}}';
+    style.textContent+=' .bs-admin-animation-row{display:flex;justify-content:space-between;gap:12px;padding:9px;border-bottom:1px solid #dbe3ee}.bs-admin-animation-row span{white-space:nowrap}';
     doc.head.appendChild(style);
     const b = button(doc);
     wrap.appendChild(b);
