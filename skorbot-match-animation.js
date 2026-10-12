@@ -64,20 +64,27 @@
     // unlike oscillator playback which can remain muted by the hardware silent switch.
     let goalAudio=null;
     function goalSoundUrl(){
-      const sampleRate=11025,seconds=1.45,n=Math.floor(sampleRate*seconds);
+      // Smooth stadium-style cheer with handclaps and a short celebratory brass chord.
+      const sampleRate=16000,seconds=2.35,n=Math.floor(sampleRate*seconds);
       const bytes=new Uint8Array(44+n*2),view=new DataView(bytes.buffer);
       const put=(at,s)=>{for(let i=0;i<s.length;i++)bytes[at+i]=s.charCodeAt(i);};
       put(0,'RIFF');view.setUint32(4,36+n*2,true);put(8,'WAVE');put(12,'fmt ');
       view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);
       view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*2,true);
       view.setUint16(32,2,true);view.setUint16(34,16,true);put(36,'data');view.setUint32(40,n*2,true);
+      let crowd=0,previous=0;
       for(let i=0;i<n;i++){
-        const t=i/sampleRate,fade=Math.pow(Math.max(0,1-t/seconds),.7);
-        const horn=Math.sin(2*Math.PI*(360*t+220*t*t))*.46;
-        const harmonic=Math.sin(2*Math.PI*(720*t+440*t*t))*.19;
-        const crowd=(Math.random()*2-1)*.21;
-        const sample=Math.max(-1,Math.min(1,(horn+harmonic+crowd)*fade));
-        view.setInt16(44+i*2,Math.round(sample*26000),true);
+        const t=i/sampleRate,fade=Math.min(1,t/.16)*Math.min(1,(seconds-t)/.65);
+        // Crowd roar: wide, filtered breath-like voices rather than a shrill sweep.
+        const noise=Math.random()*2-1;
+        previous=.93*previous+.07*noise;
+        crowd=.75*crowd+.25*previous;
+        const voice=(Math.sin(2*Math.PI*175*t)+.48*Math.sin(2*Math.PI*231*t)+.36*Math.sin(2*Math.PI*286*t))*.14;
+        const cheering=(crowd*.65+voice)*fade;
+        const clapPhase=t%(.29),clap=clapPhase<.045?noise*Math.exp(-clapPhase*95)*.24:0;
+        const fanfare=t>.12&&t<1.65 ? (.09*Math.sin(2*Math.PI*392*t)+.085*Math.sin(2*Math.PI*493.88*t)+.08*Math.sin(2*Math.PI*587.33*t))*Math.min(1,(t-.12)/.12)*Math.min(1,(1.65-t)/.28):0;
+        const sample=Math.max(-1,Math.min(1,(cheering+clap+fanfare)*.92));
+        view.setInt16(44+i*2,Math.round(sample*28500),true);
       }
       let raw='';for(let i=0;i<bytes.length;i+=8192)raw+=String.fromCharCode(...bytes.subarray(i,i+8192));
       return 'data:audio/wav;base64,'+root.btoa(raw);
@@ -92,7 +99,10 @@
       try{
         if(!goalAudio){goalAudio=new root.Audio(goalSoundUrl());goalAudio.preload='auto';goalAudio.volume=1;}
         sound=true;soundBtn.setAttribute('aria-pressed','true');soundBtn.textContent='🔊 Gol sesi açık';
-        tone(); // Audible tap preview also unlocks subsequent goal playback.
+        // Unlock media playback silently on the user's tap; audible playback happens only on a goal.
+        goalAudio.muted=true;
+        const unlocked=goalAudio.play();
+        unlocked?.then?.(()=>{goalAudio.pause();goalAudio.currentTime=0;goalAudio.muted=false;}).catch?.(()=>{goalAudio.muted=false;});
       }catch(_){sound=false;soundBtn.setAttribute('aria-pressed','false');soundBtn.textContent='🔇 Ses desteklenmiyor';}
     }
     function drawGoal(angle,highlight){ctx.save();ctx.rotate(angle);ctx.strokeStyle=highlight?'#6ee7b7':'#e2e8f0';ctx.lineWidth=4;ctx.fillStyle='#dbeafe0c';ctx.fillRect(221,-30,36,60);ctx.strokeRect(221,-30,36,60);ctx.lineWidth=.65;ctx.strokeStyle='#cbd5e177';for(let x=228;x<257;x+=7){ctx.beginPath();ctx.moveTo(x,-30);ctx.lineTo(x,30);ctx.stroke();}for(let y=-23;y<30;y+=7){ctx.beginPath();ctx.moveTo(221,y);ctx.lineTo(257,y);ctx.stroke();}ctx.restore();}
