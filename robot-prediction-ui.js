@@ -35,7 +35,7 @@
     settings=normalize(config())||normalize(settings);fixture=settings?.fixtures?.[index]||fixture;
     if(!fixture||!settings||!root.BizimSkorMatchAnimation)return;
     const row=settings.rows[index],teams=row?.querySelectorAll('.t')||[];
-    const team=(el,fallback)=>{const name=el?.querySelector('.bs-team-name')?.textContent?.trim()||el?.textContent?.trim()?.replace(/^\d{1,2}[.:]\d{2}\s*/,'')||fallback;return{name,image:el?.querySelector('.bs-team-logo,img'),logo:el?.querySelector('.bs-team-logo,img')?.src||root.BizimSkorBrandAssets?.teamLogoUrl(name)||root.BizimSkorBrandAssets?.nationalTeamLogoUrl(name)||''}};
+    const team=(el,fallback)=>{const name=el?.querySelector('.bs-team-name')?.textContent?.trim()||el?.textContent?.trim()?.replace(/^\d{1,2}[.:]\d{2}\s*/,'')||fallback;const flag=settings.kind==='nations'?root.BizimSkorNationalTeamFlagFix?.flagFor(name)||'':'';return{name,flag,image:flag?null:el?.querySelector('.bs-team-logo,img'),logo:flag?'':el?.querySelector('.bs-team-logo,img')?.src||root.BizimSkorBrandAssets?.teamLogoUrl(name)||root.BizimSkorBrandAssets?.nationalTeamLogoUrl(name)||''}};
     if(button){button.disabled=true;button.textContent='🤖 Maç hazırlanıyor…'}
     try{
       const score=await suggestion(fixture,settings);

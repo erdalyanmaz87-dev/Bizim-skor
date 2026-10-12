@@ -47,3 +47,8 @@ test('bank shot touches the wall twice before crossing into the goal',()=>{
   const end=arena.pointOnPath(path,1);assert(Math.abs(Math.hypot(end.x,end.y)-250)<.001);
   assert.deepEqual(arena.pointOnPath(path,0),path[0]);
 });
+test('finished result moves above the pitch and is brought into view',()=>{
+ let moved,scrolled=false,focused=false;const result={scrollIntoView(){scrolled=true}},apply={focus(){focused=true}},dialog={scrollTop:300,querySelector(){return{after(node){moved=node}}}};
+ assert.equal(typeof arena.presentResult,'function');arena.presentResult(result,dialog,apply);
+ assert.equal(moved,result);assert.equal(dialog.scrollTop,0);assert(scrolled&&focused);
+});
