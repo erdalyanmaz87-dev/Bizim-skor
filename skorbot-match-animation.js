@@ -53,75 +53,31 @@
     const layer=document.createElement('div');layer.className='sb-arena-layer';
     const home=options.home||{name:'Ev sahibi'},away=options.away||{name:'Deplasman'};
     const markup=(team)=>`<div class="sb-arena-team">${team.flag?`<span class="sb-arena-flag">${escape(team.flag)}</span>`:team.logo?`<img src="${escape(team.logo)}" alt="" referrerpolicy="no-referrer">`:'⚽'}<div class="sb-arena-team-name">${escape(team.name)}</div></div>`;
-    layer.innerHTML=`<section class="sb-arena-dialog" role="dialog" aria-modal="true" aria-labelledby="sbArenaTitle"><header class="sb-arena-top"><div><div class="sb-arena-kicker">BİZİMSKOR · SKORBOT</div><h2 id="sbArenaTitle">Oynat bakalım</h2></div><button type="button" class="sb-arena-close" aria-label="Animasyonu kapat">×</button></header><div class="sb-arena-scoreboard">${markup(home)}<div><div class="sb-arena-score" aria-live="polite">0 : 0</div><div class="sb-arena-minute">0′ · Başlama vuruşu</div></div>${markup(away)}</div><div class="sb-arena-goals" aria-live="polite"><div data-goals-home></div><div data-goals-away></div></div><div class="sb-arena-canvas-wrap"><canvas class="sb-arena-canvas" width="560" height="560" aria-label="Dairesel sahada hareket eden takım logolarıyla SkorBot tahmini"></canvas><div class="sb-arena-goal" aria-live="polite"><strong>GOOOL!</strong><span></span></div></div><div class="sb-arena-progress"><span></span></div><div class="sb-arena-toolbar"><button type="button" class="sb-arena-control" data-arena-pause>Ⅱ Duraklat</button><button type="button" class="sb-arena-control" data-arena-sound aria-pressed="false">🔊 Gol sesini aç</button></div><p class="sb-arena-caption">SkorBot tahmin animasyonu</p><div class="sb-arena-result"><p>🤖 SkorBot’un önerisi</p><strong></strong><button type="button" class="sb-arena-apply">${escape(options.applyLabel||'Tahminime uygula')}</button><div class="sb-arena-error" role="status"></div></div></section>`;
+    layer.innerHTML=`<section class="sb-arena-dialog" role="dialog" aria-modal="true" aria-labelledby="sbArenaTitle"><header class="sb-arena-top"><div><div class="sb-arena-kicker">BİZİMSKOR · SKORBOT</div><h2 id="sbArenaTitle">Oynat bakalım</h2></div><button type="button" class="sb-arena-close" aria-label="Animasyonu kapat">×</button></header><div class="sb-arena-scoreboard">${markup(home)}<div><div class="sb-arena-score" aria-live="polite">0 : 0</div><div class="sb-arena-minute">0′ · Başlama vuruşu</div></div>${markup(away)}</div><div class="sb-arena-goals" aria-live="polite"><div data-goals-home></div><div data-goals-away></div></div><div class="sb-arena-canvas-wrap"><canvas class="sb-arena-canvas" width="560" height="560" aria-label="Dairesel sahada hareket eden takım logolarıyla SkorBot tahmini"></canvas><div class="sb-arena-goal" aria-live="polite"><strong>GOOOL!</strong><span></span></div></div><div class="sb-arena-progress"><span></span></div><div class="sb-arena-toolbar"><button type="button" class="sb-arena-control" data-arena-pause>Ⅱ Duraklat</button></div><p class="sb-arena-caption">SkorBot tahmin animasyonu</p><div class="sb-arena-result"><p>🤖 SkorBot’un önerisi</p><strong></strong><button type="button" class="sb-arena-apply">${escape(options.applyLabel||'Tahminime uygula')}</button><div class="sb-arena-error" role="status"></div></div></section>`;
     document.body.appendChild(layer);document.body.style.overflow='hidden';
-    const canvas=layer.querySelector('canvas'),ctx=canvas.getContext('2d'),scoreEl=layer.querySelector('.sb-arena-score'),minuteEl=layer.querySelector('.sb-arena-minute'),goalEl=layer.querySelector('.sb-arena-goal'),result=layer.querySelector('.sb-arena-result'),pause=layer.querySelector('[data-arena-pause]'),soundBtn=layer.querySelector('[data-arena-sound]'),apply=layer.querySelector('.sb-arena-apply');
-    let loading=true,time=0,last=0,raf=0,paused=false,finished=false,closed=false,sound=false,audio=null,eventCount=0;
+    const canvas=layer.querySelector('canvas'),ctx=canvas.getContext('2d'),scoreEl=layer.querySelector('.sb-arena-score'),minuteEl=layer.querySelector('.sb-arena-minute'),goalEl=layer.querySelector('.sb-arena-goal'),result=layer.querySelector('.sb-arena-result'),pause=layer.querySelector('[data-arena-pause]'),apply=layer.querySelector('.sb-arena-apply');
+    let loading=true,time=0,last=0,raf=0,paused=false,finished=false,closed=false,eventCount=0;
     const tokens=[{side:'home',x:-85,y:50,vx:123,vy:102,team:home,color:'#fbbf24'},{side:'away',x:86,y:-68,vx:-127,vy:99,team:away,color:'#60a5fa'}];
     minuteEl.textContent='Logolar hazırlanıyor…';pause.disabled=true;pause.textContent='Hazırlanıyor…';apply.disabled=true;
     const logoReady=Promise.all(tokens.map(async token=>{token.image=await loadTeamLogo(token.team);}));
     // HTMLMediaElement playback is unlocked by an explicit tap on iOS,
     // unlike oscillator playback which can remain muted by the hardware silent switch.
-    let goalAudio=null;
-    function goalSoundUrl(){
-      // Smooth stadium-style cheer with handclaps and a short celebratory brass chord.
-      const sampleRate=16000,seconds=2.35,n=Math.floor(sampleRate*seconds);
-      const bytes=new Uint8Array(44+n*2),view=new DataView(bytes.buffer);
-      const put=(at,s)=>{for(let i=0;i<s.length;i++)bytes[at+i]=s.charCodeAt(i);};
-      put(0,'RIFF');view.setUint32(4,36+n*2,true);put(8,'WAVE');put(12,'fmt ');
-      view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);
-      view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*2,true);
-      view.setUint16(32,2,true);view.setUint16(34,16,true);put(36,'data');view.setUint32(40,n*2,true);
-      let crowd=0,previous=0;
-      for(let i=0;i<n;i++){
-        const t=i/sampleRate,fade=Math.min(1,t/.16)*Math.min(1,(seconds-t)/.65);
-        // Crowd roar: wide, filtered breath-like voices rather than a shrill sweep.
-        const noise=Math.random()*2-1;
-        previous=.93*previous+.07*noise;
-        crowd=.75*crowd+.25*previous;
-        const voice=(Math.sin(2*Math.PI*175*t)+.48*Math.sin(2*Math.PI*231*t)+.36*Math.sin(2*Math.PI*286*t))*.14;
-        const cheering=(crowd*.65+voice)*fade;
-        const clapPhase=t%(.29),clap=clapPhase<.045?noise*Math.exp(-clapPhase*95)*.24:0;
-        const fanfare=t>.12&&t<1.65 ? (.09*Math.sin(2*Math.PI*392*t)+.085*Math.sin(2*Math.PI*493.88*t)+.08*Math.sin(2*Math.PI*587.33*t))*Math.min(1,(t-.12)/.12)*Math.min(1,(1.65-t)/.28):0;
-        const sample=Math.max(-1,Math.min(1,(cheering+clap+fanfare)*.92));
-        view.setInt16(44+i*2,Math.round(sample*28500),true);
-      }
-      let raw='';for(let i=0;i<bytes.length;i+=8192)raw+=String.fromCharCode(...bytes.subarray(i,i+8192));
-      return 'data:audio/wav;base64,'+root.btoa(raw);
-    }
-    function tone(){
-      if(!sound||!goalAudio)return;
-      try{goalAudio.pause();goalAudio.currentTime=0;const played=goalAudio.play();
-        played?.catch?.(()=>{soundBtn.textContent='🔇 Ses oynatılamadı';});}catch(_){soundBtn.textContent='🔇 Ses oynatılamadı';}
-    }
-    function toggleGoalSound(){
-      if(sound){sound=false;goalAudio?.pause();soundBtn.textContent='🔊 Gol sesini aç';soundBtn.setAttribute('aria-pressed','false');return;}
-      try{
-        if(!goalAudio){goalAudio=new root.Audio(goalSoundUrl());goalAudio.preload='auto';goalAudio.volume=1;}
-        sound=true;soundBtn.setAttribute('aria-pressed','true');soundBtn.textContent='🔊 Gol sesi açık';
-        // Unlock media playback silently on the user's tap; audible playback happens only on a goal.
-        goalAudio.muted=true;
-        const unlocked=goalAudio.play();
-        unlocked?.then?.(()=>{goalAudio.pause();goalAudio.currentTime=0;goalAudio.muted=false;}).catch?.(()=>{goalAudio.muted=false;});
-      }catch(_){sound=false;soundBtn.setAttribute('aria-pressed','false');soundBtn.textContent='🔇 Ses desteklenmiyor';}
-    }
     function drawGoal(angle,highlight){ctx.save();ctx.rotate(angle);ctx.strokeStyle=highlight?'#6ee7b7':'#e2e8f0';ctx.lineWidth=4;ctx.fillStyle='#dbeafe0c';ctx.fillRect(221,-30,36,60);ctx.strokeRect(221,-30,36,60);ctx.lineWidth=.65;ctx.strokeStyle='#cbd5e177';for(let x=228;x<257;x+=7){ctx.beginPath();ctx.moveTo(x,-30);ctx.lineTo(x,30);ctx.stroke();}for(let y=-23;y<30;y+=7){ctx.beginPath();ctx.moveTo(221,y);ctx.lineTo(257,y);ctx.stroke();}ctx.restore();}
     function draw(){if(closed||!ctx)return;ctx.clearRect(0,0,560,560);ctx.save();ctx.translate(280,280);ctx.shadowColor='#34d39922';ctx.shadowBlur=35;ctx.beginPath();ctx.arc(0,0,229,0,TAU);ctx.fillStyle='#123b2c';ctx.fill();ctx.shadowBlur=0;ctx.save();ctx.beginPath();ctx.arc(0,0,221,0,TAU);ctx.clip();for(let i=-5;i<=5;i++){ctx.fillStyle=i%2?'#256445':'#215a40';ctx.fillRect(i*48,-250,48,500);}ctx.restore();ctx.strokeStyle='#e2e8f0';ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,224,0,TAU);ctx.stroke();ctx.strokeStyle='#e2e8f099';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(0,0,214,0,TAU);ctx.stroke();ctx.save();ctx.rotate(angleAt(time,'home'));ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-214);ctx.lineTo(0,214);ctx.stroke();ctx.beginPath();ctx.arc(0,0,54,0,TAU);ctx.stroke();ctx.beginPath();ctx.arc(0,0,4,0,TAU);ctx.fillStyle='#e2e8f0';ctx.fill();ctx.restore();for(const side of ['home','away']){const latest=events.filter(e=>e.side===side&&time>=e.time&&time<e.time+.45).length;drawGoal(angleAt(time,side),latest);}
       for(const token of tokens){if(loading||token.hiddenUntil>time)continue;ctx.save();ctx.translate(token.x,token.y);ctx.shadowColor='#0009';ctx.shadowBlur=12;ctx.shadowOffsetY=3;ctx.beginPath();ctx.arc(0,0,24,0,TAU);ctx.fillStyle='#ffffffdf';ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetY=0;if(token.image?.complete&&token.image.naturalWidth){const ratio=token.image.naturalWidth/token.image.naturalHeight,w=ratio>1?43:43*ratio,h=ratio>1?43/ratio:43;ctx.drawImage(token.image,-w/2,-h/2,w,h);}else{ctx.fillStyle=token.color;ctx.beginPath();ctx.arc(0,0,20,0,TAU);ctx.fill();ctx.fillStyle='#10213a';ctx.font='bold 15px Arial';ctx.textAlign='center';if(token.team.flag){ctx.font='30px Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif';ctx.fillText(token.team.flag,0,10);}else ctx.fillText((token.team.name||'?').slice(0,2).toUpperCase(),0,5);}ctx.restore();}
       ctx.restore();
     }
     function update(dt){const shotDuration=Math.min(2.4,14/(events.length+1)*.85);for(const token of tokens){const next=events.find(e=>e.side===token.side&&e.time>=time);if(next&&time>=next.time-shotDuration){if(token.shot!==next){token.shot=next;token.path=bankPath(token,angleAt(next.time,token.side));}const p=Math.max(0,Math.min(1,(time-next.time+shotDuration)/shotDuration)),point=pointOnPath(token.path,p);token.x=point.x;token.y=point.y;}else{token.x+=token.vx*dt;token.y+=token.vy*dt;const distance=Math.hypot(token.x,token.y);if(distance>198){const nx=token.x/distance,ny=token.y/distance,dot=token.vx*nx+token.vy*ny;token.x=nx*198;token.y=ny*198;if(dot>0){token.vx-=2*dot*nx;token.vy-=2*dot*ny;}}}}const dx=tokens[1].x-tokens[0].x,dy=tokens[1].y-tokens[0].y,d=Math.hypot(dx,dy);if(d<48&&d>0&&!tokens.some(t=>t.shot&&Math.abs(t.shot.time-time)<shotDuration)){const nx=dx/d,ny=dy/d,impulse=(tokens[0].vx-tokens[1].vx)*nx+(tokens[0].vy-tokens[1].vy)*ny;if(impulse>0){tokens[0].vx-=impulse*nx;tokens[0].vy-=impulse*ny;tokens[1].vx+=impulse*nx;tokens[1].vy+=impulse*ny;}const overlap=(48-d)/2;tokens[0].x-=nx*overlap;tokens[0].y-=ny*overlap;tokens[1].x+=nx*overlap;tokens[1].y+=ny*overlap;}
-      while(eventCount<events.length&&time>=events[eventCount].time){const event=events[eventCount++],token=tokens.find(t=>t.side===event.side);token.hiddenUntil=event.time+.23;token.x=event.side==='home'?-80:80;token.y=event.side==='home'?55:-55;token.shot=null;goalEl.querySelector('span').textContent=`${event.minute}′ · ${event.homeScore} – ${event.awayScore}`;tone();}
+      while(eventCount<events.length&&time>=events[eventCount].time){const event=events[eventCount++],token=tokens.find(t=>t.side===event.side);token.hiddenUntil=event.time+.23;token.x=event.side==='home'?-80:80;token.y=event.side==='home'?55:-55;token.shot=null;goalEl.querySelector('span').textContent=`${event.minute}′ · ${event.homeScore} – ${event.awayScore}`;}
       for(const side of ['home','away']){const box=layer.querySelector('[data-goals-'+side+']'),text=events.slice(0,eventCount).filter(e=>e.side===side).map(e=>`${e.minute}′ · ${e.homeScore}–${e.awayScore}`).join('\n');if(box.textContent!==text){box.textContent=text;box.style.whiteSpace='pre-line';}}
       const latest=events[eventCount-1];goalEl.classList.toggle('show',!!latest&&time-latest.time<.65);const score=scoreAt(events,time);const scoreText=`${score.homeScore} : ${score.awayScore}`,minuteText=`${Math.min(90,Math.floor(time/DURATION*90))}′ · ${finished?'Maç sonu':'SkorBot oynatıyor'}`;if(scoreEl.textContent!==scoreText)scoreEl.textContent=scoreText;if(minuteEl.textContent!==minuteText)minuteEl.textContent=minuteText;layer.querySelector('.sb-arena-progress span').style.width=`${time/DURATION*100}%`;
     }
     function complete(){apply.disabled=false;time=DURATION;finished=true;update(0);draw();goalEl.classList.remove('show');result.classList.add('visible');result.querySelector('strong').textContent=`${options.score.homeScore} – ${options.score.awayScore}`;pause.textContent='↻ Tekrar oynat';pause.disabled=false;presentResult(result,layer.querySelector('.sb-arena-dialog'),apply);}
     function frame(stamp){if(closed)return;const dt=last?Math.max(0,(stamp-last)/1000):0;last=stamp;if(!paused&&!finished){time=Math.min(DURATION,time+dt);update(Math.min(dt,.06));draw();if(time>=DURATION)complete();}if(!finished)raf=root.requestAnimationFrame(frame);}
-    function close(){if(closed)return;closed=true;root.cancelAnimationFrame(raf);document.removeEventListener('keydown',keyHandler);document.removeEventListener('visibilitychange',visibility);audio?.close?.();goalAudio?.pause();layer.remove();document.body.style.overflow=previousOverflow;active=null;previousFocus?.focus?.();}
+    function close(){if(closed)return;closed=true;root.cancelAnimationFrame(raf);document.removeEventListener('keydown',keyHandler);document.removeEventListener('visibilitychange',visibility);layer.remove();document.body.style.overflow=previousOverflow;active=null;previousFocus?.focus?.();}
     function keyHandler(event){if(event.key==='Escape'){event.stopPropagation();close();}if(event.key==='Tab'){const items=[...layer.querySelectorAll('button:not(:disabled)')].filter(el=>!el.hidden&&el.getClientRects().length);const first=items[0],end=items[items.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();end.focus();}else if(!event.shiftKey&&document.activeElement===end){event.preventDefault();first.focus();}}}
     function visibility(){if(document.hidden&&!finished){paused=true;pause.textContent='▶ Devam et';}last=0;}
     pause.onclick=()=>{if(finished){close();open(options);return;}paused=!paused;pause.textContent=paused?'▶ Devam et':'Ⅱ Duraklat';last=0;};
-    soundBtn.onclick=toggleGoalSound;
     apply.onclick=async()=>{apply.disabled=true;layer.querySelector('.sb-arena-error').textContent='';try{const accepted=await options.onApply?.(options.score);if(accepted===false){apply.disabled=false;return;}if(!closed){apply.textContent='✓ Tahminine uygulandı';if(options.closeOnApply!==false)close();}}catch(error){layer.querySelector('.sb-arena-error').textContent=error.message||'Tahmin uygulanamadı.';apply.disabled=false;}};
     layer.querySelector('.sb-arena-close').onclick=close;layer.addEventListener('click',e=>{if(e.target===layer)close();});document.addEventListener('keydown',keyHandler);document.addEventListener('visibilitychange',visibility);layer.querySelector('.sb-arena-close').focus();draw();active={close};logoReady.then(()=>{if(closed)return;loading=false;last=0;minuteEl.textContent='0′ · Başlama vuruşu';pause.disabled=false;pause.textContent='Ⅱ Duraklat';draw();raf=root.requestAnimationFrame(frame);});return active;
   }
