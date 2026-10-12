@@ -25,9 +25,19 @@ test('invalid suggestions do not silently turn into another score', () => {
     assert.throws(()=>arena.plan(value));
   }
 });
-test('goals carry the correct team player, minute and running score',()=>{
+test('goals show minute and running score without player names',()=>{
   const events=arena.plan({homeScore:2,awayScore:1},{home:{players:['Ev oyuncusu']},away:{players:['Konuk oyuncusu']}});
-  events.forEach((e,i)=>{assert.equal(e.scorer,e.side==='home'?'Ev oyuncusu':'Konuk oyuncusu');assert.equal(e.homeScore+e.awayScore,i+1);assert(e.minute>0&&e.minute<90);});
+  events.forEach((e,i)=>{assert.equal('scorer' in e,false);assert.equal(e.homeScore+e.awayScore,i+1);assert(e.minute>0&&e.minute<90);});
+});
+test('logo preparation waits until the actual image loads',async()=>{
+ assert.equal(typeof arena.loadTeamLogo,'function');let img,settled=false;
+ class DeferredImage {constructor(){img=this}set src(v){this.url=v}}
+ const ready=arena.loadTeamLogo({logo:'https://example.test/team.png'},DeferredImage).then(image=>{settled=true;return image});
+ await Promise.resolve();assert.equal(settled,false);img.complete=true;img.naturalWidth=140;img.naturalHeight=140;img.onload();assert.equal(await ready,img);
+});
+test('an already loaded match-row logo can be used immediately',async()=>{
+ const image={complete:true,naturalWidth:140,naturalHeight:140};
+ assert.equal(await arena.loadTeamLogo({image,logo:'cached'}),image);
 });
 test('bank shot touches the wall twice before crossing into the goal',()=>{
   assert.equal(typeof arena.bankPath,'function');
