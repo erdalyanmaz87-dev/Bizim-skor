@@ -38,6 +38,14 @@
     const team=(el,fallback)=>{const name=el?.querySelector('.bs-team-name')?.textContent?.trim()||el?.textContent?.trim()?.replace(/^\d{1,2}[.:]\d{2}\s*/,'')||fallback;const flag=settings.kind==='nations'?root.BizimSkorNationalTeamFlagFix?.flagFor(name)||'':'';return{name,flag,image:flag?null:el?.querySelector('.bs-team-logo,img'),logo:flag?'':el?.querySelector('.bs-team-logo,img')?.src||root.BizimSkorBrandAssets?.teamLogoUrl(name)||root.BizimSkorBrandAssets?.nationalTeamLogoUrl(name)||''}};
     if(button){button.disabled=true;button.textContent='🤖 Maç hazırlanıyor…'}
     try{
+      const token=root.localStorage?.getItem('bizimSkorFriendToken');
+      if(!token)throw new Error('SkorBot için oyuncu oturumun açık olmalı.');
+      const claim=await root.sb.rpc('claim_skorbot_preview',{
+        p_token:token,p_competition:competition(settings),p_season:season,
+        p_week:Number(settings.week),p_fixture_id:Number(fixture.id)
+      });
+      if(claim.error)throw claim.error;
+      if(claim.data!==true)throw new Error(`SkorBot kullanım hakkın doldu veya maç tahmine kapalı. Bu haftada en fazla ${robot().robotLimit(settings.fixtures.length)} maçta SkorBot kullanılabilir.`);
       const score=await suggestion(fixture,settings);
       const home=team(teams[0],fixture.home_team||'Ev sahibi'),away=team(teams[teams.length-1],fixture.away_team||'Deplasman');
       root.BizimSkorMatchAnimation.open({home,away,score,onApply:async()=>{
