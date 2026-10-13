@@ -97,6 +97,7 @@
       if(daily)daily.insertAdjacentElement('beforebegin',spotlight);
       else home?.prepend(spotlight);
     }else if(summaryHost&&summaryHost.parentNode!==spotlight)spotlight.appendChild(summaryHost);
+    if(root.Event)root.dispatchEvent?.(new root.Event('bizimskor:home-arena-ready'));
     return{spotlight,summaryHost};
   }
 

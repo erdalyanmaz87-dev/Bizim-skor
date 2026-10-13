@@ -6,6 +6,7 @@
   const GROUPS=[
     {key:'rankings',title:'Sıralamalar',items:[
       ['arena','🏆','Arena'],
+      ['cup','🏆','BizimSkor Kupası'],
       ['championsRanking','⭐','Şampiyonlar Ligi Genel Sıralaması'],
       ['nationsRanking','🌍','UEFA Uluslar Ligi Genel Sıralaması'],
       ['general','🇹🇷','Süper Lig Genel Sıralaması'],
@@ -101,7 +102,7 @@
     @media(prefers-reduced-motion:reduce){.bs-simple-backdrop,.bs-simple-panel{transition:none}}
   </style>`}
 
-  function availableTabs(doc){return[...doc.querySelectorAll('.tab[data-tab]')].map(tab=>tab.dataset.tab)}
+  function availableTabs(doc){return[...doc.querySelectorAll('.tab[data-tab]')].map(tab=>tab.dataset.tab).concat(root.BizimSkorCup?['cup']:[])}
   function accountState(){return{loggedIn:!!String(root?.localStorage?.getItem('bizimSkorName')||'').trim()}}
   function findOriginalTab(doc,name){for(const candidate of preferredTabNames(name)){const found=doc.querySelector(`.tab[data-tab="${candidate}"]`);if(found)return found}return null}
   function currentOriginalTab(doc){return doc.querySelector('.tab[data-tab].active')?.dataset.tab||'home'}
@@ -125,7 +126,7 @@
   function triggerAccount(doc,action){if(action==='inviteChampion'){openFeature(doc,'inviteChampion');return}if(action==='shareGame'){doc.getElementById('bsShareGame')?.click();return}if(action==='weeklyResult'){openWeeklyResult(doc);return}const map={update:'bsHeaderUpdate',museum:'bsHeaderMuseumAction',logout:'bsHeaderAccountAction',login:'bsHeaderAccountAction',support:'bsHeaderSupport'};doc.getElementById(map[action])?.click()}
   function bindDrawer(doc,drawer){
     drawer.querySelectorAll('[data-simple-close]').forEach(button=>button.addEventListener('click',()=>closeDrawer(doc)));
-    drawer.querySelectorAll('[data-simple-tab]').forEach(button=>button.addEventListener('click',()=>{const tab=button.dataset.simpleTab;findOriginalTab(doc,tab)?.click();setBottomActive(doc,bottomTargetForTab(tab));closeDrawer(doc)}));
+    drawer.querySelectorAll('[data-simple-tab]').forEach(button=>button.addEventListener('click',()=>{const tab=button.dataset.simpleTab;if(tab==='cup'){closeDrawer(doc);root.BizimSkorCup?.open?.();return}findOriginalTab(doc,tab)?.click();setBottomActive(doc,bottomTargetForTab(tab));closeDrawer(doc)}));
     drawer.querySelectorAll('[data-simple-account]').forEach(button=>button.addEventListener('click',()=>{triggerAccount(doc,button.dataset.simpleAccount);closeDrawer(doc)}));
   }
   function syncUnread(doc){const unread=!!doc.querySelector('.tab[data-tab="chat"].has-unread');doc.body.classList.toggle('bs-simple-nav-has-unread',unread)}
