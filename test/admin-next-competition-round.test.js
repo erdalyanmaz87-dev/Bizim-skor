@@ -40,5 +40,5 @@ test('yönetici özeti ön yüz düzeltmesi eski tarayıcı önbelleğinde kalma
     path.join(__dirname, '../ui-integration-loader.js'),
     'utf8',
   );
-  assert.match(loader, /20261012-admin-next-round-v1/);
+  assert.match(loader, /20261014-freeze-fix-v1/);
 });

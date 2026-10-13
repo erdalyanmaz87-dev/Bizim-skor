@@ -11,7 +11,7 @@
   function repair(doc=document){
     const panel=doc.querySelector('#bsPredictionBottomSheet>.bs-pred-sheet');
     if(!panel)return false;
-    panel.classList.remove('hide');
+    if(panel.classList.contains('hide'))panel.classList.remove('hide');
     return true;
   }
   function mount(doc=document){
