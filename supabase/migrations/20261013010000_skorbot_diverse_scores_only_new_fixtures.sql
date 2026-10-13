@@ -50,10 +50,10 @@ begin
      order by kickoff desc,id desc limit 5
   )
   select
-    coalesce((select avg(case when home_team=p_home_team then home_score else away_score end) from last_home),1.45),
-    coalesce((select avg(case when home_team=p_home_team then away_score else home_score end) from last_home),1.25),
-    coalesce((select avg(case when home_team=p_away_team then home_score else away_score end) from last_away),1.25),
-    coalesce((select avg(case when home_team=p_away_team then away_score else home_score end) from last_away),1.45)
+    coalesce((select avg(case when home_team=p_home_team then h.home_score else h.away_score end) from last_home h),1.45),
+    coalesce((select avg(case when home_team=p_home_team then h.away_score else h.home_score end) from last_home h),1.25),
+    coalesce((select avg(case when home_team=p_away_team then a.home_score else a.away_score end) from last_away a),1.25),
+    coalesce((select avg(case when home_team=p_away_team then a.away_score else a.home_score end) from last_away a),1.45)
   into v_home_for,v_home_against,v_away_for,v_away_against;
 
   v_form_gap := (v_home_for-v_home_against) - (v_away_for-v_away_against);
