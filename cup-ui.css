@@ -8,3 +8,5 @@
 
 @media(max-width:430px){.bsc-bracket-stage{gap:28px;padding-right:12px}.bsc-bracket-match{font-size:11px;padding-inline:7px}.bsc-bracket-player{gap:3px}.bsc-body{padding-inline:12px}.bsc-bracket-match--current::after{width:14px}.bsc-bracket-match--current:nth-child(odd)::before{left:calc(100% + 14px)}.bsc-bracket-match--next::before{width:14px}}
 @media(prefers-reduced-motion:reduce){.bsc-bracket-viewport{scroll-behavior:auto!important}.bsc-bracket-stage,.bsc-bracket-match{transition:none!important}}
+
+.bsc-draw-pools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;color:#bed0e7;font-size:12px}.bsc-draw-pools span{padding:12px 8px;border:1px solid #35506c;border-radius:12px;background:#102038}.bsc-draw-pools b{display:block;color:#f4cc7a;margin-top:4px}.bsc-draw-names{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;min-height:92px}.bsc-draw-names span{overflow-wrap:anywhere}.bsc-draw-controls{margin:18px 0 12px}.bsc-draw-progress{font-variant-numeric:tabular-nums}.bsc-draw-rules{margin-bottom:18px}.bsc-draw .bsc-primary{font-size:16px;min-height:50px}

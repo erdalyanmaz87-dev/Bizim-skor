@@ -117,6 +117,6 @@ test('revealBracketRound keeps the selected round button visible after refresh',
 test('cup bracket assets use the new cache version',()=>{
   const ui=fs.readFileSync(require.resolve('../ui-integration-loader.js'),'utf8');
   const cupSource=fs.readFileSync(require.resolve('../cup-ui.js'),'utf8');
-  assert.match(ui,/ASSET_VERSION='[^']*-cup-bracket-v1'/);
-  assert.match(cupSource,/cup-ui\.css\?v=20261014-cup-bracket-v1/);
+  assert.match(ui,/ASSET_VERSION='[^']*-cup-bracket-v1-cup-manual-v1'/);
+  assert.match(cupSource,/cup-ui\.css\?v=20261014-cup-manual-v1/);
 });
