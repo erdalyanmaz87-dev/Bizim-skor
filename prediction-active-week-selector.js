@@ -48,7 +48,7 @@
   function timeText(value){return new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value)).replace(':','.')}
   function championInputs(rows){
     const group=root.BizimSkorChampionsLeague?.groupFixturesByTurkeyDate?.(rows)||[];
-    return group.map(day=>`<div class="champions-day">${esc(day.label)}</div>`+day.fixtures.map(f=>`<div class="champions-match"><div class="t home"><span class="small">${timeText(f.kickoff)}</span><br>${esc(f.home_team)}</div><input id="clh${f.fixture_id}" inputmode="numeric" maxlength="2" value="${f.predicted_home??''}"><div>-</div><input id="cla${f.fixture_id}" inputmode="numeric" maxlength="2" value="${f.predicted_away??''}"><div class="t">${esc(f.away_team)}</div></div>`).join('')).join('')
+    return group.map(day=>`<div class="champions-day">${esc(day.label)}</div>`+day.fixtures.map(f=>`<div class="champions-match"><div class="t home"><span class="small">${timeText(f.kickoff)}</span><br>${esc(f.home_team)}</div><input id="clh${f.fixture_id}" inputmode="numeric" maxlength="2" value="${f.predicted_home??''}" ${f.predicted_home!=null&&new Date(f.kickoff).getTime()<=Date.now()?'disabled aria-label="Kayıtlı tahmin kilitli"':''}><div>-</div><input id="cla${f.fixture_id}" inputmode="numeric" maxlength="2" value="${f.predicted_away??''}" ${f.predicted_away!=null&&new Date(f.kickoff).getTime()<=Date.now()?'disabled aria-label="Kayıtlı tahmin kilitli"':''}><div class="t">${esc(f.away_team)}</div></div>`).join('')).join('')
   }
 
   async function loadChampionWeek(week){
@@ -68,7 +68,7 @@
 
   function renderChampionEditor(rows,week){
     const state=document.getElementById('championsState'),box=document.getElementById('championsFixtures'),save=document.getElementById('championsSave');if(!state||!box||!save)return;
-    state.innerHTML='';box.innerHTML=championInputs(rows);save.classList.remove('hide');save.textContent='Şampiyonlar Ligi Tahminlerimi Kaydet ⭐';
+    state.innerHTML=rows.some(f=>new Date(f.kickoff).getTime()<=Date.now())?'<p class="small">🔓 Eksik maçları tamamlama hakkın açık. Kayıtlı tahminler değiştirilemez. Kalan maçların tamamını kaydedince hafta yeniden kilitlenir.</p>':'';box.innerHTML=championInputs(rows);save.classList.remove('hide');save.textContent='Şampiyonlar Ligi Tahminlerimi Kaydet ⭐';
     save.onclick=async()=>{try{const predictions=rows.map(f=>{const h=document.getElementById('clh'+f.fixture_id),a=document.getElementById('cla'+f.fixture_id);return{fixture_id:Number(f.fixture_id),home_score:h?.value,away_score:a?.value,robot_applied:h?.dataset.robotScore===h?.value&&a?.dataset.robotScore===a?.value}});const checked=root.BizimSkorChampionsLeague.validateWeeklyScores(rows.map(f=>({...f,id:Number(f.fixture_id)})),predictions);const q=await root.sb.rpc('save_champions_league_predictions',{p_token:token(),p_season:SEASON,p_week:Number(week),p_predictions:checked});if(q.error)throw q.error;root.alert?.(`Şampiyonlar Ligi ${week}. hafta tahminlerin kaydedildi ✅`);await loadChampionWeek(week);root.BizimSkorPredictionWeekCards?.refresh?.();root.BizimSkorHomePriority?.refresh?.()}catch(error){root.alert?.(error.message)}};
     root.BizimSkorRobotUI?.decorate?.();root.BizimSkorMatchStatistics?.injectButtons?.();
   }
@@ -91,6 +91,6 @@
   function refresh(){ensureStyles();mountChampionSelector();mountNationsSelector()}
   function mount(){if(typeof document==='undefined')return;refresh();setTimeout(refresh,700);setTimeout(refresh,1800);root.addEventListener?.('bizimskor:session-ready',()=>{const select=document.getElementById('championsPredictionWeekSelect');if(select)select.dataset.bound='';refresh()});root.addEventListener?.('bizimskor:champions-prediction-opened',()=>setTimeout(refresh,0));root.addEventListener?.('bizimskor:nations-prediction-opened',()=>setTimeout(refresh,0));new MutationObserver(()=>{if(!document.getElementById('championsPredictionWeekSelect')||!document.getElementById('nationsPredictionWeekSelect'))refresh()}).observe(document.body,{childList:true,subtree:true})}
 
-  root.BizimSkorActivePredictionWeekSelector=Object.freeze({uniqueWeeks,openWeeks,fetchChampionWeeks,fetchNationsWeeks,loadChampionWeek,getChampionFixtures:()=>championRows.slice(),refresh,mount});
+  root.BizimSkorActivePredictionWeekSelector=Object.freeze({championInputs,uniqueWeeks,openWeeks,fetchChampionWeeks,fetchNationsWeeks,loadChampionWeek,getChampionFixtures:()=>championRows.slice(),refresh,mount});
   mount();
 })(typeof globalThis!=='undefined'?globalThis:this);
