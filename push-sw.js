@@ -1,3 +1,5 @@
+importScripts('/prediction-badge-core.js?v=20261014-badge-v1','/prediction-badge-worker.js?v=20261014-badge-v1');
+self.addEventListener('message',event=>{if(event.data?.type==='prediction-badge-state')event.waitUntil(self.BizimSkorPredictionBadgeWorker.receiveSnapshot(event.data.snapshot))});
 self.addEventListener('push',event=>{
   let data={};
   try{data=event.data?event.data.json():{}}catch{data={body:event.data?event.data.text():''}}
@@ -9,7 +11,8 @@ self.addEventListener('push',event=>{
     data:{url:data.url||self.registration.scope},
     tag:data.tag||`bizim-skor-${Date.now()}`
   };
-  event.waitUntil(self.registration.showNotification(title,options));
+  const update=data.predictionBadge?self.BizimSkorPredictionBadgeWorker.applyPush(data.predictionBadge):Promise.resolve();
+  event.waitUntil(Promise.all([self.registration.showNotification(title,options),update]));
 });
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
