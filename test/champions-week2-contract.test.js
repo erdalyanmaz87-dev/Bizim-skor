@@ -24,7 +24,8 @@ test('2. hafta fırsat maçı Manchester City - PSG olur',()=>{
   const ui=read('opportunity-match-ui.js');
   const utils=read('opportunity-match-utils.js');
   const sql=read('supabase/migrations/20260913003000_champions_league_week2.sql');
-  assert.match(ui,/CL_HOME='Manchester City',CL_AWAY='PSG'/);
+  assert.match(ui,/rpc\('get_opportunity_match_cards'\)/);
+  assert.match(ui,/BizimSkorOpportunity\?\.register\?\.\(opportunityMenu\)/);
   assert.match(utils,/CHAMPIONS_WEEK=2/);
   assert.match(sql,/home_team='Manchester City' and f\.away_team='PSG'/);
 });
@@ -44,9 +45,10 @@ test('Şampiyonlar Ligi maç araçları ortak yatay düzeni yalnız bir kez kull
   const robot=read('robot-prediction-ui.js');
   const stats=read('match-statistics-ui.js');
   assert.doesNotMatch(champions,/data-champions-robot|champions-tools|Robotun Önerisi: \$\{/);
-  assert.match(robot,/button\.textContent='🤖 SkorBot’un Önerisi'/);
-  assert.match(robot,/\.match-stats-button\{grid-column:1\/4/);
-  assert.match(robot,/\.robot-prediction-button\{grid-column:4\/6/);
+  assert.match(robot,/button\.textContent='🤖 ▶ Oynat bakalım'/);
+  assert.match(robot,/\.prediction-action-row\{grid-column:1\/-1/);
+  assert.match(robot,/grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(robot,/alignActionButtons\(row\)/);
   assert.match(stats,/\['#championsFixtures \.champions-match',championsFixtures,'champions'\]/);
 });
 
