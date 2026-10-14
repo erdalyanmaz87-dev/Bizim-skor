@@ -1,0 +1,7 @@
+const test=require('node:test'),assert=require('node:assert/strict'),Live=require('../live-score-ui');
+const f={id:1,competition:'champions_league',home_team:'Roma',away_team:'Real Madrid'};
+const state={status:'2H',elapsed:66,home_score:3,away_score:1,fetched_at:new Date().toISOString(),exact_players:['A','B','C','D','E','F'],correct_players:['A','B','C','D','E','F','G']};
+test('exact total and clickable overflow render above a result total',()=>{const h=Live.renderLiveMatchMarkup(f,state);assert.match(h,/tam bilenler \(6 kişi\)/);assert.match(h,/data-live-predictors="exact"[^>]*>\+1 kişi/);assert.match(h,/data-live-predictors="result"[^>]*>⚽ Şu an doğru sonucu bilen: 7 kişi/);});
+test('names are unique and unsafe names stay escaped in the popup',()=>{const h=Live.renderPredictorListMarkup({home_team:'Roma',away_team:'Real Madrid',home_score:3,away_score:1},'exact',['<script>x</script>','A','A']);assert.match(h,/2 kişi/);assert.doesNotMatch(h,/<script>/);assert.match(h,/&lt;script&gt;/);assert.equal((h.match(/<li>/g)||[]).length,2);});
+test('no exact predictors still shows the correct outcome count',()=>{const h=Live.renderLiveMatchMarkup(f,{...state,exact_players:[],correct_players:['G']});assert.match(h,/tam skoru bilen yok/);assert.match(h,/doğru sonucu bilen: 1 kişi/);});
+test('scheduled games never display other players names',()=>{const h=Live.renderLiveMatchMarkup(f,{...state,status:'NS'});assert.doesNotMatch(h,/data-live-predictors/);});
