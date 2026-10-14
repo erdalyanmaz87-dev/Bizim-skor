@@ -1,17 +1,6 @@
-const test=require('node:test');
-const assert=require('node:assert/strict');
-const fs=require('node:fs');
-
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('./index.html','utf8');
-
-test('oyuncu adı ancak aynı oyuncunun güvenli oturumu kurulduktan sonra etkinleşir',()=>{
-  const login=html.slice(html.indexOf("document.getElementById('loginPlayer').onclick"),html.indexOf("document.getElementById('createPlayer').onclick"));
-  assert.ok(login.indexOf('await createFriendSession(n,sessionPin)')<login.indexOf('setAuthPlayer(n)'));
-  assert.doesNotMatch(login,/friend session skipped/);
-});
-
-test('yeni kayıt da oturum kurulmadan oyuncuyu etkin göstermez',()=>{
-  const register=html.slice(html.indexOf("document.getElementById('createPlayer').onclick"),html.indexOf("document.getElementById('save').onclick"));
-  assert.ok(register.indexOf('await createFriendSession(c.data,p1)')<register.indexOf('setAuthPlayer(c.data)'));
-  assert.doesNotMatch(register,/friend session skipped/);
-});
+function actionSource(name,end){return html.slice(html.indexOf(`const ${name}=async`),html.indexOf(end))+`;globalThis.action=${name};`}
+function context(){let activated=false;const values={loginName:'Tester',loginPin:'1234',registerName:'Tester',registerPin:'1234',registerPin2:'1234'};return{document:{getElementById:id=>({value:values[id]})},window:{},validPin:()=>true,ensureDeviceId:()=> 'test-device',authRpc:async name=>({data:name==='find_player_login_state'?[{name:'Tester',has_pin:true}]:'Tester'}),clearForcePinOnce:async()=>{},setAuthPlayer(){activated=true},refreshAfterAuthentication(){},getActivated:()=>activated}}
+test('oyuncu adı ancak aynı oyuncunun güvenli oturumu kurulduktan sonra etkinleşir',async()=>{const root=context();let release;root.createFriendSession=()=>new Promise(resolve=>release=resolve);vm.runInNewContext(actionSource('loginAction','const registerAction='),root);const pending=root.action();await new Promise(resolve=>setImmediate(resolve));assert.equal(root.getActivated(),false);release();await pending;assert.equal(root.getActivated(),true)});
+test('yeni kayıt da oturum kurulmadan oyuncuyu etkin göstermez',async()=>{const root=context();root.createFriendSession=async()=>{throw Error('session failed')};vm.runInNewContext(actionSource('registerAction','function refreshAfterAuthentication'),root);await assert.rejects(root.action(),/session failed/);assert.equal(root.getActivated(),false)});
