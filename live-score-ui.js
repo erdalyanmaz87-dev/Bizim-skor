@@ -9,6 +9,44 @@
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   })[char]);
 
+
+  const predictorCards=new Map();
+  let openPredictors=null;
+  function uniqueNames(names){return [...new Set((Array.isArray(names)?names:[]).filter(Boolean).map(String))]}
+  function renderPredictorListMarkup(card,kind,names){
+    const list=uniqueNames(names),title=kind==='exact'?'🎯 Tam skoru bilenler':'⚽ Doğru sonucu bilenler';
+    return `<header><h3>${title} (${list.length} kişi)</h3><button type="button" data-live-predictors-close aria-label="Listeyi kapat">×</button></header><p>${esc(card.home_team)} ${esc(card.home_score)} - ${esc(card.away_score)} ${esc(card.away_team)}</p>${kind==='result'?'<p class="live-list-note">Tam skoru bilenler de bu listeye dahildir.</p>':''}<ul>${list.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>${list.length?'':'<p>Şu an bilen yok.</p>'}`;
+  }
+  function syncPredictorDialog(){
+    const dialog=root.document?.getElementById('livePredictorDialog');
+    if(!dialog||!openPredictors)return;
+    const card=predictorCards.get(openPredictors.key);if(!card)return;
+    const html=renderPredictorListMarkup(card,openPredictors.kind,card[openPredictors.kind]);
+    if(dialog.innerHTML!==html)dialog.innerHTML=html;
+  }
+  function mountPredictorLists(){
+    const doc=root.document;if(!doc||doc.__livePredictorListsMounted)return;
+    doc.__livePredictorListsMounted=true;
+    const style=doc.createElement('style');style.textContent='.live-predictor-summary{margin-top:8px;text-align:center;font-size:12px;font-weight:700;line-height:1.5;color:#1d4ed8}.live-predictor-summary button{display:inline;padding:5px 3px;min-height:32px;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px}.live-predictor-summary .live-result-count{display:block;margin:2px auto 0}.live-predictor-summary button:disabled{text-decoration:none;opacity:.8}html[data-theme="dark"] .live-predictor-summary{color:#93c5fd}.live-predictor-dialog{width:min(90vw,440px);max-height:78dvh;overflow:auto;box-sizing:border-box;padding:18px;background:#102038;color:#edf4ff;border:1px solid #35506c;border-radius:18px}.live-predictor-dialog::backdrop{background:rgba(2,6,23,.75)}.live-predictor-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.live-predictor-dialog h3{font-size:17px;margin:0}.live-predictor-dialog header button{min-width:44px;min-height:44px;background:#17314c;color:#edf4ff;border:1px solid #35506c;border-radius:10px;font-size:26px}.live-predictor-dialog p{color:#bfd0e6}.live-predictor-dialog ul{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}.live-predictor-dialog li{padding:9px;background:#17314c;border-radius:8px;overflow-wrap:anywhere}.live-list-note{font-size:12px}';doc.head.appendChild(style);
+    const dialog=doc.createElement('dialog');dialog.id='livePredictorDialog';dialog.className='live-predictor-dialog';dialog.setAttribute('aria-label','Tahmini tutan oyuncular');doc.body.appendChild(dialog);
+    dialog.addEventListener('close',()=>{openPredictors=null});
+    dialog.addEventListener('click',e=>{if(e.target.closest?.('[data-live-predictors-close]')||e.target===dialog)dialog.close()});
+    doc.addEventListener('click',e=>{
+      const button=e.target.closest?.('[data-live-predictors]');if(!button)return;
+      const key=button.closest?.('[data-live-key]')?.dataset.liveKey;if(!predictorCards.has(key))return;
+      openPredictors={key,kind:button.dataset.livePredictors};syncPredictorDialog();if(!dialog.open)dialog.showModal();
+    });
+  }
+  function renderPredictorSummary(fixture,state){
+    if(!isLiveStatus(state.status)&&!isTerminalStatus(state.status))return '';
+    const exact=uniqueNames(state.exact_players),result=uniqueNames([...exact,...(state.correct_players||[])]),remaining=Math.max(0,exact.length-5);
+    const key=`${fixture.competition||'super_lig'}:${fixture.id}`;
+    predictorCards.set(key,{home_team:fixture.home_team,away_team:fixture.away_team,home_score:state.home_score,away_score:state.away_score,exact,result});
+    if(openPredictors?.key===key)syncPredictorDialog();
+    const exactText=exact.length?`🎯 Şu an tam bilenler (${exact.length} kişi): ${exact.slice(0,5).map(esc).join(' • ')}${remaining?` • <button type="button" data-live-predictors="exact">+${remaining} kişi</button>`:''}`:'Şu an tam skoru bilen yok.';
+    return `<div class="live-predictor-summary"><div>${exactText}</div><button type="button" class="live-result-count" data-live-predictors="result" ${result.length?'':'disabled'}>⚽ Şu an doğru sonucu bilen: ${result.length} kişi</button></div>`;
+  }
+
   function isLiveStatus(status){return LIVE.has(String(status||'').toUpperCase())}
   function isTerminalStatus(status){return TERMINAL.has(String(status||'').toUpperCase())}
   function isStale(fetchedAt,now=new Date(),maxAgeMs=600000){
@@ -43,8 +81,7 @@
     const stale=isStale(liveState.fetched_at,now);
     const shownElapsed=liveState.elapsed==null?null:projectAdminElapsed({elapsed:liveState.elapsed,savedAt:liveState.fetched_at,now});
     const label=isTerminalStatus(status)?'MS':isLiveStatus(status)?`🔴 CANLI${shownElapsed!=null?` • ${esc(shownElapsed)}’`:''}`:esc(status);
-    const predictors=formatExactPredictors(liveState.exact_players);
-    return `<div class="live-match${stale?' live-stale':''}" data-live-key="${esc(fixture.competition||'super_lig')}:${esc(fixture.id)}"><div class="live-status">${label}</div><div class="live-score-row"><b>${esc(fixture.home_team)}</b><strong>${esc(liveState.home_score)} - ${esc(liveState.away_score)}</strong><b>${esc(fixture.away_team)}</b></div><div class="live-exact-ticker"><span>${esc(predictors)}</span></div>${stale?'<div class="small">Canlı veri geçici olarak güncellenemiyor.</div>':''}</div>`;
+    return `<div class="live-match${stale?' live-stale':''}" data-live-key="${esc(fixture.competition||'super_lig')}:${esc(fixture.id)}"><div class="live-status">${label}</div><div class="live-score-row"><b>${esc(fixture.home_team)}</b><strong>${esc(liveState.home_score)} - ${esc(liveState.away_score)}</strong><b>${esc(fixture.away_team)}</b></div>${renderPredictorSummary(fixture,liveState)}${stale?'<div class="small">Canlı veri geçici olarak güncellenemiyor.</div>':''}</div>`;
   }
 
   function isAdminName(name){return new Set(['erdal','ipek']).has(String(name||'').trim().toLocaleLowerCase('tr-TR'))}
@@ -164,6 +201,7 @@
   }
   function autoMountAdmin(){
     if(typeof window==='undefined'||typeof document==='undefined')return;
+    if(document.body)mountPredictorLists();else window.addEventListener('DOMContentLoaded',mountPredictorLists,{once:true});
     const sync=()=>mountAdminPanel().catch(e=>console.warn('admin live mount',e));
     if(document.readyState==='complete')setTimeout(sync,300);else window.addEventListener('load',()=>setTimeout(sync,500),{once:true});
     window.addEventListener('bizimskor:session-ready',()=>setTimeout(sync,100));
@@ -172,5 +210,5 @@
       if(p&&!isAdminName(n))p.remove();else if(!p&&isAdminName(n)&&currentStorage()?.getItem('bizimSkorFriendToken'))sync();
     },3000);
   }
-  return{isLiveStatus,isTerminalStatus,isStale,detectGoal,formatExactPredictors,projectAdminElapsed,renderLiveMatchMarkup,isAdminName,validateAdminScoreInput,competitionLabel,rowKey,createAdminDraftMap,updateAdminDraft,renderAdminPanelMarkup,todayMatchRows,todaySuperLigRows,removeDuplicateAdminPanels,insertAdminPanelBeforeDailyMatches,mountAdminPanel,autoMountAdmin};
+  return{renderPredictorListMarkup,mountPredictorLists,isLiveStatus,isTerminalStatus,isStale,detectGoal,formatExactPredictors,projectAdminElapsed,renderLiveMatchMarkup,isAdminName,validateAdminScoreInput,competitionLabel,rowKey,createAdminDraftMap,updateAdminDraft,renderAdminPanelMarkup,todayMatchRows,todaySuperLigRows,removeDuplicateAdminPanels,insertAdminPanelBeforeDailyMatches,mountAdminPanel,autoMountAdmin};
 });
