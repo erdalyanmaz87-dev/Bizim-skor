@@ -1,12 +1,12 @@
 (function(root){
   const SEASON='2026/27';
-  let championLoadVersion=0,nationsLoadVersion=0;
+  let championLoadVersion=0,nationsLoadVersion=0,championRows=[];const championLocks=new Map();
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const token=()=>root.localStorage?.getItem('bizimSkorFriendToken')||'';
   const uniqueWeeks=rows=>[...new Set((rows||[]).map(row=>Number(typeof row==='object'&&row!==null?row.week:row)).filter(Number.isFinite))].sort((a,b)=>a-b);
   const openWeeks=checks=>(checks||[]).filter(item=>item.rows.length&&!item.rows.some(row=>row.is_locked)).map(item=>item.week).slice(0,2);
   const latestWeeks=checks=>root.BizimSkorTwoWeek?.selectLatestWeeks?.(checks,2)??(checks||[]).filter(item=>item.rows.length).map(item=>item.week).slice(-2);
-  const optionMarkup=weeks=>weeks.map(week=>`<option value="${week}">${week}. Hafta • Tahmine Açık</option>`).join('');
+  const optionMarkup=(weeks,champions=false)=>weeks.map(week=>`<option value="${week}">${week}. Hafta ${champions&&championLocks.get(week)?'🔒':'• Tahmine Açık'}</option>`).join('');
 
   function ensureStyles(){
     if(document.getElementById('activePredictionWeekSelectorStyles'))return;
@@ -19,7 +19,7 @@
     if(available.error)throw available.error;
     const weeks=uniqueWeeks(available.data||[]);
     const checks=await Promise.all(weeks.map(async week=>{const q=await root.sb.rpc('get_champions_league_week',{p_token:pToken,p_season:SEASON,p_week:week});if(q.error)throw q.error;return{week,rows:q.data||[]}}));
-    return openWeeks(checks);
+    checks.forEach(check=>championLocks.set(check.week,check.rows.some(row=>row.is_locked)));return latestWeeks(checks);
   }
 
   async function fetchNationsWeeks(){
@@ -57,11 +57,11 @@
     if(!pToken||!state||!box||!save)return;
     state.innerHTML='<p class="small">Şampiyonlar Ligi fikstürü yükleniyor…</p>';
     const q=await root.sb.rpc('get_champions_league_week',{p_token:pToken,p_season:SEASON,p_week:requestedWeek});
-    if(requestVersion!==championLoadVersion)return;
+    if(requestVersion!==championLoadVersion||pToken!==token())return;
     if(q.error){state.innerHTML=`<div class="champions-error">${esc(q.error.message)}</div>`;box.innerHTML='';save.classList.add('hide');return}
-    const rows=q.data||[],locked=rows.some(row=>row.is_locked),complete=rows.length>0&&rows.every(row=>row.predicted_home!=null&&row.predicted_away!=null);
+    const rows=q.data||[];championRows=rows.map(row=>({...row,id:Number(row.fixture_id)}));const picker=document.getElementById('championsPredictionWeekSelect');if(picker)picker.value=String(requestedWeek);const locked=rows.some(row=>row.is_locked),complete=rows.length>0&&rows.every(row=>row.predicted_home!=null&&row.predicted_away!=null);
     const title=document.querySelector('#championsPred .champions-hero b');if(title)title.textContent=`Şampiyonlar Ligi • ${requestedWeek}. Hafta`;
-    if(locked){state.innerHTML=`<div class="champions-summary"><b>🔒 Şampiyonlar Ligi ${requestedWeek}. hafta tahmin süresi doldu.</b></div>`;box.innerHTML='';save.classList.add('hide');return}
+    if(locked){state.innerHTML=`<div class="champions-summary"><b>🔒 Şampiyonlar Ligi ${requestedWeek}. hafta • Tahminler kilitli</b>${rows.map(f=>`<div class="savedrow">${esc(f.home_team)} <b>${f.predicted_home==null||f.predicted_away==null?'—':f.predicted_home+'-'+f.predicted_away+(f.robot_applied?' 🤖':'')}</b> ${esc(f.away_team)}</div>`).join('')}</div>`;box.innerHTML='';save.classList.add('hide');root.BizimSkorMatchStatistics?.injectButtons?.();return}
     if(complete){state.innerHTML=`<div class="champions-summary"><b>✅ Şampiyonlar Ligi ${requestedWeek}. hafta tahminlerin kaydedildi</b>${rows.map(f=>`<div class="savedrow">${esc(f.home_team)} <b>${f.predicted_home}-${f.predicted_away}${f.robot_applied?' 🤖':''}</b> ${esc(f.away_team)}</div>`).join('')}<button id="championsActiveWeekEdit" class="full">Tahminleri Düzenle ✏️</button></div>`;box.innerHTML='';save.classList.add('hide');document.getElementById('championsActiveWeekEdit')?.addEventListener('click',()=>renderChampionEditor(rows,requestedWeek));return}
     renderChampionEditor(rows,requestedWeek);
   }
@@ -75,9 +75,9 @@
 
   async function mountChampionSelector(){
     if(!document.getElementById('championsPred')||!root.BizimSkorChampionsUI)return;
-    const select=championPicker();if(!select||select.dataset.bound==='1')return;
-    select.dataset.bound='1';
-    try{const weeks=await fetchChampionWeeks();select.innerHTML=optionMarkup(weeks);if(!weeks.length){select.innerHTML='<option>Şu anda açık hafta yok</option>';select.disabled=true;return}select.disabled=false;select.value=String(weeks[0]);select.addEventListener('change',()=>loadChampionWeek(Number(select.value)));await loadChampionWeek(weeks[0])}catch(error){console.warn('champions active week selector',error)}
+    const select=championPicker();if(!select||select.dataset.bound==='1'||select.dataset.bound==='loading')return;
+    select.dataset.bound='loading';const requestToken=token();
+    try{const weeks=await fetchChampionWeeks();if(requestToken!==token()){select.dataset.bound='';return}select.innerHTML=optionMarkup(weeks,true);if(!weeks.length){select.innerHTML='<option>Şu anda açık hafta yok</option>';select.disabled=true;select.dataset.bound='';return}select.dataset.bound='1';select.disabled=false;const first=weeks.find(w=>!championLocks.get(w))??weeks.at(-1);select.value=String(first);select.addEventListener('change',()=>loadChampionWeek(Number(select.value)));await loadChampionWeek(first)}catch(error){select.dataset.bound='';console.warn('champions active week selector',error)}
   }
 
   async function mountNationsSelector(){
@@ -89,8 +89,8 @@
   }
 
   function refresh(){ensureStyles();mountChampionSelector();mountNationsSelector()}
-  function mount(){if(typeof document==='undefined')return;refresh();setTimeout(refresh,700);setTimeout(refresh,1800);root.addEventListener?.('bizimskor:champions-prediction-opened',()=>setTimeout(refresh,0));root.addEventListener?.('bizimskor:nations-prediction-opened',()=>setTimeout(refresh,0));new MutationObserver(()=>{if(!document.getElementById('championsPredictionWeekSelect')||!document.getElementById('nationsPredictionWeekSelect'))refresh()}).observe(document.body,{childList:true,subtree:true})}
+  function mount(){if(typeof document==='undefined')return;refresh();setTimeout(refresh,700);setTimeout(refresh,1800);root.addEventListener?.('bizimskor:session-ready',()=>{const select=document.getElementById('championsPredictionWeekSelect');if(select)select.dataset.bound='';refresh()});root.addEventListener?.('bizimskor:champions-prediction-opened',()=>setTimeout(refresh,0));root.addEventListener?.('bizimskor:nations-prediction-opened',()=>setTimeout(refresh,0));new MutationObserver(()=>{if(!document.getElementById('championsPredictionWeekSelect')||!document.getElementById('nationsPredictionWeekSelect'))refresh()}).observe(document.body,{childList:true,subtree:true})}
 
-  root.BizimSkorActivePredictionWeekSelector=Object.freeze({uniqueWeeks,openWeeks,fetchChampionWeeks,fetchNationsWeeks,loadChampionWeek,refresh,mount});
+  root.BizimSkorActivePredictionWeekSelector=Object.freeze({uniqueWeeks,openWeeks,fetchChampionWeeks,fetchNationsWeeks,loadChampionWeek,getChampionFixtures:()=>championRows.slice(),refresh,mount});
   mount();
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -17,8 +17,9 @@
   function wrapChampions(){
     const original=root.BizimSkorChampionsUI;
     if(!original||original.__selectedWeekOpenFix)return false;
-    const wrapped={...original,openPrediction(){
-      const requested=selectedValue('championsPredictionWeekSelect',original.currentWeek?.()||2);
+    const wrapped={...original,currentWeek(){return selectedValue('championsPredictionWeekSelect',original.currentWeek?.()||2)},getFixtures(){return root.BizimSkorActivePredictionWeekSelector?.getChampionFixtures?.()||original.getFixtures?.()||[]},openPrediction(week){
+      const requested=numericWeek(week,selectedValue('championsPredictionWeekSelect',original.currentWeek?.()||2));
+      const select=root.document?.getElementById?.('championsPredictionWeekSelect');if(select)select.value=String(requested);
       const opened=original.openPrediction();
       const loader=root.BizimSkorActivePredictionWeekSelector?.loadChampionWeek;
       return typeof loader==='function'?loader(requested):opened;

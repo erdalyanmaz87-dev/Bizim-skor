@@ -5,14 +5,11 @@ const path=require('node:path');
 
 const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 
-test('Şampiyonlar Ligi aktif tahmin haftası her yerde 2 olur',()=>{
-  const champions=read('champions-league-ui.js');
-  const priority=read('home-prediction-priority.js');
-  assert.match(champions,/const season='2026\/27',week=2(?:,|;)/);
-  assert.match(champions,/Şampiyonlar Ligi • 2\. Hafta/);
-  assert.match(priority,/week:2/);
-  assert.match(priority,/p_week:2/);
-  assert.match(priority,/Şampiyonlar Ligi 2\. Hafta/);
+test('Şampiyonlar Ligi 2. hafta korunur ve yeni haftanın durumu dinamik gösterilir',()=>{
+  const priority=require('../home-prediction-priority');
+  assert.equal(priority.championsStatus(18,18).week,2);
+  assert.equal(priority.championsStatus(0,18,null,3).week,3);
+  assert.match(priority.championsStatus(0,18,null,3).text,/3\. Hafta/);
 });
 
 test('2. hafta fikstürü 18 benzersiz maçı doğru tarihlerle yükler',()=>{
