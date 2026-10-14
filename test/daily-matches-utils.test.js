@@ -46,7 +46,7 @@ test('günlük maç kartı saat ve takımları okunaklı gösterir',()=>{
     label:'Bugünün Maçları',
     matches:[{time:'19.00',home_team:'Konyaspor',away_team:'Kocaelispor'}]
   },x=>x);
-  assert.equal(html,'<h2>⚽ Bugünün Maçları</h2><div class="daily-match"><b>19.00</b><span>Konyaspor – Kocaelispor</span></div>');
+  assert.equal(html,'<h2>⚽ Bugünün Maçları</h2><div class="daily-match" data-competition="super_lig"><b>19.00</b><span>Konyaspor – Kocaelispor</span></div>');
 });
 
 test('maç kalmadığında kart boş durum mesajı gösterir',()=>{
