@@ -7,8 +7,7 @@ const ui=fs.readFileSync(path.join(__dirname,'../robot-prediction-ui.js'),'utf8'
 
 test('kullanıcıya görünen robot markası her yerde SkorBot olur',()=>{
   for(const text of [
-    '🤖 SkorBot’un Önerisi',
-    '🤖 SkorBot’un Önerisini Boş Maçlara Uygula',
+    '🤖 ▶ Oynat bakalım',
     '<b>🤖 SkorBot’un önerisi:</b>',
     'SkorBot bu haftada en fazla',
     'SkorBot önerisi henüz yükleniyor',
