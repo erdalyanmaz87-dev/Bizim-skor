@@ -1,6 +1,10 @@
 const assert=require('assert');
 const nav=require('./simple-navigation.js');
 const reopen=require('./prediction-status-reopen-fix.js');
+const statusCard=(label,deadline,theme)=>({classList:{contains:value=>value===theme},querySelector:selector=>selector==='strong'?{textContent:label}:{dataset:{countdownDeadline:deadline}}});
+assert.equal(nav.isArchivedStatusCard(statusCard('Şampiyonlar Ligi 2. Hafta','2026-10-13T16:45:00Z','theme-champions'),Date.parse('2026-10-15T18:00:00Z')),true);
+assert.equal(nav.isArchivedStatusCard(statusCard('Şampiyonlar Ligi 3. Hafta','2026-10-20T16:45:00Z','theme-champions'),Date.parse('2026-10-15T18:00:00Z')),false);
+assert.equal(nav.isArchivedStatusCard(statusCard('Süper Lig 8. Hafta','2026-10-16T17:00:00Z','theme-super'),Date.parse('2026-10-15T18:00:00Z')),false);
 
 assert.strictEqual(nav.canonicalTab('live'),'weeklyRankings');
 assert.strictEqual(nav.canonicalTab('weeklyRankings'),'weeklyRankings');

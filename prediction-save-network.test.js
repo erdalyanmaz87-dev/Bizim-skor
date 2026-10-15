@@ -10,10 +10,11 @@ function setup(){
  return {root,api:root.module.exports,nodes,storage};
 }
 test('save retries rejected and returned fetch errors with unchanged scores',async()=>{
- const s=setup();let attempts=0;const requests=[];
+ const s=setup();let attempts=0;const requests=[],events=[];s.root.dispatchEvent=event=>events.push(event);
  s.root.sb={rpc:async(name,args)=>{requests.push(JSON.stringify(args));attempts++;if(attempts===1)throw new TypeError('Failed to fetch');if(attempts===2)return{error:{message:'TypeError: Failed to fetch'}};return{data:true,error:null}}};
  assert.equal(await s.api.saveKind('super_lig',{textContent:'Kaydet'}),true);
  assert.equal(attempts,3);assert.equal(new Set(requests).size,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(events[0].detail)),{player:'kaner',competition:'super',week:8,fixture_count:1,saved_count:1});
  assert.equal([...s.storage.keys()].filter(k=>k.startsWith('bizimSkorPredictionDraft:')).length,0);
 });
 test('exhausted network failure preserves a scoped draft and releases button',async()=>{
