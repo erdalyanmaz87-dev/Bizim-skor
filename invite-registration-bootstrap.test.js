@@ -40,3 +40,13 @@ test('existing-player session event does not attribute unless registration butto
   await listeners['bizimskor:session-ready']();
   assert.equal(rpcCalls,0);
 });
+
+test('keyboard registration arms attribution and retries a failed write on focus',async()=>{
+ const listeners={};let calls=0,cleaned=0;
+ const host={location:{search:'?invite=Erdal',href:'https://x.test/?invite=Erdal'},addEventListener(type,fn){listeners[type]=fn},localStorage:{getItem:key=>key==='bizimSkorName'?'Yeni Oyuncu':'new-session'},sb:{async rpc(){if(++calls===1)throw Error('network');return{data:true}}},history:{replaceState(){cleaned++}}};
+ const doc={getElementById:()=>({addEventListener(){}}),addEventListener(){}};
+ start(host,doc);assert.equal(typeof listeners['bizimskor:registration-started'],'function');listeners['bizimskor:registration-started']();
+ await listeners['bizimskor:session-ready']();assert.equal(cleaned,0);
+ await listeners.focus();assert.equal(calls,2);assert.equal(cleaned,1);
+ await listeners.focus();assert.equal(calls,2);
+});

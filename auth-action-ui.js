@@ -15,7 +15,7 @@
   }
   function submit(mode,doc=root.document){
     const button=doc.getElementById(mode==='login'?'loginPlayer':'createPlayer'),status=doc.getElementById('authActionStatus'),buttons=['loginPlayer','createPlayer'].map(id=>doc.getElementById(id)).filter(Boolean);
-    return runAction({button,status,buttons},async()=>{if(!actions){if(status)status.textContent='Oyun hazırlanıyor; bağlantı kurulunca işlemin başlayacak.';await new Promise((resolve,reject)=>{const timer=root.setTimeout(()=>{waiting=null;const error=new Error('Oyun bağlantısı henüz hazır değil.');error.code='AUTH_TIMEOUT';reject(error)},15000);waiting=()=>{root.clearTimeout(timer);waiting=null;resolve()}})}await actions[mode]()});
+    return runAction({button,status,buttons},async()=>{if(!actions){if(status)status.textContent='Oyun hazırlanıyor; bağlantı kurulunca işlemin başlayacak.';await new Promise((resolve,reject)=>{const timer=root.setTimeout(()=>{waiting=null;const error=new Error('Oyun bağlantısı henüz hazır değil.');error.code='AUTH_TIMEOUT';reject(error)},15000);waiting=()=>{root.clearTimeout(timer);waiting=null;resolve()}})}if(mode==='register'&&root.Event)root.dispatchEvent?.(new root.Event('bizimskor:registration-started'));await actions[mode]()});
   }
   function showMode(mode,doc=root.document){const login=mode==='login';doc.getElementById('loginBox')?.classList.toggle('hide',!login);doc.getElementById('registerBox')?.classList.toggle('hide',login);doc.getElementById('showLogin')?.classList.toggle('p',login);doc.getElementById('showRegister')?.classList.toggle('p',!login);doc.getElementById(login?'loginName':'registerName')?.focus?.()}
   function bindActions(next){actions=next;waiting?.()}

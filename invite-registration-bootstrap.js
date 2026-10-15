@@ -21,20 +21,22 @@ function cleanInviteParams(host=root){
   host.history.replaceState({},'',url.pathname+url.search+url.hash);return true;
 }
 function start(host=root,doc=typeof document!=='undefined'?document:null){
-  if(!doc||!host?.addEventListener)return false;
-  const invite=readInvite(host.location);if(!invite.inviterId)return false;
-  let armed=false,done=false;
+  if(!doc||!host?.addEventListener||host.__bsInviteRegistrationStarted)return false;
+  const invite=readInvite(host.location);if(!invite.inviterId)return false;host.__bsInviteRegistrationStarted=true;
+  let armed=false,done=false,sessionReady=false;
   const arm=()=>{armed=true};
   const button=doc.getElementById('createPlayer');
   if(button)button.addEventListener('click',arm,true);else doc.addEventListener('click',e=>{if(e.target?.id==='createPlayer')arm()},true);
-  host.addEventListener('bizimskor:session-ready',async()=>{
+  host.addEventListener('bizimskor:registration-started',arm);
+  const consume=async()=>{
     if(!armed||done)return;
     const token=host.localStorage?.getItem?.('bizimSkorFriendToken')||'';
     const name=host.localStorage?.getItem?.('bizimSkorName')||'';
     if(!token||!name)return;
     done=true;
-    try{await consumeRegistrationInvite({invite,token,newPlayerName:name,api:host.sb});cleanInviteParams(host)}catch(error){done=false;console.warn('invite attribution skipped',error)}
-  });
+    try{await consumeRegistrationInvite({invite,token,newPlayerName:name,api:host.sb||(typeof sb!=='undefined'?sb:null)});cleanInviteParams(host)}catch(error){done=false;console.warn('invite attribution skipped',error)}
+  };
+  host.addEventListener('bizimskor:session-ready',()=>{if(!armed)return;sessionReady=true;return consume()});host.addEventListener('focus',()=>sessionReady?consume():undefined);
   return true;
 }
 return Object.freeze({normalized,readInvite,consumeRegistrationInvite,cleanInviteParams,start});
