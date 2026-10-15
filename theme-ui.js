@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const STORAGE_KEY='bizimSkorTheme';
   const COLORS={light:'#071633',dark:'#020617'};
-  const UI_INTEGRATION_VERSION='20261014-cup-live-points-v1';
+  const UI_INTEGRATION_VERSION='20261015-prediction-save-network-v1';
   let waitingForDocument=false,observerStarted=false,teamBootstrapLoaded=false;
 
   function normalizeTheme(value){return value==='dark'?'dark':'light'}
