@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 
-function loadModule(){
+function loadModule(overrides={}){
   const code=fs.readFileSync('weekly-ranking-score-fix.js','utf8');
   const context={
     console,
@@ -18,7 +18,7 @@ function loadModule(){
     Intl,
     Date
   };
-  context.globalThis=context;
+  Object.assign(context,overrides);context.globalThis=context;
   vm.runInNewContext(code,context,{filename:'weekly-ranking-score-fix.js'});
   return context.BizimSkorWeeklyRankingScoreFix;
 }
@@ -37,6 +37,12 @@ const createdAt=new Map([
 const invites=new Map([
   ['zezu',1],['qwe1s0qwe',0],['mevlüt',5],['ayşegül',0],['kat',0]
 ]);
+
+test('historical weekly ranking ignores current total invite counts',async()=>{
+ const api=loadModule({localStorage:{getItem:()=> 'session'},sb:{rpc:async()=>{throw Error('unnecessary request')}},playerInviteCount:new Map([['erdal',2]]),playerRankingInviteContext:[{week:null,player_name:'Erdal',invite_count:2},{week:3,player_name:'Zezu',invite_count:1},{week:8,player_name:'Erdal',invite_count:2}]});
+ assert.equal((await api.seasonInviteCounts(3)).get('erdal')||0,0);
+ assert.equal((await api.seasonInviteCounts(8)).get('erdal'),2);
+});
 
 test('Hafta Sıralaması Rule 8 ile eşit puanları tek tek sıralar',()=>{
   const api=loadModule();
