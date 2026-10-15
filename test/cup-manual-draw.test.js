@@ -15,7 +15,10 @@ test('BAY is displayed with direct advancement rather than as missing opponent',
  const html=cup.render({...base,status:'drawing',revealed_pairs:1,matches:[{round:1,position:1,name_a:'BAY',name_b:'Erdal',winner:'Erdal',tie_reason:'BAY'}]},'draw');
  assert.match(html,/doğrudan.*9\. haftaya/i);assert.doesNotMatch(html,/Kura bekleniyor/);
 });
-test('completed draw offers no restart or advancement and lists all results',()=>{
- const html=cup.render({...base,is_owner:true,status:'running',drawn_at:'2026-10-14T18:00:00Z',revealed_pairs:32},'draw');
- assert.match(html,/KURA TAMAMLANDI/);assert.doesNotMatch(html,/data-cup-start|data-cup-next/);
+test('completed draw opens the bracket and removes registration and draw controls',()=>{
+ for(const status of ['running','finished'])for(const selected of ['join','draw','bracket']){
+ const html=cup.render({...base,count:60,is_owner:true,status,drawn_at:'2026-10-14T18:00:00Z',revealed_pairs:32},selected);
+ assert.match(html,/data-cup-bracket/);assert.match(html,/60 katılımcı • 6 tur/);assert.match(html,/Kupa ödülleri/);assert.match(html,/8–13\. haftalar/);
+ assert.doesNotMatch(html,/data-cup-tab|data-cup-start|data-cup-next|data-cup-join|Son başvuru|Kura:|bsc-count|bsc-joined|data-cup-schedule/);
+ }
 });
