@@ -63,7 +63,8 @@
   function renderSkorbotUsage(usage) {
     if(!usage)return '<section class="bs-admin-stats-group"><h3>⚽ Gol Animasyonu Kullanımı</h3><p>İstatistikler henüz kullanılamıyor.</p></section>';
     const rows=usage.players||[];
-    return `<section class="bs-admin-stats-group"><h3>⚽ Gol Animasyonu Kullanımı</h3><p>Toplam oynatma: <b>${num(usage.total_plays)}</b> · Farklı oyuncu: <b>${num(usage.unique_players)}</b></p>${rows.length?rows.map(x=>`<div class="bs-admin-animation-row"><b>${esc(x.player_name)}</b><span>${Number(x.play_count||0)} oynatma</span></div>`).join(''):'<p>Henüz kayıtlı oynatma yok.</p>'}<p class="small">Veriler, kullanım takibi etkinleştirildikten sonrasını kapsar.</p></section>`;
+    const scope=usage.week ? `${usage.competition_label||''} • ${Number(usage.week)}. Hafta` : 'Güncel tahmin haftası';
+    return `<section class="bs-admin-stats-group"><h3>⚽ Gol Animasyonu Kullanımı</h3><p class="small">${esc(scope)}</p><p>Toplam oynatma: <b>${num(usage.total_plays)}</b> · Farklı oyuncu: <b>${num(usage.unique_players)}</b></p>${rows.length?rows.map(x=>`<div class="bs-admin-animation-row"><b>${esc(x.player_name)}</b><span>${Number(x.play_count||0)} oynatma</span></div>`).join(''):'<p>Henüz kayıtlı oynatma yok.</p>'}<p class="small">Yalnızca bu haftanın maçlarında oynatılan animasyonlar gösterilir. Hafta bilgisi bulunmayan eski kayıtlar dahil edilmez.</p></section>`;
   }
   function render(data) {
     latestData = data || {};
