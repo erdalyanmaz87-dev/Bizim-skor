@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SkorBot • İki Seçenek Önizleme</title>
+<style>
+:root{color-scheme:dark;font-family:Arial,sans-serif;color:#eff5ff;background:#071121}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#123e4c 0,transparent 55%),#071121;min-height:100dvh}main{max-width:490px;margin:auto;padding:24px 18px 40px}header{display:flex;align-items:center;justify-content:space-between;margin:8px 0 30px}.brand{font-size:20px;font-weight:900;letter-spacing:-.6px}.brand span{color:#76e6ae}.tag{color:#9ab5ca;border:1px solid #294252;font-size:11px;padding:7px 9px;border-radius:20px}h1{font-size:30px;letter-spacing:-1px;line-height:1.1;margin:10px 0}p{color:#9eb0c7;line-height:1.6;font-size:14px}.eyebrow{font-size:11px;color:#77e7b0;font-weight:bold;letter-spacing:1.7px}.card{background:linear-gradient(145deg,#15263c,#0e1b2e);border:1px solid #2d435a;border-radius:24px;padding:22px 18px;margin:24px 0 16px;box-shadow:0 20px 60px #0003}.league{font-size:11px;color:#b4c7dc;text-align:center;letter-spacing:1px}.teams{display:grid;grid-template-columns:1fr 60px 1fr;text-align:center;align-items:center;margin:28px 0 24px}.crest{height:58px;width:58px;object-fit:contain;display:block;margin:0 auto 12px}.teams b{font-size:14px}.vs{font-size:12px;color:#6f85a0}.entry{display:flex;justify-content:center;align-items:center;gap:12px;margin:22px 0}.entry output{width:58px;padding:13px 4px;text-align:center;border-radius:12px;border:1px solid #344b67;background:#091426;color:#d3e0f1;font-size:22px;font-weight:bold}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{font-family:inherit;cursor:pointer;min-height:48px;font-size:13px;font-weight:800;border-radius:13px;border:1px solid transparent}.watch{background:#173a35;color:#9af1be;border-color:#2d6854}.quick{color:#09261c;background:#8df0b6}.caption{text-align:center;font-size:11px;color:#90a5bc;margin:12px 0 0}.quota{display:flex;justify-content:space-between;font-size:12px;color:#b0c5d6;padding:0 2px}.bar{height:5px;background:#1b2d43;border-radius:9px;margin-top:10px;overflow:hidden}.bar span{display:block;background:#77e7b0;height:100%;width:0;transition:width .2s}.note{border-left:2px solid #386353;padding-left:12px;margin-top:26px;font-size:12px}.reset{display:block;margin:20px auto 0;background:transparent;color:#8198af;font-size:12px;min-height:36px}.status{padding:12px;background:#133b2c;color:#a6eac1;border-radius:12px;font-size:13px;line-height:1.5;margin-top:16px}.hidden{display:none!important}dialog{padding:26px 22px;border:1px solid #38546c;border-radius:25px;background:linear-gradient(145deg,#172e43,#0d192b);color:#eff5ff;width:calc(100% - 36px);max-width:430px;box-shadow:0 30px 100px #0009}dialog::backdrop{background:#020916cc;backdrop-filter:blur(6px)}.modal-head{display:flex;align-items:center;justify-content:space-between}.close{background:#ffffff09;border-color:#35516a;color:#bfd0df;font-size:22px;min-height:36px;width:36px}.score{font-size:64px;font-weight:900;text-align:center;letter-spacing:6px;margin:24px 0 8px}.matchname{text-align:center;font-size:13px;color:#b8cadb}.apply{width:100%;margin-top:22px;background:#8df0b6;color:#09261c}.modal-note{text-align:center;font-size:11px;margin:12px 0 0}.small{font-size:11px}.limit{color:#ffbd9a}
+</style></head><body><main>
+<header><div class="brand">bizim<span>skor</span></div><span class="tag">TASARIM ÖNİZLEMESİ</span></header>
+<div class="eyebrow">SKORBOT</div><h1>Öneriyi nasıl<br>almak istersin?</h1><p>Vaktin varsa maçı oynat.<br>Acelen varsa skoru hemen gör.</p>
+<section class="card" aria-label="Örnek maç"><div class="league">ŞAMPİYONLAR LİGİ · ÖRNEK MAÇ</div>
+<div class="teams"><div><img id="homeLogo" class="crest" alt=""><b>Galatasaray</b></div><span class="vs">VS</span><div><img id="awayLogo" class="crest" alt=""><b>Barcelona</b></div></div>
+<div class="entry" aria-label="Tahmin alanı"><output id="homeValue">–</output><span>:</span><output id="awayValue">–</output></div>
+<div class="actions"><button class="watch" id="watch">▶ Oynat bakalım</button><button class="quick" id="quick">⚡ Hızlı öneri</button></div>
+<p class="caption">İki yol, aynı SkorBot önerisi.</p>
+<div id="status" class="status hidden" role="status"></div>
+</section>
+<div class="quota"><span>Haftalık SkorBot hakkı</span><b id="counter">0 / 6 maç</b></div><div class="bar"><span id="progress"></span></div>
+<p id="quotaNote" class="small">Öneriyi ilk açışında 1 hak kullanılır. Aynı maç tekrar hak harcamaz.</p>
+<p class="note">Bu sayfa örnek bir denemedir. Buradaki işlemler oyundaki tahminlerini ve kullanım haklarını etkilemez.</p><button id="reset" class="reset">Demoyu baştan dene ↻</button>
+</main>
+<dialog id="quickDialog" aria-labelledby="quickTitle"><div class="modal-head"><div><div class="eyebrow">SKORBOT ÖNERİSİ</div><h2 id="quickTitle" style="font-size:22px;margin:7px 0">Hızlı önerin hazır</h2></div><button class="close" id="close" aria-label="Kapat">×</button></div>
+<div class="score">3 : 2</div><div class="matchname">Galatasaray – Barcelona</div><button id="apply" class="apply">Tahminime uygula</button><p class="modal-note">Bu öneriyi animasyonda da aynı skorla izleyebilirsin.</p></dialog>
+<script src="brand-assets.js"></script><script src="skorbot-match-animation.js"></script>
+<script>
+const score={homeScore:3,awayScore:2};
+const home={name:'Galatasaray',logo:BizimSkorBrandAssets.teamLogoUrl('Galatasaray')};
+const away={name:'Barcelona',logo:BizimSkorBrandAssets.teamLogoUrl('Barcelona')};
+document.getElementById('homeLogo').src=home.logo;
+document.getElementById('awayLogo').src=away.logo;
+let claimed=false;
+const dialog=document.getElementById('quickDialog');
+function claim(){if(!claimed){claimed=true;document.getElementById('counter').textContent='1 / 6 maç';document.getElementById('progress').style.width='16.6667%';}return true}
+function apply(){document.getElementById('homeValue').textContent=score.homeScore;document.getElementById('awayValue').textContent=score.awayScore;const el=document.getElementById('status');el.textContent='✓ SkorBot önerisi örnek tahmin alanına uygulandı.';el.classList.remove('hidden');if(dialog.open)dialog.close();return true}
+document.getElementById('quick').onclick=()=>{if(claim())dialog.showModal()};
+document.getElementById('watch').onclick=()=>{if(claim())BizimSkorMatchAnimation.open({home,away,score,onApply:apply})};
+document.getElementById('apply').onclick=apply;
+document.getElementById('close').onclick=()=>dialog.close();
+dialog.onclick=e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}};
+document.getElementById('reset').onclick=()=>{claimed=false;document.getElementById('counter').textContent='0 / 6 maç';document.getElementById('progress').style.width='0';document.getElementById('homeValue').textContent='–';document.getElementById('awayValue').textContent='–';document.getElementById('status').classList.add('hidden');if(dialog.open)dialog.close()};
+</script></body></html>
