@@ -88,7 +88,7 @@ test('round controls and stage panels have matching accessible links',()=>{
   const labels=['Son 64','Son 32','Son 16','Çeyrek final','Yarı final','Final'];
   labels.forEach((label,index)=>{
     const round=index+1;
-    assert.match(html,new RegExp(`id="bscBracketRound-${round}"[^>]*aria-controls="bscBracketStage-${round}"[^>]*aria-pressed="${round===3}"[^>]*>${label}`));
+    assert.match(html,new RegExp(`id="bscBracketRound-${round}"[^>]*aria-controls="bscBracketStage-${round}"[^>]*aria-pressed="${false}"[^>]*>${label}`));
     assert.match(html,new RegExp(`data-stage="${round}" id="bscBracketStage-${round}" aria-labelledby="bscBracketRound-${round}"`));
   });
 });
@@ -118,5 +118,5 @@ test('cup bracket assets use the new cache version',()=>{
   const ui=fs.readFileSync(require.resolve('../ui-integration-loader.js'),'utf8');
   const cupSource=fs.readFileSync(require.resolve('../cup-ui.js'),'utf8');
   assert.match(ui,/ASSET_VERSION='[^']*-cup-bracket-v1-cup-manual-v1-cup-live-points-v1'/);
-  assert.match(cupSource,/cup-ui\.css\?v=20261014-cup-live-points-v1/);
+  assert.match(cupSource,/cup-ui\.css\?v=20261016-overview-tree-v1/);
 });
