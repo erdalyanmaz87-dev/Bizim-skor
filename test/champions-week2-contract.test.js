@@ -47,7 +47,7 @@ test('Şampiyonlar Ligi maç araçları ortak yatay düzeni yalnız bir kez kull
   assert.doesNotMatch(champions,/data-champions-robot|champions-tools|Robotun Önerisi: \$\{/);
   assert.match(robot,/button\.textContent='🤖 ▶ Oynat bakalım'/);
   assert.match(robot,/\.prediction-action-row\{grid-column:1\/-1/);
-  assert.match(robot,/grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(robot,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
   assert.match(robot,/alignActionButtons\(row\)/);
   assert.match(stats,/\['#championsFixtures \.champions-match',championsFixtures,'champions'\]/);
 });
