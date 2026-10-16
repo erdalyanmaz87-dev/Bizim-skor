@@ -1,5 +1,5 @@
 (function(){
-  let opportunityMenu=[];
+  let opportunityMenu=[],menuRenderKey=null,roundKey=null,menuRequest=null,lastLoadedAt=0;
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const leagueName=kind=>kind==='nations_league'?'UEFA Uluslar Ligi':kind==='champions_league'?'Şampiyonlar Ligi':'Süper Lig';
   function badge(){return '<span class="opp-badge">X2</span>'}
@@ -12,11 +12,26 @@
   }
   function ensureMenuLayer(){if(document.getElementById('oppMenuLayer'))return;document.body.insertAdjacentHTML('beforeend','<div id="oppMenuLayer" class="opp-menu-layer"><section class="opp-menu-panel"><div class="opp-menu-head"><h2>🔥 Fırsat Maçları</h2><button type="button" class="opp-menu-close" aria-label="Kapat">×</button></div><div id="oppMenuCards" class="opp-menu-body"><p>Maçlar yükleniyor…</p></div></section></div>');const layer=document.getElementById('oppMenuLayer');layer.querySelector('.opp-menu-close').onclick=()=>layer.style.display='none';layer.onclick=e=>{if(e.target===layer)layer.style.display='none'}}
   function renderOpportunityMenu(rows){const box=document.getElementById('oppMenuCards');if(!box)return;box.innerHTML=rows.length?rows.map(match=>`<div class="opp-menu-match${match.competition==='nations_league'||match.competition==='champions_league'?' current':''}"><div class="opp-menu-week">${leagueName(match.competition)} ${Number(match.week)}. Hafta</div><div class="opp-menu-line"><b>${esc(match.home_team)} – ${esc(match.away_team)}</b>${badge()}</div></div>`).join(''):'<p>Bu haftalar için fırsat maçı bulunmuyor.</p>'}
-  async function loadOpportunityMenu(){ensureMenuLayer();try{const q=await window.sb.rpc('get_opportunity_match_cards');if(q.error)throw q.error;opportunityMenu=q.data||[];window.BizimSkorOpportunity?.register?.(opportunityMenu);renderOpportunityMenu(opportunityMenu);markRows()}catch(error){const box=document.getElementById('oppMenuCards');if(box&&!opportunityMenu.length)box.textContent='Fırsat maçları şu anda yüklenemiyor.';console.warn('opportunity menu',error)}}
+  function syncOpportunityMenu(){
+    const rounds=window.BizimSkorPredictionWeekCards?.activeRounds?.(document)||[];
+    const nextRoundKey=JSON.stringify(rounds),changed=roundKey!==null&&roundKey!==nextRoundKey;
+    roundKey=nextRoundKey;
+    const rows=window.BizimSkorOpportunity?.selectMenuMatches?.(opportunityMenu,rounds)||[];
+    const nextRenderKey=JSON.stringify(rows);
+    if(nextRenderKey!==menuRenderKey&&document.getElementById('oppMenuCards')){menuRenderKey=nextRenderKey;renderOpportunityMenu(rows)}
+    if(changed){lastLoadedAt=0;loadOpportunityMenu()}
+  }
+  async function loadOpportunityMenu(){
+    if(menuRequest)return menuRequest;
+    if(lastLoadedAt&&Date.now()-lastLoadedAt<30000){syncOpportunityMenu();return}
+    menuRequest=fetchOpportunityMenu();
+    try{await menuRequest}finally{menuRequest=null}
+  }
+  async function fetchOpportunityMenu(){ensureMenuLayer();try{const q=await window.sb.rpc('get_opportunity_match_cards');if(q.error)throw q.error;opportunityMenu=q.data||[];window.BizimSkorOpportunity?.register?.(opportunityMenu);lastLoadedAt=Date.now();syncOpportunityMenu();markRows()}catch(error){const box=document.getElementById('oppMenuCards');if(box&&!opportunityMenu.length)box.textContent='Fırsat maçları şu anda yüklenemiyor.';console.warn('opportunity menu',error)}}
   function openOpportunityMenu(){ensureMenuLayer();const layer=document.getElementById('oppMenuLayer');if(layer)layer.style.display='block';loadOpportunityMenu()}
   function mountOpportunityMenu(){const drawer=document.getElementById('bsSimpleNavDrawer');if(!drawer)return;const football=drawer.querySelector('[data-simple-nav-group="football"]');if(!football||football.querySelector('[data-opportunity-menu]'))return;const row=document.createElement('button');row.type='button';row.className='bs-simple-row';row.dataset.opportunityMenu='1';row.innerHTML='<span aria-hidden="true">🔥</span><b>Fırsat Maçları</b><span class="bs-simple-chevron" aria-hidden="true">›</span>';row.onclick=e=>{e.preventDefault();e.stopPropagation();drawer.querySelector('[data-simple-close]')?.click();setTimeout(openOpportunityMenu,30)};football.appendChild(row)}
   function refresh(){mountStyles();patchScoring();ensureMenuLayer();mountOpportunityMenu();loadOpportunityMenu()}
   window.BizimSkorOpportunityUI=Object.freeze({open:openOpportunityMenu,refresh,mountOpportunityMenu});
   document.addEventListener('click',event=>{if(event.target?.closest?.('[data-simple-nav="menu"]')){setTimeout(mountOpportunityMenu,0);setTimeout(mountOpportunityMenu,60);setTimeout(mountOpportunityMenu,180)}});
-  window.addEventListener('load',()=>{refresh();setTimeout(refresh,500);setTimeout(refresh,1500)});new MutationObserver(()=>{markRows();mountOpportunityMenu()}).observe(document.documentElement,{childList:true,subtree:true});
+  const start=()=>{refresh();setTimeout(refresh,500);setTimeout(refresh,1500)};if(document.readyState==='complete')start();else window.addEventListener('load',start,{once:true});new MutationObserver(()=>{markRows();mountOpportunityMenu();syncOpportunityMenu()}).observe(document.documentElement,{childList:true,subtree:true});
 })();
