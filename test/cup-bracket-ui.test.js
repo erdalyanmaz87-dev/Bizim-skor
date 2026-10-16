@@ -88,7 +88,7 @@ test('round controls and stage panels have matching accessible links',()=>{
   const labels=['Son 64','Son 32','Son 16','Çeyrek final','Yarı final','Final'];
   labels.forEach((label,index)=>{
     const round=index+1;
-    assert.match(html,new RegExp(`id="bscBracketRound-${round}"[^>]*aria-controls="bscBracketStage-${round}"[^>]*aria-pressed="${round===3}"[^>]*>${label}`));
+    assert.match(html,new RegExp(`id="bscBracketRound-${round}"[^>]*aria-controls="bscBracketStage-${round}"[^>]*aria-pressed="${false}"[^>]*>${label}`));
     assert.match(html,new RegExp(`data-stage="${round}" id="bscBracketStage-${round}" aria-labelledby="bscBracketRound-${round}"`));
   });
 });
