@@ -19,8 +19,9 @@ test('şifre sıfırlama yalnız oyuncu adı ve dört rakamlı eşleşen şifrey
   assert.equal(validateResetInput({ name: 'Çağatay', newPin: '1234', confirmPin: '4321' }).ok, false);
 });
 
-test('farklı cihaz sonucu hesap varlığını ayrıntılandırmadan destek yönlendirmesi verir', () => {
-  assert.match(resetResultMessage(false), /farklı bir cihazda kayıtlı/i);
+test('başarısız doğrulama cihaz değiştirildiğini varsaymadan destek yönlendirmesi verir', () => {
+  assert.match(resetResultMessage(false), /hesap sahipliği doğrulanamadı/i);
+  assert.doesNotMatch(resetResultMessage(false), /farklı bir cihazda kayıtlı/i);
   assert.match(resetResultMessage(false), /yöneticiyle iletişime geçin/i);
   assert.doesNotMatch(resetResultMessage(false), /bulunamadı/i);
 });

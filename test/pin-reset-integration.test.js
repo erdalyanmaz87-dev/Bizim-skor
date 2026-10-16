@@ -6,7 +6,7 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 test('giriş ekranı şifre sıfırlama yardımcısını yükler ve doğru etiketi gösterir', () => {
-  assert.match(html, /<script src="pin-reset-ui\.js"><\/script>/);
+  assert.match(html, /<script src="pin-reset-ui\.js(?:\?[^"]+)?"><\/script>/);
   assert.match(html, /id="openPinReset"/);
   assert.match(html, />Şifremi Unuttum</);
   assert.doesNotMatch(html, />PIN.?imi Unuttum</i);

@@ -22,7 +22,7 @@
   function resetResultMessage(success) {
     return success
       ? 'Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.'
-      : 'Bu hesap farklı bir cihazda kayıtlı. Şifre sıfırlamak için yöneticiyle iletişime geçin.';
+      : 'Bu tarayıcıda hesap sahipliği doğrulanamadı. PIN’inizi biliyorsanız Giriş Yap bölümünü kullanın; şifre sıfırlamak için yöneticiyle iletişime geçin.';
   }
 
   function renderResetFormMarkup() {
