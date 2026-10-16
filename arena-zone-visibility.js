@@ -4,7 +4,7 @@
   else{root.BizimSkorArenaZoneVisibility=api;api.mount();}
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   function parseTargets(text=''){
-    const value=String(text||''),promotion=value.match(/İlk\s+(\d+)\s+yükselir/i),relegation=value.match(/Son\s+(\d+)\s+düşer/i);
+    const value=String(text||''),promotion=value.match(/İlk\s+(\d+)(?:\s+uygun\s+oyuncu)?\s+yükselir/i),relegation=value.match(/Son\s+(\d+)\s+düşer/i);
     return{promotion:promotion?Number(promotion[1]):0,relegation:relegation?Number(relegation[1]):0};
   }
   function zoneForRank(rank,size,targets={}){
@@ -13,6 +13,7 @@
     if(d>0&&r>n-d)return'relegation';
     return'none';
   }
+  function zoneForRow(row,index,size,targets){const recorded=row?.dataset?.arenaZone;if(['promotion','relegation','none'].includes(recorded))return recorded;return zoneForRank(rankOf(row,index),size,targets)}
   function zoneLabel(zone){return zone==='promotion'?'↑ Yükselir':zone==='relegation'?'↓ Düşer':'';}
   function rankOf(row,index){const value=Number(String(row?.querySelector?.('.league-rank')?.textContent||'').replace(/[^0-9]/g,''));return value||index+1;}
   function ensureStyles(doc){
@@ -23,12 +24,13 @@
     if(!table?.querySelectorAll)return false;
     const targets=parseTargets(table.querySelector('.league-movement-info')?.textContent||''),rows=[...table.querySelectorAll('.league-row')],size=rows.length;
     if(!size||(!targets.promotion&&!targets.relegation))return false;
+    const promotionBoundary=Math.max(0,...rows.map((row,index)=>zoneForRow(row,index,size,targets)==='promotion'?rankOf(row,index):0));
     rows.forEach((row,index)=>{
-      const rank=rankOf(row,index),zone=zoneForRank(rank,size,targets),promotion=zone==='promotion',relegation=zone==='relegation';
+      const rank=rankOf(row,index),zone=zoneForRow(row,index,size,targets),promotion=zone==='promotion',relegation=zone==='relegation';
       row.classList.toggle('league-promotion-zone',promotion);
       row.classList.toggle('league-relegation-zone',relegation);
       if(promotion||relegation)row.classList.remove('league-championship-zone');
-      row.classList.toggle('league-promotion-boundary',promotion&&rank===targets.promotion);
+      row.classList.toggle('league-promotion-boundary',promotion&&rank===promotionBoundary);
       row.classList.toggle('league-relegation-boundary',relegation&&rank===size-targets.relegation+1);
       const player=row.querySelector('.league-player');if(!player)return;
       let badge=player.querySelector('.league-zone-badge');const label=zoneLabel(zone);
@@ -40,5 +42,5 @@
   }
   function decorate(doc=typeof document!=='undefined'?document:null){if(!doc)return false;ensureStyles(doc);let changed=false;doc.querySelectorAll('.league-table-wrap').forEach(table=>{changed=decorateTable(table)||changed});return changed;}
   function mount(doc=typeof document!=='undefined'?document:null){if(!doc||doc.__bsArenaZoneVisibility)return false;doc.__bsArenaZoneVisibility=true;const run=()=>decorate(doc);run();if(typeof MutationObserver==='function')new MutationObserver(()=>run()).observe(doc.body,{childList:true,subtree:true});return true;}
-  return Object.freeze({parseTargets,zoneForRank,zoneLabel,rankOf,decorateTable,decorate,mount});
+  return Object.freeze({parseTargets,zoneForRank,zoneForRow,zoneLabel,rankOf,decorateTable,decorate,mount});
 });

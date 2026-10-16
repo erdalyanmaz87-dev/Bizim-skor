@@ -24,7 +24,7 @@
     });
     return new Promise((resolve,reject)=>{
       const script=root.document.createElement('script');
-      script.src=src;
+      script.src=src+(src==='league-system-ui.js'?'?v=20261016-eligibility-zones-v1':'');
       script.defer=true;
       script.dataset.bizimSkorSrc=src;
       script.addEventListener('load',()=>{script.dataset.loaded='1';resolve(true)},{once:true});
