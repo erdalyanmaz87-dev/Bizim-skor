@@ -48,7 +48,7 @@
       if(claim.data!==true)throw new Error(`SkorBot kullanım hakkın doldu veya maç tahmine kapalı. Bu haftada en fazla ${robot().robotLimit(settings.fixtures.length)} maçta SkorBot kullanılabilir.`);
       const score=await suggestion(fixture,settings);
       const home=team(teams[0],fixture.home_team||'Ev sahibi'),away=team(teams[teams.length-1],fixture.away_team||'Deplasman');
-      root.BizimSkorMatchAnimation.open({home,away,score,onApply:async()=>{
+      root.BizimSkorMatchAnimation.open({home,away,score,competition:competition(settings),fixtureId:Number(fixture.id),onApply:async()=>{
         const current=normalize(config());
         if(!row?.isConnected||current?.kind!==settings.kind||Number(current?.week)!==Number(settings.week)||Number(current?.fixtures?.[index]?.id)!==Number(fixture.id))throw new Error('Maç ekranı değişti. Bu maçın tahminini yeniden aç.');
         const ids=settings.inputIds(fixture,index);if(ids.some(id=>{const el=document.getElementById(id);return !el||el.disabled||el.readOnly}))throw new Error('Bu maç tahmin girişine kapalı.');

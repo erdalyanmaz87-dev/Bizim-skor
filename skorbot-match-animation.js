@@ -48,7 +48,7 @@
   function open(options){
     const events=plan(options.score,options);if(active)active.close();mountStyle();
     // Count an explicit opening (including replay), not each rendered frame.
-    try { const token=root.localStorage?.getItem('bizimSkorFriendToken'); if(token&&root.sb?.rpc) root.sb.rpc('record_skorbot_animation_play',{p_token:token}).then(()=>{},()=>{}); }catch(_){}
+    try { const token=root.localStorage?.getItem('bizimSkorFriendToken'); if(token&&root.sb?.rpc&&options.competition&&Number.isInteger(options.fixtureId)) root.sb.rpc('record_skorbot_animation_play',{p_token:token,p_competition:options.competition,p_fixture_id:options.fixtureId}).then(()=>{},()=>{}); }catch(_){}
     const previousFocus=document.activeElement,previousOverflow=document.body.style.overflow;
     const layer=document.createElement('div');layer.className='sb-arena-layer';
     const home=options.home||{name:'Ev sahibi'},away=options.away||{name:'Deplasman'};
