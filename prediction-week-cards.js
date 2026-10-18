@@ -26,7 +26,7 @@ function render(cards,now=Date.now()){
   return `<div class="bs-week-cards">${cards.map((card,i)=>{
     const action=card.complete?'✓ Tahminlerin tamamlandı':'Tahminini yap →';
     const countdown=card.deadline?`<small class="bs-week-countdown" data-countdown-deadline="${String(card.deadline)}" data-countdown-complete="${card.complete}">${countdownText(card.deadline,now,card.complete)}</small>`:'';
-    return `<button type="button" class="bs-week-card theme-${card.theme} ${card.complete?'done':'missing'}" data-bs-card="${i}" data-competition="${({league:'super_lig',champions:'champions_league',nations:'nations_league'})[card.target.type]}" data-week="${Number(card.target.week)}">${root.BizimSkorBrandAssets?.competitionLogoMarkup?`<span class="bs-week-card-logo" aria-hidden="true">${root.BizimSkorBrandAssets.competitionLogoMarkup(card.theme)}</span>`:''}<strong>${card.label}</strong><span>${action}</span>${countdown}</button>`;
+    return `<button type="button" class="bs-week-card theme-${card.theme} ${card.complete?'done':'missing'}" data-bs-card="${i}" data-competition="${({league:'super_lig',champions:'champions_league',nations:'nations_league'})[card.target.type]}" data-week="${Number(card.target.week)}">${root.BizimSkorBrandVisualUI?.competitionMarkup?`<span class="bs-week-card-logo" aria-hidden="true">${root.BizimSkorBrandVisualUI.competitionMarkup(card.theme,'')}</span>`:''}<strong>${card.label}</strong><span>${action}</span>${countdown}</button>`;
   }).join('')}</div>`;
 }
 function updateCountdowns(host,now=Date.now()){host?.querySelectorAll?.('[data-countdown-deadline]').forEach(el=>{el.textContent=countdownText(el.dataset.countdownDeadline,now,el.dataset.countdownComplete==='true')})}
