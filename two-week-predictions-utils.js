@@ -9,7 +9,10 @@
   function selectVisibleWeeks(fixtures,limit=2,nowMs=Date.now()){
     const weeks=[...new Set((fixtures||[]).map(fixture=>+fixture.week).filter(Number.isFinite))]
       .sort((a,b)=>a-b);
-    return weeks.slice(-Math.max(0,limit));
+    // The administrator explicitly keeps week 8 visible until requesting removal.
+    const pinnedWeeks=[8];
+    const latest=weeks.slice(-Math.max(0,limit));
+    return [...new Set([...weeks.filter(week=>pinnedWeeks.includes(week)),...latest])].sort((a,b)=>a-b);
   }
 
   function selectLatestWeeks(checks,limit=2){

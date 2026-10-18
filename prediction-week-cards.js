@@ -1,7 +1,7 @@
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;else{root.BizimSkorPredictionWeekCards=api;api.mount();}})(typeof globalThis!=='undefined'?globalThis:this,function(root){
 let refreshVersion=0;
 function buildCards(leagueStatuses,champions,nations=[]){
-  const league=(leagueStatuses||[]).slice(0,2).map(x=>({label:`Süper Lig ${x.week}. Hafta`,complete:!!x.complete,deadline:x.deadline||null,theme:'super',target:{type:'league',week:+x.week}}));
+  const league=(leagueStatuses||[]).map(x=>({label:`Süper Lig ${x.week}. Hafta`,complete:!!x.complete,deadline:x.deadline||null,theme:'super',target:{type:'league',week:+x.week}}));
   const cl=(Array.isArray(champions)?champions:champions?[champions]:[]).slice().sort((a,b)=>a.week-b.week).slice(-2).map(x=>({label:`Şampiyonlar Ligi ${x.week}. Hafta`,complete:!!x.complete,deadline:x.deadline||null,theme:'champions',target:{type:'champions',week:+x.week}}));
   const nl=[...(nations||[])].sort((a,b)=>Number(a.week)-Number(b.week)).slice(-2).map(x=>({label:`UEFA Uluslar Ligi ${x.week}. Hafta`,complete:!!x.complete,deadline:x.deadline||null,theme:'nations',target:{type:'nations',week:+x.week}}));
   return[...league,...cl,...nl];
