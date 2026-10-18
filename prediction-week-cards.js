@@ -4,7 +4,8 @@ function buildCards(leagueStatuses,champions,nations=[]){
   const league=(leagueStatuses||[]).map(x=>({label:`Süper Lig ${x.week}. Hafta`,complete:!!x.complete,deadline:x.deadline||null,theme:'super',target:{type:'league',week:+x.week}}));
   const cl=(Array.isArray(champions)?champions:champions?[champions]:[]).slice().sort((a,b)=>a.week-b.week).slice(-2).map(x=>({label:`Şampiyonlar Ligi ${x.week}. Hafta`,complete:!!x.complete,deadline:x.deadline||null,theme:'champions',target:{type:'champions',week:+x.week}}));
   const nl=[...(nations||[])].sort((a,b)=>Number(a.week)-Number(b.week)).slice(-2).map(x=>({label:`UEFA Uluslar Ligi ${x.week}. Hafta`,complete:!!x.complete,deadline:x.deadline||null,theme:'nations',target:{type:'nations',week:+x.week}}));
-  return[...league,...cl,...nl];
+  const kickoff=card=>{const time=Date.parse(card.deadline);return Number.isFinite(time)?time:Infinity};
+  return[...league,...cl,...nl].sort((a,b)=>kickoff(a)-kickoff(b));
 }
 function championsTabSelector(){return '[data-tab="championsPred"]'}
 function selectionValue(card){return card?.target?.type==='league'?String(card.target.week):''}
