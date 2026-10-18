@@ -7,6 +7,20 @@ Deno.serve(async(req:Request)=>{
  if(!secret)return json(401,{error:'unauthorized'});
  const auth=await sb.rpc('authorize_live_score_cron',{p_secret:secret});
  if(auth.error||auth.data!==true)return json(401,{error:'unauthorized'});
+ let body:any={};try{body=await req.json()}catch{}
+ if(body.provider==='soccersapi'){
+  const token=Deno.env.get('SOCCERSAPI_TOKEN')||'';
+  if(!token)return json(200,{provider:'soccersapi',configured:false,ready:false,error:'SOCCERSAPI_TOKEN_missing'});
+  try{
+   const response=await fetch('https://api.soccersapi.com/v2.2/leagues/?t=list',{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(15000)});
+   const payload=await response.json();
+   const leagues=Array.isArray(payload.data)?payload.data:[];
+   const ids=new Set(leagues.map((row:any)=>Number(row.id)));
+   const coverage={super_lig:ids.has(3515),champions_league:ids.has(539),nations_league:ids.has(366)};
+   return json(200,{provider:'soccersapi',configured:true,ready:response.ok&&Object.values(coverage).every(Boolean),provider_status:response.status,coverage,
+    leagues:leagues.map((row:any)=>({id:row.id,name:row.name})),message:payload.meta?.msg||null,requests_left:payload.meta?.requests_left??null});
+  }catch{return json(502,{provider:'soccersapi',configured:true,ready:false,error:'soccersapi_connection_failed'});}
+ }
  const key=Deno.env.get('API_FOOTBALL_KEY')||'';
  if(!key)return json(503,{error:'provider_key_missing'});
  const date=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Istanbul'});
