@@ -1,4 +1,5 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+import {syncSoccersApi} from './soccersapi-sync.ts';
 import {normalizeApiFootballFixture,matchScheduledProviderFixture,matchUnlinkedLiveFixtures,extractProviderTeamNames,adaptivePollIntervalMinutes,shouldAdaptivePoll,isWithinLiveTrackingWindow} from './core.mjs';
 
 const API_BASE='https://v3.football.api-sports.io';
@@ -15,9 +16,10 @@ function equalSecret(left:string|null,right:string){
 Deno.serve(async(req:Request)=>{
   if(req.method!=='POST')return json(405,{error:'method_not_allowed'});
   const apiKey=Deno.env.get('API_FOOTBALL_KEY')||'';
+  const soccerToken=Deno.env.get('SOCCERSAPI_TOKEN')||'';
   const url=Deno.env.get('SUPABASE_URL')||'';
   const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'';
-  if(!apiKey||!url||!serviceKey)return json(503,{error:'not_configured'});
+  if((!apiKey&&!soccerToken)||!url||!serviceKey)return json(503,{error:'not_configured'});
 
   const sb=createClient(url,serviceKey,{auth:{persistSession:false}});
   try{
@@ -32,6 +34,7 @@ Deno.serve(async(req:Request)=>{
 
     let body:any={};
     try{body=await req.json()}catch{}
+    if(soccerToken)return json(200,await syncSoccersApi(sb,soccerToken,body,{autoFinalize:Deno.env.get('AUTO_FINALIZE_RESULTS')!=='false'}));
     const inspectProviderFixtureIds=Array.isArray(body?.inspect_provider_fixture_ids)
       ? body.inspect_provider_fixture_ids.map(Number).filter((id:number)=>Number.isInteger(id)&&id>0).slice(0,20)
       : [];

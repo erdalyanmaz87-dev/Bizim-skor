@@ -12,6 +12,28 @@ export function normalizeApiFootballFixture(raw){
   return{provider_fixture_id,status,elapsed,home_score,away_score};
 }
 
+export function toProviderFixtureShape(match){
+  return{
+    fixture:{id:Number(match?.id),date:match?.utcDate},
+    teams:{home:{name:String(match?.homeTeam?.name||'')},away:{name:String(match?.awayTeam?.name||'')}}
+  };
+}
+
+export function normalizeFootballDataMatch(match){
+  const provider_fixture_id=Number(match?.id);
+  const providerStatus=String(match?.status||'');
+  const elapsed=match?.minute==null?null:Number(match.minute);
+  const home_score=match?.score?.fullTime?.home;
+  const away_score=match?.score?.fullTime?.away;
+  let status='';
+  if(providerStatus==='FINISHED')status='FT';
+  else if(providerStatus==='PAUSED')status='HT';
+  else if(providerStatus==='IN_PLAY'||providerStatus==='LIVE')status=(Number(elapsed)||0)<=45?'1H':'2H';
+  else status=providerStatus;
+  if(!Number.isInteger(provider_fixture_id)||!status||!validScore(home_score)||!validScore(away_score))throw new Error('Geçersiz football-data skoru');
+  return{provider_fixture_id,status,elapsed,home_score,away_score};
+}
+
 export function nextTerminalState(previous,observation){
   const terminal=TERMINAL.has(String(observation?.status||''));
   if(!terminal||!validScore(observation?.home_score)||!validScore(observation?.away_score))return{terminal_seen_count:0,terminal_signature:null,should_finalize:false};
@@ -33,9 +55,34 @@ export function adaptivePollIntervalMinutes({request_count,remaining_window_minu
   return Math.max(1,Math.min(15,Math.ceil(remaining/available)));
 }
 
-export function shouldAdaptivePoll({active_fixture_count,request_count,remaining_window_minutes,last_requested_at,now=new Date()}){
+export function fixtureMinimumPollIntervalMinutes(activeFixtures,overrides){
+  const active=new Set((Array.isArray(activeFixtures)?activeFixtures:[]).map(row=>`${row.competition}:${Number(row.fixture_id)}`));
+  return (Array.isArray(overrides)?overrides:[]).reduce((minimum,row)=>{
+    if(!active.has(`${row.competition}:${Number(row.fixture_id)}`))return minimum;
+    const interval=Math.max(0,Math.min(15,Math.floor(Number(row.minimum_interval_minutes)||0)));
+    return Math.max(minimum,interval);
+  },0);
+}
+
+export function configuredMinimumPollIntervalMinutes(activeFixtures){
+  const active=Array.isArray(activeFixtures)?activeFixtures:[];
+  if(active.length===0)return 2;
+  if(active.some(row=>String(row.competition)==='champions_league'))return 2;
+  const keys=new Set(active.map(row=>`${row.competition}:${Number(row.fixture_id)}`));
+  if(keys.has('super_lig:33')||keys.has('super_lig:34')||keys.has('super_lig:30'))return 2;
+  return 5;
+}
+
+export function resolvePollIntervalMinutes({minimum_interval_minutes=0,...quota}){
+  const adaptive=adaptivePollIntervalMinutes(quota);
+  if(adaptive===null)return null;
+  const minimum=Math.max(0,Math.min(15,Math.floor(Number(minimum_interval_minutes)||0)));
+  return Math.max(adaptive,minimum);
+}
+
+export function shouldAdaptivePoll({active_fixture_count,request_count,remaining_window_minutes,minimum_interval_minutes=0,last_requested_at,now=new Date()}){
   if(Number(active_fixture_count)<1)return false;
-  const interval=adaptivePollIntervalMinutes({request_count,remaining_window_minutes});
+  const interval=resolvePollIntervalMinutes({request_count,remaining_window_minutes,minimum_interval_minutes});
   if(interval===null)return false;
   if(!last_requested_at)return true;
   return new Date(now).getTime()-new Date(last_requested_at).getTime()>=interval*60000;
@@ -53,7 +100,7 @@ export function isWithinLiveTrackingWindow(fixture,now=new Date()){
 
 function teamKey(value){
   const key=String(value||'').toLocaleLowerCase('tr-TR').replace(/ı/g,'i').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
-  return ({erzurumsporfk:'erzurumbb'})[key]||key;
+  return ({erzurumsporfk:'erzurumbb',aekathens:'aek',lasklinz:'lask'})[key]||key;
 }
 
 function sameTeam(left,right){
