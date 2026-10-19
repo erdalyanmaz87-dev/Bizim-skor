@@ -11,6 +11,7 @@
   function zeroRoundRelegation(record,periodNo){return Number(periodNo)===1&&['champions','elite','gold','silver'].includes(record.league_code)&&record.valid_round_count!=null&&Number(record.valid_round_count)===0}
   function annotateRows(rows,doc=document,periodNo){
     const list=rows||[];
+    const provisional=list.length>0&&list.every(record=>Number(record.valid_round_count)<2)&&Number(periodNo)>1;
     const byName=new Map(list.map(row=>[norm(row.player_name),row]));
     const promotionRanks=list.filter(record=>record.promotion_status==='promotion'&&Number(record.valid_round_count)>=2).map(record=>Number(record.league_rank));
     const lastPromotionRank=Math.max(0,...promotionRanks);
@@ -20,11 +21,13 @@
       const forced=record.promotion_status==='forced_relegation'||zeroRoundRelegation(record,periodNo);
       row.classList.toggle('league-forced-relegation',forced);
       if(forced)row.classList.add('league-relegation-zone');
-      const inPromotionZone=record.promotion_status==='promotion'&&Number(record.valid_round_count)>=2;
-      row.dataset.arenaZone=inPromotionZone?'promotion':forced||record.promotion_status==='relegation'?'relegation':'none';
+      const inPromotionZone=record.promotion_status==='promotion'&&Number(record.valid_round_count)>=2||provisional&&row.dataset.arenaZone==='promotion';
+      const provisionalRelegation=provisional&&row.dataset.arenaZone==='relegation';
+      const provisionalBoundary=provisional&&row.classList.contains('league-promotion-boundary');
+      row.dataset.arenaZone=inPromotionZone?'promotion':forced||record.promotion_status==='relegation'||provisionalRelegation?'relegation':'none';
       row.classList.toggle('league-promotion-zone',inPromotionZone);
       row.classList.toggle('league-relegation-zone',row.dataset.arenaZone==='relegation');
-      row.classList.toggle('league-promotion-boundary',inPromotionZone&&Number(record.league_rank)===lastPromotionRank);
+      row.classList.toggle('league-promotion-boundary',inPromotionZone&&(provisionalBoundary||Number(record.league_rank)===lastPromotionRank));
       const player=row.querySelector('.league-player');
       let note=player?.querySelector('.league-forced-relegation-note');
       if(forced&&player){if(!player.dataset.playerName)player.dataset.playerName=record.player_name;if(!note){note=doc.createElement('small');note.className='league-forced-relegation-note';player.appendChild(note)}note.textContent='⬇ Küme düştü'}else{note?.remove()}

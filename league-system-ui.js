@@ -1,8 +1,8 @@
 (function(root,factory){
-  const api=factory();
+  const api=factory(root);
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.BizimSkorLeagues=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const LABELS={champions:'Şampiyonlar',elite:'Elit Lig',gold:'Altın Lig',silver:'Gümüş Lig',bronze:'Bronz Lig'};
   const ICONS={champions:'👑',elite:'💎',gold:'🥇',silver:'🥈',bronze:'🥉'};
 
@@ -48,6 +48,7 @@
   function zoneFor(row,size,targets={}){
     const rank=Number(row.league_rank)||0,promotion=Number(targets.promotion)||0,relegation=Number(targets.relegation)||0;
     const rounds=Number(row.valid_round_count),knownRounds=row.valid_round_count!=null&&Number.isFinite(rounds);
+    if(targets.preview&&row.promotion_status==='none'){if(promotion>0&&rank>0&&rank<=promotion)return'promotion';if(relegation>0&&rank>size-relegation)return'relegation';return'none'}
     if(!row.arena_preview&&Object.hasOwn(row,'promotion_status')){
       if(row.promotion_status==='promotion'&&(!knownRounds||rounds>=2))return'promotion';
       return ['relegation','forced_relegation'].includes(row.promotion_status)?'relegation':'none';
@@ -72,7 +73,7 @@
   function renderLeagueTable(rows=[],summary={}){
     const code=summary.league_code||rows[0]?.league_code||'bronze';
     if(!rows.length)return `<div class="league-empty">Bu ligde henüz sıralamaya giren oyuncu yok.</div>`;
-    const size=rows.length,targets={...(summary.movement_targets||{promotion:0,relegation:0})},info=movementText(targets);targets.promotionBoundary=Math.max(0,...rows.filter(row=>zoneFor(row,size,targets)==='promotion').map(row=>Number(row.league_rank)||0));
+    const size=rows.length,targets={...(summary.movement_targets||{promotion:0,relegation:0}),preview:!summary.final_super_round_started&&!rows.some(row=>Number(row.valid_round_count)>=2)},info=movementText(targets);targets.promotionBoundary=Math.max(0,...rows.filter(row=>zoneFor(row,size,targets)==='promotion').map(row=>Number(row.league_rank)||0));
     return `<div class="league-table-wrap">${info?`<div class="league-movement-info">${esc(info)}</div>`:''}<div class="league-table-head"><span>#</span><span>Oyuncu</span><span>Perf.</span><span>Tur</span></div>${rows.map(row=>`<div class="${rowClass(row,size,targets)}" data-arena-zone="${zoneFor(row,size,targets)}"><span class="league-rank">${esc(row.league_rank)}</span><span class="league-player" data-player-name="${esc(row.player_name)}">${row.is_me?'<b>Sen • </b>':''}${esc(row.player_name)}</span><span class="league-performance">${esc(row.performance_score??'—')}</span><span class="league-rounds">${esc(row.valid_round_count??0)}</span></div>`).join('')}<div class="league-table-foot">${ICONS[code]||'🥉'} ${esc(label(code))}</div></div>`;
   }
 

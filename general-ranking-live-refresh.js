@@ -24,7 +24,7 @@
     });
     return new Promise((resolve,reject)=>{
       const script=root.document.createElement('script');
-      script.src=src+(src==='league-system-ui.js'?'?v=20261019-arena-season2-v1':'');
+      script.src=src+(src==='league-system-ui.js'?'?v=20261019-arena-season2-v2':'');
       script.defer=true;
       script.dataset.bizimSkorSrc=src;
       script.addEventListener('load',()=>{script.dataset.loaded='1';resolve(true)},{once:true});
