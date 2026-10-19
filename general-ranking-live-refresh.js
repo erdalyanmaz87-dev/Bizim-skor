@@ -24,7 +24,7 @@
     });
     return new Promise((resolve,reject)=>{
       const script=root.document.createElement('script');
-      script.src=src+(src==='league-system-ui.js'?'?v=20261016-eligibility-zones-v1':'');
+      script.src=src+(src==='league-system-ui.js'?'?v=20261019-arena-season2-v1':'');
       script.defer=true;
       script.dataset.bizimSkorSrc=src;
       script.addEventListener('load',()=>{script.dataset.loaded='1';resolve(true)},{once:true});
@@ -86,7 +86,7 @@
       spotlight=doc.createElement('div');
       spotlight.id='homeArenaSpotlight';
       spotlight.className='c home-arena-spotlight';
-      spotlight.innerHTML='<div class="home-arena-heading"><div><h2>🏟️ Arena Ligleri</h2></div><span>1. Sezon • 19 Ekim’e kadar</span></div>';
+      spotlight.innerHTML='<div class="home-arena-heading"><div><h2>🏟️ Arena Ligleri</h2></div><span>2. Sezon • Bitiş: 23 Kasım 2026</span></div>';
       if(!summaryHost){
         summaryHost=doc.createElement('div');
         summaryHost.id='personalLeagueSummary';
@@ -191,3 +191,4 @@
   }
   return Object.freeze({mount,removeLeakedNewlineText,mountLeagues,ensureArenaNavigation,ensureHomeArenaSpotlight,ensureLeagueMountPoints,scheduleLeagueMount});
 });
+

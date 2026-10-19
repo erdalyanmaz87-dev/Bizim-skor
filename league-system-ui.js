@@ -8,6 +8,7 @@
 
   function esc(value){return String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
   function label(code){return LABELS[code]||'Bronz Lig'}
+  function seasonText(summary={}){const number=Number(summary.period_no);if(!number)return '';const end=Date.parse(summary.ends_at);const date=Number.isFinite(end)?new Date(end-1).toLocaleDateString('tr-TR',{timeZone:'Europe/Istanbul',day:'numeric',month:'long',year:'numeric'}):'';return `${number}. Sezon${date?' • Bitiş: '+date:''}`}
   function renderArenaPending(){return '<div class="league-empty league-pending"><b>🏆 Arena dönemi hazırlanıyor.</b><br>Geçici başlangıç sıralaması henüz oluşturulamıyor.</div>'}
   function slot(size,rate){const n=Number(size)||0;return n>0?Math.max(1,Math.round(n*rate)):0}
   function movementTargets(code,counts={},lockedSlots=null){
@@ -36,7 +37,7 @@
     if(status==='promotion')statusText='⬆ Yükselme hattındasın';
     else if(status==='relegation')statusText='⬇ Düşme hattındasın';
     else if(status==='championship')statusText='🏆 Liderlik koltuğundasın';
-    if(!summary.is_eligible){const needed=Math.max(1,Number(summary.rounds_needed)||Math.max(1,2-(Number(summary.valid_round_count)||0)));statusText=summary.final_super_round_started?eligibilityNote(summary.valid_round_count,true):`Yükselme/düşme için ${needed} tahmin turu daha tamamla`}
+    if(!summary.is_eligible){const needed=Math.max(1,Number(summary.rounds_needed)||Math.max(1,2-(Number(summary.valid_round_count)||0)));statusText=summary.final_super_round_started?eligibilityNote(summary.valid_round_count,true):'Sezon devam ediyor'}
     return `<button type="button" class="league-summary league-summary-button${summary.is_eligible?'':' league-summary-pending'}" data-league-open="1"><span class="league-summary-title">${ICONS[code]||'🥉'} ${esc(label(code))}</span><strong class="league-summary-rank">${rank||'—'} / ${size||'—'}</strong><span class="league-summary-performance">Ort. Arena Puanı ${esc(perf)}</span><span class="league-summary-participation">Katılım ${participation} / 2</span><span class="league-summary-status" data-arena-final-round="${!!summary.final_super_round_started}">${esc(statusText)}</span><span class="league-summary-action">Arena'ya Gir ›</span></button>`;
   }
   function renderPreviewSummary(summary={}){
@@ -72,13 +73,13 @@
     const code=summary.league_code||rows[0]?.league_code||'bronze';
     if(!rows.length)return `<div class="league-empty">Bu ligde henüz sıralamaya giren oyuncu yok.</div>`;
     const size=rows.length,targets={...(summary.movement_targets||{promotion:0,relegation:0})},info=movementText(targets);targets.promotionBoundary=Math.max(0,...rows.filter(row=>zoneFor(row,size,targets)==='promotion').map(row=>Number(row.league_rank)||0));
-    return `<div class="league-table-wrap">${info?`<div class="league-movement-info">${esc(info)}</div>`:''}<div class="league-table-head"><span>#</span><span>Oyuncu</span><span>Perf.</span><span>Tur</span></div>${rows.map(row=>`<div class="${rowClass(row,size,targets)}" data-arena-zone="${zoneFor(row,size,targets)}"><span class="league-rank">${esc(row.league_rank)}</span><span class="league-player" data-player-name="${esc(row.player_name)}">${row.is_me?'<b>Sen • </b>':''}${esc(row.player_name)}${Number.isFinite(Number(row.valid_round_count))&&Number(row.valid_round_count)<2?`<small class="league-row-eligibility">${eligibilityNote(row.valid_round_count,summary.final_super_round_started)}</small>`:''}</span><span class="league-performance">${esc(row.performance_score??'—')}</span><span class="league-rounds">${esc(row.valid_round_count??0)}</span></div>`).join('')}<div class="league-table-foot">${ICONS[code]||'🥉'} ${esc(label(code))}</div></div>`;
+    return `<div class="league-table-wrap">${info?`<div class="league-movement-info">${esc(info)}</div>`:''}<div class="league-table-head"><span>#</span><span>Oyuncu</span><span>Perf.</span><span>Tur</span></div>${rows.map(row=>`<div class="${rowClass(row,size,targets)}" data-arena-zone="${zoneFor(row,size,targets)}"><span class="league-rank">${esc(row.league_rank)}</span><span class="league-player" data-player-name="${esc(row.player_name)}">${row.is_me?'<b>Sen • </b>':''}${esc(row.player_name)}</span><span class="league-performance">${esc(row.performance_score??'—')}</span><span class="league-rounds">${esc(row.valid_round_count??0)}</span></div>`).join('')}<div class="league-table-foot">${ICONS[code]||'🥉'} ${esc(label(code))}</div></div>`;
   }
 
   function renderLeagueRules(){return `<div class="league-rules"><h3>ⓘ Lig Kuralları</h3><p>Bir Arena dönemi <b>4 Süper Lig haftası</b> sürer: 5, 6, 7 ve 8. hafta.</p><p>Bu tarihler arasında oynanan Uluslar Ligi ve Şampiyonlar Ligi puanları da ortalama Arena puanına eklenir; ancak tur sayısını artırmaz.</p><p>Yükselme veya ligde kalma hakkı için dönem içinde <b>en az 2 haftaya</b> eksiksiz Süper Lig tahminiyle katılmak gerekir.</p><p>2 hafta şartını tamamlamayan oyuncu dönem sonunda <b>bir alt lige düşer</b>. Bronz Lig oyuncusu Bronz Lig’de kalır.</p><p>Yeni oyuncular Bronz Lig’den başlar.</p><p>Yükselme ve düşme kontenjanları dönem başında belirlenir ve dönem boyunca değişmez.</p><p>Katılmadığın hafta ortalamaya 0 yazmaz; minimum 2 hafta şartı ayrıca uygulanır.</p></div>`}
   function renderOtherLeagueChips(counts={},currentLeague){return `<div class="league-other"><div class="league-other-title">Diğer Ligler</div><div class="league-chips">${Object.keys(LABELS).map(code=>`<button type="button" class="league-chip${code===currentLeague?' league-chip-active':''}" data-league-code="${code}">${ICONS[code]} <span>${esc(LABELS[code])}</span><small>${Number(counts[code])||0}</small></button>`).join('')}</div></div>`}
   function renderLeagueShell(summary={},rows=[],counts={}){
-    const code=summary.league_code||'bronze',ownCode=summary.own_league_code||code,showEligibilityNote=!summary.is_eligible&&code===ownCode;
+    const code=summary.league_code||'bronze',ownCode=summary.own_league_code||code,showEligibilityNote=!summary.is_eligible&&code===ownCode&&summary.final_super_round_started;
     const targets=movementTargets(code,counts,summary.locked_promotion_slots||null);
     return `<div class="league-shell"><div class="league-header"><div><div class="league-eyebrow">Bizim Skor Ligleri</div><h2>${ICONS[code]||'🥉'} ${esc(label(code))}</h2></div><button type="button" class="league-rules-button" data-league-rules="1">ⓘ Kurallar</button></div>${renderOtherLeagueChips(counts,code)}${summary.final_super_round_started?`<div class="league-eligibility-note">Bu sezonun son Süper Lig turu ${summary.last_super_week}. haftadır. Şampiyonlar Ligi puana etki eder; tur sayısını artırmaz. İki tur şartını sağlayamayan oyuncular bu sezon yükselemez.</div>`:''}${renderLeagueTable(rows,{...summary,league_code:code,movement_targets:targets})}${showEligibilityNote?`<div class="league-eligibility-note">${summary.final_super_round_started?eligibilityNote(summary.valid_round_count,true):`Yükselme/düşme için ${Math.max(1,Number(summary.rounds_needed)||2)} tahmin turu daha tamamlamalısın.`}</div>`:''}<div class="league-rules-host" hidden>${renderLeagueRules()}</div></div>`;
   }
@@ -106,6 +107,7 @@
       loadPreviewLeague(ownCode);return true;
     }
     try{const final=arenaFinalRound(typeof allFixtures!=='undefined'?allFixtures:[],summary.starts_at);summary.final_super_round_started=!!final?.started;summary.last_super_week=final?.week}catch(_){}
+    const seasonNode=root.document?.querySelector?.('#homeArenaSpotlight .home-arena-heading>span');if(seasonNode)seasonNode.textContent=seasonText(summary);
     const counts={champions:0,elite:0,gold:0,silver:0,bronze:0};(countResult.data||[]).forEach(row=>{if(Object.hasOwn(counts,row.league_code))counts[row.league_code]=Number(row.player_count)||0});
     if(summaryHost)summaryHost.innerHTML=renderLeagueSummary(summary);if(!detailHost)return true;
     async function loadLeague(code){const ownLeague=summary.league_code||'bronze',target=code||ownLeague;const tableResult=await sb.rpc('get_league_table',{p_token:token,p_league_code:target});if(tableResult.error)throw tableResult.error;const rows=tableResult.data||[];detailHost.innerHTML=renderLeagueShell({...summary,league_code:target,own_league_code:ownLeague},rows,counts);detailHost.querySelector('[data-league-rules]')?.addEventListener('click',()=>{const host=detailHost.querySelector('.league-rules-host');if(host)host.hidden=!host.hidden});detailHost.querySelectorAll('[data-league-code]').forEach(btn=>btn.addEventListener('click',()=>loadLeague(btn.dataset.leagueCode)));
@@ -119,5 +121,6 @@
     await loadLeague(summary.league_code||'bronze');return true;
   }
 
-  return {arenaFinalRound,esc,movementTargets,renderArenaPending,renderLeagueSummary,renderPreviewSummary,renderLeagueTable,renderLeagueRules,renderOtherLeagueChips,renderLeagueShell,renderPreviewShell,css,mount};
+  return {seasonText,arenaFinalRound,esc,movementTargets,renderArenaPending,renderLeagueSummary,renderPreviewSummary,renderLeagueTable,renderLeagueRules,renderOtherLeagueChips,renderLeagueShell,renderPreviewShell,css,mount};
 });
+
