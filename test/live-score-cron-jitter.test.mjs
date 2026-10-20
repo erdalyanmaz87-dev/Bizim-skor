@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {shouldAdaptivePoll} from '../supabase/functions/live-score-sync/core.mjs';
+const base={active_fixture_count:2,request_count:1,remaining_window_minutes:235,minimum_interval_minutes:5,last_requested_at:'2026-10-20T16:45:02.700Z',now:new Date('2026-10-20T16:50:00.500Z'),scheduling_tolerance_ms:15000};
+test('cron seconds of latency do not skip the next five-minute tick',()=>assert.equal(shouldAdaptivePoll(base),true));
+test('existing callers remain strict without opting into grace',()=>assert.equal(shouldAdaptivePoll({...base,scheduling_tolerance_ms:0}),false));
+test('early polls are still throttled',()=>assert.equal(shouldAdaptivePoll({...base,now:new Date('2026-10-20T16:49:00Z')}),false));
+test('no active match never polls',()=>assert.equal(shouldAdaptivePoll({...base,active_fixture_count:0}),false));
+test('quota guard still takes precedence over scheduling grace',()=>assert.equal(shouldAdaptivePoll({...base,request_count:94}),false));
+test('caller cannot enlarge grace beyond fifteen seconds',()=>assert.equal(shouldAdaptivePoll({...base,scheduling_tolerance_ms:300000,now:new Date('2026-10-20T16:49:00Z')}),false));
+test('a completed interval still polls',()=>assert.equal(shouldAdaptivePoll({...base,now:new Date('2026-10-20T16:51:00Z')}),true));

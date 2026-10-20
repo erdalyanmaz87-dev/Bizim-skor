@@ -80,12 +80,15 @@ export function resolvePollIntervalMinutes({minimum_interval_minutes=0,...quota}
   return Math.max(adaptive,minimum);
 }
 
-export function shouldAdaptivePoll({active_fixture_count,request_count,remaining_window_minutes,minimum_interval_minutes=0,last_requested_at,now=new Date()}){
+export function shouldAdaptivePoll({active_fixture_count,request_count,remaining_window_minutes,minimum_interval_minutes=0,last_requested_at,now=new Date(),scheduling_tolerance_ms=0}){
   if(Number(active_fixture_count)<1)return false;
   const interval=resolvePollIntervalMinutes({request_count,remaining_window_minutes,minimum_interval_minutes});
   if(interval===null)return false;
   if(!last_requested_at)return true;
-  return new Date(now).getTime()-new Date(last_requested_at).getTime()>=interval*60000;
+  // A cron tick can arrive a few seconds before the previous request/cache timestamp.
+  // Opt-in bounded grace avoids skipping a full scheduled cycle; quota guards still apply.
+  const tolerance=Math.max(0,Math.min(15000,Number(scheduling_tolerance_ms)||0));
+  return new Date(now).getTime()-new Date(last_requested_at).getTime()>=interval*60000-tolerance;
 }
 
 export function isPollableFixture({cache_status,result_finalized}){

@@ -13,7 +13,7 @@ export async function syncSoccersApi(sb:any,token:string,body:any,options:{autoF
  const interval=resolvePollIntervalMinutes(quota);
  if(!preview){
   if(Number(gate.active_fixture_count||0)===0)return {provider:'soccersapi',polled:false,reason:'no_active_fixture'};
-  if(!shouldAdaptivePoll({...quota,active_fixture_count:gate.active_fixture_count,last_requested_at:gate.last_observation_at}))return {provider:'soccersapi',polled:false,reason:interval==null?'daily_quota_guard':'throttled',poll_interval_minutes:interval};
+  if(!shouldAdaptivePoll({...quota,active_fixture_count:gate.active_fixture_count,last_requested_at:gate.last_observation_at,scheduling_tolerance_ms:15000}))return {provider:'soccersapi',polled:false,reason:interval==null?'daily_quota_guard':'throttled',poll_interval_minutes:interval};
  }
  const start=new Date(now.getTime()-4*3600000).toISOString();
  const end=new Date(now.getTime()+(preview?30:0)*3600000).toISOString();
