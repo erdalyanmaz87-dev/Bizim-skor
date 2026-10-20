@@ -17,3 +17,13 @@ The original exact-score counter remains across all periods. New difference/tota
 ## Frozen column headings
 
 Column headings now use sticky positioning inside the screen scroller for all nine table-based standings (including legacy weeks) and Arena's grid. The Nations League overflow wrapper is released so it cannot trap sticky positioning. Opaque light/dark header backgrounds keep scrolling players from showing through. Browser checks confirm fixed heading position in all ten contexts and both themes; scoring and row values are unchanged.
+
+## Preventive scroll performance update
+
+An intermittent freeze was reported and then stopped reproducing on the user's device. No specific browser freeze cause is claimed. Scoped preventive changes keep the UI and scoring intact:
+
+- Ignore unrelated body mutations when deciding whether to recheck standings layout; still respond to table replacements, ancestor visibility changes and moved/new boards.
+- Avoid repeating identical legend DOM/style writes.
+- Reuse an unchanged adjacent ranking toolbar; rebuild when login, player-row availability, visibility or placement changes.
+
+Browser fixture: eight unrelated screen changes previously caused 16 standings layout reads, now zero. Repeated positions 900 → 2400 → 0 → 3000 → 0 succeed; hiding/reopening and replacing table rows still restores the seven columns and legend. Frozen headers pass all ten contexts in both themes. New toolbar identity regression and focused tests pass. Full suite: 630 tests, 626 pass, same four pre-existing failures documented above.

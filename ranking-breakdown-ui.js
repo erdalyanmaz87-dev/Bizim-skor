@@ -24,20 +24,28 @@ function decorate(table,data){if(!data?.has_new_scoring||table.classList.contain
  table.classList.add('bs-scoring-table');return true;
 }
 async function refreshBoard(board){const table=board.querySelector('table'),c=context(board);if(!table||!c||table.dataset.scoringChecked||pending.has(table))return;pending.add(table);const key=contextKey(c);try{const data=await fetchCounts(c);if(board.querySelector('table')!==table||contextKey(context(board)||{})!==key)return;table.dataset.scoringChecked='1';decorate(table,data);syncLegend();}catch(e){console.warn('ranking breakdown',e);}finally{pending.delete(table);}}
-function syncLegend(){if(!legend)return;const active=boardIds.map(id=>document.getElementById(id)).find(b=>visible(b)&&b.querySelector('.bs-scoring-table'));legend.hidden=!active;if(document.body.classList.contains('bs-scoring-legend-open')!==!!active)document.body.classList.toggle('bs-scoring-legend-open',!!active);if(!active)return;
+function syncLegend(){if(!legend)return;const active=boardIds.map(id=>document.getElementById(id)).find(b=>visible(b)&&b.querySelector('.bs-scoring-table'));if(legend.hidden===!!active)legend.hidden=!active;if(document.body.classList.contains('bs-scoring-legend-open')!==!!active)document.body.classList.toggle('bs-scoring-legend-open',!!active);if(!active)return;
  const nav=document.getElementById('bsSimpleBottomNav'),layer=active.closest('.bs-screen-layer');
  // Full-screen ranking layers cover the main navigation; ordinary pages sit above it.
  const bottom=layer?0:(visible(nav)?nav.getBoundingClientRect().height:0);
- legend.style.bottom=bottom+'px';
+ if(legend.style.bottom!==bottom+'px')legend.style.bottom=bottom+'px';
  const space=legend.getBoundingClientRect().height+bottom+16;
- document.documentElement.style.setProperty('--bs-scoring-reserve',space+'px');
+ if(document.documentElement.style.getPropertyValue('--bs-scoring-reserve')!==space+'px')document.documentElement.style.setProperty('--bs-scoring-reserve',space+'px');
  document.querySelectorAll('.bs-scoring-scroll').forEach(el=>{if(!el.contains(active))el.classList.remove('bs-scoring-scroll');});
  const scroll=active.closest('.bs-screen-content')||active;if(!scroll.classList.contains('bs-scoring-scroll'))scroll.classList.add('bs-scoring-scroll');
 }
 function refresh(){scheduled=false;for(const id of boardIds){const b=document.getElementById(id);if(visible(b))refreshBoard(b);}syncLegend();}
 function schedule(){if(!scheduled){scheduled=true;root.setTimeout(refresh,40);}}
+function affectsRankings(record){
+ const target=record.target?.nodeType===1?record.target:record.target?.parentElement;if(!target||legend?.contains(target)||target===legend)return false;
+ const boards=boardIds.map(id=>document.getElementById(id)).filter(Boolean);
+ if(record.type==='attributes')return boards.some(b=>b===target||b.contains(target)||target.contains(b));
+ if(boards.some(b=>b===target||b.contains(target)))return true;
+ const selector=boardIds.map(id=>'#'+id).join(',');
+ return [...(record.addedNodes||[]),...(record.removedNodes||[])].some(n=>n.nodeType===1&&(boardIds.includes(n.id)||n.querySelector(selector)));
+}
 function mount(){if(typeof document==='undefined')return;legend=document.createElement('aside');legend.id='bsScoringLegend';legend.hidden=true;legend.setAttribute('aria-label','Puan simgeleri açıklaması');legend.innerHTML=legendMarkup();document.body.appendChild(legend);
- new MutationObserver(records=>{if(records.some(r=>!legend.contains(r.target)&&r.target!==legend))schedule();}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','data-scoring-context']});
+ new MutationObserver(records=>{if(records.some(affectsRankings))schedule();}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','data-scoring-context']});
  root.addEventListener('resize',schedule);document.addEventListener('visibilitychange',schedule);document.addEventListener('click',schedule);schedule();
 }
 return {columns,category,requestArgs,contextKey,legendMarkup,decorate,refreshBoard,syncLegend,mount};

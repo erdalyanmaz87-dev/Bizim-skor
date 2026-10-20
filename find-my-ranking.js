@@ -3,6 +3,7 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   else{root.BizimSkorFindMyRanking=api;api.mount()}
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
+  const toolbarStates=new WeakMap();
   const BOARD_IDS=['weeklyRankingBoard','sezuBoard','generalBoard','championsRankingBoard','championsWeeklyRankingBoard','nationsRankingBoard','nationsWeeklyRankingBoard','friendLeagueRanking'];
 
   function normalizePlayer(value){
@@ -39,7 +40,9 @@
     if(!board)return false;
     const row=findPlayerRow(board,playerName);
     const doc=board.ownerDocument||root.document,id=toolbarId(board);
-    doc.getElementById(id)?.remove?.();
+    const existing=doc.getElementById(id),hidden=board.style?.display==='none',show=shouldShowButton(playerName,row),previous=toolbarStates.get(board);
+    if(existing&&previous?.node===existing&&previous.playerName===playerName&&previous.hidden===hidden&&previous.show===show&&existing.parentNode===board.parentNode&&existing.nextElementSibling===board)return true;
+    existing?.remove?.();
     const toolbar=doc.createElement('div');
     toolbar.id=id;toolbar.className='bs-find-me-toolbar'+(board.style?.display==='none'?' hide':'');
     const homeButton=doc.createElement('button');
@@ -59,6 +62,7 @@
       toolbar.appendChild(button);
     }
     board.insertAdjacentElement('beforebegin',toolbar);
+    toolbarStates.set(board,{node:toolbar,playerName,hidden,show});
     return true;
   }
 

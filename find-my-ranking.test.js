@@ -102,3 +102,12 @@ test('oyuncu satırı sonradan yüklenince kendimi gör düğmesini geri getirir
   ui.enhanceBoard(board,'Erdal');
   assert.deepEqual(inserted.children.map(button=>button.textContent),['🏠 Ana Menü','🎯 Kendimi Gör']);
 });
+
+test('unchanged ranking refresh preserves toolbar and creates no extra DOM nodes',()=>{
+ let inserted=null,created=0;const parent={};
+ const doc={getElementById:()=>inserted,createElement:()=>{created++;return {children:[],dataset:{},appendChild(c){this.children.push(c)},addEventListener(){},remove(){inserted=null}}}};
+ const board={id:'generalBoard',style:{},parentNode:parent,ownerDocument:doc,querySelectorAll:()=>[],insertAdjacentElement(_position,n){inserted=n;n.parentNode=parent;n.nextElementSibling=board}};
+ ui.enhanceBoard(board,'Erdal');const original=inserted,count=created;
+ for(let i=0;i<20;i++)ui.enhanceBoard(board,'Erdal');
+ assert.equal(inserted,original);assert.equal(created,count);
+});
