@@ -1,4 +1,4 @@
-import {matchSoccersFixtures,normalizeSoccersFixture} from './soccersapi.mjs';
+import {matchSoccersFixtures,normalizeSoccersFixture,soccersPollQuota} from './soccersapi.mjs';
 import {resolvePollIntervalMinutes,shouldAdaptivePoll} from './core.mjs';
 
 const COMPETITIONS=[['super_lig','fixtures','results'],['champions_league','champions_league_fixtures','champions_league_results'],['nations_league','nations_league_fixtures','nations_league_results']];
@@ -9,7 +9,7 @@ export async function syncSoccersApi(sb:any,token:string,body:any,options:{autoF
  const gateResponse=await sb.rpc('get_soccersapi_poll_gate');
  if(gateResponse.error)throw gateResponse.error;
  const gate=gateResponse.data?.[0]||{};
- const quota={request_count:Number(gate.request_count||0),remaining_window_minutes:Number(gate.remaining_window_minutes||0),minimum_interval_minutes:5};
+ const quota=soccersPollQuota(gate,now);
  const interval=resolvePollIntervalMinutes(quota);
  if(!preview){
   if(Number(gate.active_fixture_count||0)===0)return {provider:'soccersapi',polled:false,reason:'no_active_fixture'};
