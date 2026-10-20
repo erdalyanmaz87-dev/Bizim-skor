@@ -56,3 +56,15 @@ test('Champions weekly loader paints live points on its first render',async()=>{
  await context.module.exports.loadChampionsWeeklyRanking(3);
  assert.ok(board.innerHTML.includes('Canlı'));assert.ok(board.innerHTML.includes('<b>16</b>'));
 });
+
+test('slow match summaries do not block the weekly points table',async()=>{
+ const liveContext={module:{exports:{}},console};vm.runInNewContext(source,liveContext);
+ const board={dataset:{},innerHTML:'',querySelector:()=>null};let release;
+ const context={module:{exports:{}},console,localStorage:{getItem:()=> 'test-session'},BizimSkorWeeklyLiveRanking:{markup:liveContext.module.exports.markup,acceptSnapshot(){}},document:{getElementById:id=>id==='championsWeeklyRankingBoard'?board:null}};
+ context.sb={rpc:name=>name==='get_live_weekly_ranking'?Promise.resolve({data}):new Promise(resolve=>release=resolve)};
+ vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'weekly-ranking-strip.js'),'utf8'),context);
+ const loading=context.module.exports.loadChampionsWeeklyRanking(3);
+ for(let i=0;i<5;i++)await Promise.resolve();
+ const visibleBeforeSummaries=board.innerHTML.includes('Canlı')&&board.innerHTML.includes('<b>16</b>');
+ release({data:[]});await loading;assert.ok(visibleBeforeSummaries);
+});
