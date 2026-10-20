@@ -10,6 +10,6 @@ test('Fransa - İtalya 3. hafta maçı Uluslar Ligi fırsat maçıdır',()=>{
 test('Uluslar Ligi 5 ve 6. hafta fırsat maçları iki kat puan verir',()=>{
   assert.equal(Opportunity.isNationsOpportunity({fixture_id:9034,week:5}),true);
   assert.equal(Opportunity.isNationsOpportunity({fixture_id:9044,week:6}),true);
-  assert.equal(Opportunity.pointsForNations({fixture_id:9034,week:5,home_score:2,away_score:1},{home_score:2,away_score:1}),8);
-  assert.equal(Opportunity.pointsForNations({fixture_id:9044,week:6,home_score:1,away_score:0},{home_score:2,away_score:0}),2);
+  assert.equal(Opportunity.pointsForNations({fixture_id:9034,week:5,home_score:2,away_score:1},{home_score:2,away_score:1}),20);
+  assert.equal(Opportunity.pointsForNations({fixture_id:9044,week:6,home_score:1,away_score:0},{home_score:2,away_score:0}),4);
 });

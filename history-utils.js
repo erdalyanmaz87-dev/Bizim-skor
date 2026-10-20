@@ -1,14 +1,14 @@
 (function(root,factory){
-  const api=factory();
+  const api=factory(root);
   if(typeof module==='object'&&module.exports)module.exports=api;
   root.BizimSkorHistory=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(root){
   function outcome(home,away){return +home>+away?'1':+home<+away?'2':'X'}
   function scorePrediction(prediction,result){
     if(!prediction||!result||result.home_score==null||result.away_score==null)return{points:0,symbol:'',exact:0,correct:0};
     const exact=+prediction.home_score===+result.home_score&&+prediction.away_score===+result.away_score;
     const correct=outcome(prediction.home_score,prediction.away_score)===outcome(result.home_score,result.away_score);
-    return{points:exact?4:correct?1:0,symbol:exact?'🎯':correct?'⚽':'',exact:exact?1:0,correct:correct?1:0};
+    return{points:(typeof module==='object'&&module.exports?require('./scoring-version-utils.js'):root.BizimSkorScoring).basePoints(prediction,result,(typeof module==='object'&&module.exports?require('./scoring-version-utils.js'):root.BizimSkorScoring).version(prediction,'super_lig')),symbol:exact?'🎯':correct?'⚽':'',exact:exact?1:0,correct:correct?1:0};
   }
   function buildWeeklyRanking(rows){
     const created=value=>{const time=new Date(value||0).getTime();return Number.isFinite(time)&&value?time:Number.MAX_SAFE_INTEGER};
@@ -31,7 +31,7 @@
 
 if(typeof document!=='undefined'&&!document.querySelector('script[data-bizim-integration-loader]')){
   const loader=document.createElement('script');
-  loader.src='ui-integration-loader.js';
+  loader.src='ui-integration-loader.js?v=20261020-scoring-v2';
   loader.defer=true;
   loader.dataset.bizimIntegrationLoader='1';
   document.head.appendChild(loader);
