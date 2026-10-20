@@ -11,6 +11,10 @@ create table public.push_delivery_log (
 alter table public.push_delivery_log enable row level security;
 revoke all on table public.push_delivery_log from anon, authenticated;
 
+-- The dispatcher reserves a delivery, records its response and removes
+-- failed reservations directly through the server-side Data API client.
+grant select, insert, update, delete on table public.push_delivery_log to service_role;
+
 select vault.create_secret(
   gen_random_uuid()::text,
   'notification_cron_secret',

@@ -51,6 +51,12 @@ revoke all on public.live_score_cache from anon, authenticated;
 revoke all on public.live_score_daily_usage from anon, authenticated;
 revoke all on public.live_score_result_audit from anon, authenticated;
 
+-- Edge Functions use these tables directly. Do not depend on public's
+-- automatic Data API grants when installing on a fresh database.
+grant select, insert, update on table public.live_fixture_links to service_role;
+grant select on table public.live_score_cache to service_role;
+-- Usage and result-audit writes run inside the owner-executed RPCs below.
+
 create or replace function public.get_live_score_poll_gate(p_now timestamptz default now())
 returns table(active_fixture_count integer,request_count integer,five_minutes_elapsed boolean)
 language sql
