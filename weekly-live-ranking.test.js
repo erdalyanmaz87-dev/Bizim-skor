@@ -45,3 +45,14 @@ test('current week switches at kickoff, before any result is entered',()=>{
  assert.equal(f(fixtures,Date.parse('2026-10-20T16:45:00Z')),3);
  assert.equal(f(fixtures,Date.parse('2026-10-20T16:45:01Z')),3);
 });
+
+test('Champions weekly loader paints live points on its first render',async()=>{
+ const context={module:{exports:{}},console,localStorage:{getItem:()=> 'test-session'}};
+ const liveContext={module:{exports:{}},console};vm.runInNewContext(source,liveContext);context.BizimSkorWeeklyLiveRanking={markup:liveContext.module.exports.markup,acceptSnapshot(){}};
+ const board={dataset:{},innerHTML:''},title={};
+ context.document={getElementById:id=>id==='championsWeeklyRankingBoard'?board:id==='weeklyRankingTitle'?title:null};
+ context.sb={rpc:async name=>name==='get_live_weekly_ranking'?{data}:{data:[]}};
+ vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'weekly-ranking-strip.js'),'utf8'),context);
+ await context.module.exports.loadChampionsWeeklyRanking(3);
+ assert.ok(board.innerHTML.includes('Canlı'));assert.ok(board.innerHTML.includes('<b>16</b>'));
+});
