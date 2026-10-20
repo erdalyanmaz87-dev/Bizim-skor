@@ -13,6 +13,7 @@
     const query=await client.rpc('get_super_league_general_ranking');if(query.error)throw query.error;
     const rows=(query.data||[]).map(row=>({name:row.player_name,pts:+row.total_points,ex:+row.exact_scores,cr:+row.correct_results,rank:+row.league_rank}));
     const clean=escape||String,identity=name=>root.BizimSkorPlayerIdentity?.markup?.(name)||clean(name);
+    doc.getElementById('generalBoard').dataset.scoringContext=JSON.stringify({competition:'super_lig'});
     doc.getElementById('generalBoard').innerHTML=`<table><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>🎯</th></tr>${rows.map(row=>`<tr><td>${row.rank===1?'🥇 1':row.rank===2?'🥈 2':row.rank===3?'🥉 3':row.rank}</td><td>${identity(row.name)}</td><td><b>${row.pts}</b></td><td>${row.ex}</td></tr>`).join('')}</table>`;
     return rows;
   }

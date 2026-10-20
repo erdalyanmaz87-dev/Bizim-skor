@@ -31,7 +31,7 @@
 
 if(typeof document!=='undefined'&&!document.querySelector('script[data-bizim-integration-loader]')){
   const loader=document.createElement('script');
-  loader.src='ui-integration-loader.js?v=20261020-scoring-v2';
+  loader.src='ui-integration-loader.js?v=20261020-ranking-icons-v1';
   loader.defer=true;
   loader.dataset.bizimIntegrationLoader='1';
   document.head.appendChild(loader);
