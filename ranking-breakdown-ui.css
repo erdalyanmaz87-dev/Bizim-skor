@@ -15,3 +15,23 @@ body :is(#weeklyRankingBoard,#generalBoard,#championsWeeklyRankingBoard,#champio
 #bsScoringLegend p{margin:7px 0 3px;font-size:11px;font-weight:700}.bs-scoring-history-note{font-size:9px;display:block;color:#53647b}
 body.bs-scoring-legend-open .bs-scoring-scroll{padding-bottom:var(--bs-scoring-reserve,135px)!important;scroll-padding-bottom:var(--bs-scoring-reserve,135px)}
 body.dark #bsScoringLegend,body[data-theme="dark"] #bsScoringLegend{background:#102846;color:#edf5ff;border-color:#35618b}
+
+/* Keep column labels at the top of the scrolling standings, including legacy weeks. */
+:is(#weeklyRankingBoard,#generalBoard,#championsWeeklyRankingBoard,#championsRankingBoard,#nationsWeeklyRankingBoard,#nationsRankingBoard,#friendLeagueRanking,#board,#sezuBoard) table tr:first-child > th,
+.league-table-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:3;
+  background:#fff!important;
+  color:#17243d!important;
+  box-shadow:0 2px 0 #d8e1ee;
+}
+/* An overflow wrapper would capture sticky positioning instead of the screen scroller. */
+#nationsRanking #nationsRankingBoard{overflow:visible!important}
+html[data-theme="dark"] :is(#weeklyRankingBoard,#generalBoard,#championsWeeklyRankingBoard,#championsRankingBoard,#nationsWeeklyRankingBoard,#nationsRankingBoard,#friendLeagueRanking,#board,#sezuBoard) table tr:first-child > th,
+html[data-theme="dark"] .league-table-head,
+:is(#championsRankingBoard,#championsWeeklyRankingBoard,#nationsRankingBoard,#nationsWeeklyRankingBoard) table tr:first-child > th{
+  background:#102846!important;
+  color:#edf5ff!important;
+  box-shadow:0 2px 0 #35618b;
+}

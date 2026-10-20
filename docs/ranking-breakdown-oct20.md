@@ -13,3 +13,7 @@ The original exact-score counter remains across all periods. New difference/tota
 - Browser against local app and live public RPC: 93 player rows, seven columns; 320/390/430px widths fit without horizontal overflow. Legend position stays fixed during scrolling; last player remains above legend at the bottom.
 - Browser category fixture confirms legacy layout unchanged and rank, points and original exact count preserved when adding exclusive new categories.
 - Node suite: 629 tests, 625 pass. Four existing failures remain in arena-eligibility-zones (two), arena-home-spotlight (old season text), and two-week-predictions-ui (old unversioned script URL). New category tests and cache-loader test pass.
+
+## Frozen column headings
+
+Column headings now use sticky positioning inside the screen scroller for all nine table-based standings (including legacy weeks) and Arena's grid. The Nations League overflow wrapper is released so it cannot trap sticky positioning. Opaque light/dark header backgrounds keep scrolling players from showing through. Browser checks confirm fixed heading position in all ten contexts and both themes; scoring and row values are unchanged.
