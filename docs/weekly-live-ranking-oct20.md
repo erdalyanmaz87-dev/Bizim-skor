@@ -10,3 +10,5 @@ Validation:
 - JavaScript syntax and behavioral tests: label lifecycle, escaping, weekly-only scope, observer throttling, unchanged DOM, scroll, hidden views and async race guards.
 - Rolled-back database integration checks: session rejection, all three leagues, live points, future exclusion, finished weeks and FT transition without losing pending final scores.
 - No runtime shell/browser environment was available; browser appearance has not been manually verified.
+
+The default week advances at kickoff, without waiting for a completed result. Entering weekly rankings selects today's most recently started competition. Switching competition selects its latest started week; week-strip buttons still allow viewing earlier weeks.

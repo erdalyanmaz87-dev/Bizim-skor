@@ -37,3 +37,11 @@ test('week changes and newer table renders reject old responses',async()=>{
  f.board.dataset.scoringContext='{"competition":"super_lig","week":10}';resolve({data});await pending;assert.equal(f.stats().writes,0);
  f=fixture();f.root.sb.rpc=()=>new Promise(r=>resolve=r);pending=f.api.refreshBoard(f.board);f.replaceTable();resolve({data});await pending;assert.equal(f.stats().writes,0);
 });
+
+test('current week switches at kickoff, before any result is entered',()=>{
+ const context={module:{exports:{}},console};vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'weekly-ranking-strip.js'),'utf8'),context);
+ const f=context.module.exports.latestStartedWeek,fixtures=[{week:2,kickoff:'2026-10-01T00:00:00Z'},{week:3,kickoff:'2026-10-20T16:45:00Z'},{week:4,kickoff:'2026-11-03T00:00:00Z'}];
+ assert.equal(f(fixtures,Date.parse('2026-10-20T16:44:59Z')),2);
+ assert.equal(f(fixtures,Date.parse('2026-10-20T16:45:00Z')),3);
+ assert.equal(f(fixtures,Date.parse('2026-10-20T16:45:01Z')),3);
+});

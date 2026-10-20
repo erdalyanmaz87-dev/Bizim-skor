@@ -53,10 +53,11 @@ begin
   )
   select jsonb_build_object(
    'live',coalesce((select bool_or(is_live) from fixtures),false),
+   'current_week',(select max(w.week) from public.%I w where w.season=$1 and w.kickoff<=now()),
    'has_new_scoring',coalesce((select bool_or(scoring_version=2) from fixtures),false),
    'players',coalesce((select jsonb_agg(to_jsonb(r)-'created_at' order by league_rank) from ranked r),'[]'::jsonb)
   )
- $query$,v_prefix||'fixtures',v_prefix||'results',v_points,v_prefix||'predictions')
+ $query$,v_prefix||'fixtures',v_prefix||'results',v_points,v_prefix||'predictions',v_prefix||'fixtures')
  into v_output using p_season,p_week,p_competition;
  return v_output;
 end
