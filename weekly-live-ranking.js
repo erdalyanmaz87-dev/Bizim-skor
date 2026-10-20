@@ -53,6 +53,10 @@
    console.warn('weekly live ranking',error);
   }finally{s.pending=false;}
  }
+ function acceptSnapshot(board,data){
+  const c=context(board);if(!c)return;
+  state.set(board,{key:JSON.stringify(c),token:root.localStorage?.getItem('bizimSkorFriendToken')||null,signature:JSON.stringify(data),table:board.querySelector('table'),at:Date.now(),pending:false});
+ }
  function refresh(force=false){
   if(root.document?.visibilityState==='hidden')return;
   return Promise.all(Object.keys(boards).map(id=>refreshBoard(root.document?.getElementById(id),force)));
@@ -74,5 +78,5 @@
   };
   if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',start,{once:true});else start();
  }
- return {boards,interval,context,markup,refreshBoard,refresh,mount};
+ return {boards,interval,context,markup,refreshBoard,acceptSnapshot,refresh,mount};
 });
