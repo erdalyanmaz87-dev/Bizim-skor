@@ -138,6 +138,7 @@
   async function refreshAfterAdminUpdate(finished){
     try{if(typeof loadDailyMatches==='function')await loadDailyMatches()}catch(e){console.warn('admin live daily refresh',e)}
     if(!finished)return;
+    try{await root.BizimSkorWeeklyLiveRanking?.refresh?.(true)}catch(e){console.warn('admin live weekly refresh',e)}
     for(const fn of ['loadLive','loadGeneral','refreshPersonalRanks']){
       try{const callable=typeof root?.[fn]==='function'?root[fn]:null;if(callable)await callable()}catch(e){console.warn('admin live refresh',fn,e)}
     }
