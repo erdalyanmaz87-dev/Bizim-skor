@@ -38,3 +38,9 @@ export function normalizeSoccersFixture(raw){
  const elapsed=minute&&parts.every(p=>/^\d+$/.test(p))?parts.reduce((s,n)=>s+Number(n),0):null;
  return {provider_fixture_id:id,status,elapsed:elapsed==null?null:Math.min(130,elapsed),home_score,away_score};
 }
+
+// Temporary matchnight acceleration; normal quota-based cadence resumes automatically.
+export function soccersPollQuota(gate,now=new Date()){
+ const tonight=new Date(now).getTime()<Date.parse('2026-10-20T22:00:00Z');
+ return {request_count:Number(gate.request_count||0),remaining_window_minutes:tonight?1:Number(gate.remaining_window_minutes||0),minimum_interval_minutes:tonight?2:5};
+}
