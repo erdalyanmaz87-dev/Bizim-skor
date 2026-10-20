@@ -5,7 +5,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const STORAGE_KEY='bizimSkorTheme';
   const COLORS={light:'#071633',dark:'#020617'};
-  const UI_INTEGRATION_VERSION='20261020-ranking-scroll-perf-v1';
+  const UI_INTEGRATION_VERSION='20261021-home-status-v1';
   let waitingForDocument=false,observerStarted=false,teamBootstrapLoaded=false;
 
   function normalizeTheme(value){return value==='dark'?'dark':'light'}
