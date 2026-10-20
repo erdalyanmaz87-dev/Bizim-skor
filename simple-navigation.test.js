@@ -6,6 +6,10 @@ assert.equal(nav.isArchivedStatusCard(statusCard('Şampiyonlar Ligi 2. Hafta','2
 assert.equal(nav.isArchivedStatusCard(statusCard('Şampiyonlar Ligi 3. Hafta','2026-10-20T16:45:00Z','theme-champions'),Date.parse('2026-10-15T18:00:00Z')),false);
 assert.equal(nav.isArchivedStatusCard(statusCard('Süper Lig 8. Hafta','2026-10-16T17:00:00Z','theme-super'),Date.parse('2026-10-15T18:00:00Z')),false);
 
+assert.equal(nav.isArchivedStatusCard(statusCard('Süper Lig 8. Hafta','2026-10-16T17:00:00Z','theme-super'),Date.parse('2026-10-21T00:20:00+03:00')),true);
+assert.equal(nav.isArchivedStatusCard(statusCard('Süper Lig 8. Hafta','2026-10-16T17:00:00Z','theme-super'),Date.parse('2026-10-18T20:00:00+03:00')),false);
+assert.equal(nav.isArchivedStatusCard(statusCard('Süper Lig 9. Hafta','2026-10-23T17:00:00Z','theme-super'),Date.parse('2026-10-21T00:20:00+03:00')),false);
+
 assert.strictEqual(nav.canonicalTab('live'),'weeklyRankings');
 assert.strictEqual(nav.canonicalTab('weeklyRankings'),'weeklyRankings');
 assert.deepStrictEqual(nav.preferredTabNames('weeklyRankings'),['weeklyRankings','live']);
