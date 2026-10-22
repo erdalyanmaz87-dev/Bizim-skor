@@ -10,7 +10,31 @@
   function mergeStatuses(leagueStatuses,champions,nations=[]){return[...(leagueStatuses||[]),...(Array.isArray(champions)?champions:champions?[champions]:[]),...(nations||[])]}
   function statusTexts(rows){return (rows||[]).map(x=>x.text)}
   async function getStatuses(){let weeks=[],fixtures=[];try{weeks=[...(visiblePredictionWeeks||[])];fixtures=[...(allFixtures||[])]}catch(_){return[]}const name=localStorage.getItem('bizimSkorName');if(!name||!weeks.length)return[];const q=await sb.from('predictions').select('week,fixture_id').eq('player_name',name).in('week',weeks);if(q.error)throw q.error;return weeks.map(week=>{const weekFixtures=fixtures.filter(f=>+f.week===+week),total=weekFixtures.length,saved=new Set((q.data||[]).filter(p=>+p.week===+week).map(p=>p.fixture_id)).size,deadline=weekFixtures.map(f=>f.kickoff).filter(Boolean).sort()[0]||null;return weekStatus(week,saved,total,deadline)})}
-  async function getChampionsStatuses(){const token=localStorage.getItem('bizimSkorFriendToken');if(!token)return[];const q=await sb.rpc('get_champions_league_available_weeks',{p_token:token,p_season:'2026/27'});if(q.error)throw q.error;const weeks=[...new Set((q.data||[]).map(x=>Number(x.week)))].sort((a,b)=>a-b).slice(-2);return Promise.all(weeks.map(async week=>{const result=await sb.rpc('get_champions_league_week',{p_token:token,p_season:'2026/27',p_week:week});if(result.error)throw result.error;const rows=result.data||[],saved=rows.filter(x=>x.predicted_home!=null&&x.predicted_away!=null).length,deadline=rows.map(x=>x.kickoff).filter(Boolean).sort()[0]||null;return championsStatus(saved,rows.length,deadline,week)}))}
+  async function getChampionsStatuses(){
+    const token=localStorage.getItem('bizimSkorFriendToken');if(!token)return[];
+    const q=await sb.rpc('get_champions_league_available_weeks',{p_token:token,p_season:'2026/27'});
+    if(q.error)throw q.error;
+    const weeks=[...new Set((q.data||[]).map(x=>Number(x.week)).filter(Number.isFinite))].sort((a,b)=>a-b).slice(-2);
+    const details=await Promise.all(weeks.map(async week=>{
+      const result=await sb.rpc('get_champions_league_week',{p_token:token,p_season:'2026/27',p_week:week});
+      if(result.error)throw result.error;
+      return{week,rows:result.data||[]};
+    }));
+    const ids=[...new Set(details.flatMap(x=>x.rows.map(row=>Number(row.fixture_id)).filter(Number.isFinite)))];
+    let finished=new Set(),resultsAvailable=false;
+    if(ids.length){
+      const results=await sb.from('champions_league_results').select('fixture_id,home_score,away_score').in('fixture_id',ids);
+      if(!results.error){
+        resultsAvailable=true;
+        finished=new Set((results.data||[]).filter(x=>x.home_score!=null&&x.away_score!=null).map(x=>Number(x.fixture_id)));
+      }else console.warn('champions completion check',results.error);
+    }
+    return details.filter(({rows})=>!resultsAvailable||!rows.length||!rows.every(x=>finished.has(Number(x.fixture_id))&&Date.parse(x.kickoff)<=Date.now())).map(({week,rows})=>{
+      const saved=rows.filter(x=>x.predicted_home!=null&&x.predicted_away!=null).length;
+      const deadline=rows.map(x=>x.kickoff).filter(Boolean).sort()[0]||null;
+      return championsStatus(saved,rows.length,deadline,week);
+    });
+  }
   async function getChampionsStatus(){return(await getChampionsStatuses()).at(-1)||null}
   async function getNationsStatuses(){try{if(root.BizimSkorNationsUI?.getStatuses)return await root.BizimSkorNationsUI.getStatuses()}catch(error){console.warn('nations prediction CTA status',error)}return[]}
   async function refresh(){const tab=document.querySelector('.tabs .tab[data-tab="pred"]');if(!tab)return;tab.innerHTML='<span class="pred-content"><span class="pred-main">⚽ TAHMİN YAP</span><span class="pred-statuses"><span class="pred-sub">Tahminlerini yapmak için dokun</span></span></span><span class="pred-arrow">›</span>';let leagueStatuses=[];try{leagueStatuses=await getStatuses()}catch(error){console.warn('league prediction CTA status',error)}let champions=null;try{champions=await getChampionsStatuses()}catch(error){console.warn('champions prediction CTA status',error)}const nations=await getNationsStatuses();const statuses=mergeStatuses(leagueStatuses,champions,nations);if(statuses.length){const box=tab.querySelector('.pred-statuses');box.innerHTML=statuses.map(status=>`<span class="pred-sub ${status.complete?'pred-done':'pred-missing'}${status.competition==='champions'?' pred-champions':''}${status.competition==='nations'?' pred-nations':''}">${status.text}</span>`).join('')}}
