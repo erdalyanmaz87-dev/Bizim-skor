@@ -54,7 +54,7 @@
     'genclerbirligi':['turkey','genclerbirligi','https://assets.football-logos.cc/logos/turkey/1500x1500/genclerbirligi.e4cf70a6.png'],
     'amed-sk':['turkey','amed','https://assets.football-logos.cc/logos/turkey/1500x1500/amed.f1f25a66.png'],
     'corum-fk':['turkey','corum','https://assets.football-logos.cc/logos/turkey/1500x1500/corum.6565bf1b.png'],
-    'kocaelispor':['turkey','kocaelispor'], 'erzurumspor':['turkey','erzurumspor'],
+    'kocaelispor':['turkey','kocaelispor','assets/team-logos/kocaelispor.png'], 'erzurumspor':['turkey','erzurumspor'],
     'paris-saint-germain':['france','paris-saint-germain','https://assets.football-logos.cc/logos/france/1500x1500/paris-saint-germain.976d063a.png'],
     'bayern-munchen':['germany','bayern-munchen','https://assets.football-logos.cc/logos/germany/1500x1500/bayern-munchen.1eac18e8.png'],
     'real-madrid':['spain','real-madrid','https://assets.football-logos.cc/logos/spain/1500x1500/real-madrid.e34f5ba5.png'],
@@ -70,18 +70,18 @@
     'aston-villa':['england','aston-villa','https://assets.football-logos.cc/logos/england/1500x1500/aston-villa.5265a6b0.png'],
     'fc-porto':['portugal','fc-porto','https://assets.football-logos.cc/logos/portugal/1500x1500/fc-porto.bef0a887.png'],
     'manchester-united':['england','manchester-united','https://assets.football-logos.cc/logos/england/1500x1500/manchester-united.104c5aa9.png'],
-    'club-brugge':['belgium','club-brugge'], 'real-betis':['spain','real-betis','https://assets.football-logos.cc/logos/spain/1500x1500/real-betis.18a05d13.png'],
+    'club-brugge':['belgium','club-brugge','assets/team-logos/club-brugge.png'], 'real-betis':['spain','real-betis','https://assets.football-logos.cc/logos/spain/1500x1500/real-betis.18a05d13.png'],
     'psv':['netherlands','psv','https://assets.football-logos.cc/logos/netherlands/1500x1500/psv.235a2590.png'],
     'feyenoord':['netherlands','feyenoord','https://assets.football-logos.cc/logos/netherlands/1500x1500/feyenoord.6ee42168.png'],
     'lille':['france','lille','https://assets.football-logos.cc/logos/france/1500x1500/lille.682b7a4f.png'],
-    'bodo-glimt':['norway','bodo-glimt'], 'napoli':['italy','napoli','https://assets.football-logos.cc/logos/italy/1500x1500/napoli.3e57a185.png'],
+    'bodo-glimt':['norway','bodo-glimt','assets/team-logos/bodo-glimt.png'], 'napoli':['italy','napoli','https://assets.football-logos.cc/logos/italy/1500x1500/napoli.3e57a185.png'],
     'rb-leipzig':['germany','rb-leipzig','https://assets.football-logos.cc/logos/germany/1500x1500/rb-leipzig.ea056608.png'],
     'villarreal':['spain','villarreal','https://assets.football-logos.cc/logos/spain/1500x1500/villarreal.6ced8346.png'],
-    'shakhtar-donetsk':['ukraine','shakhtar-donetsk'], 'slavia-praha':['czech-republic','slavia-praha'], 'slovan-bratislava':['slovakia','slovan-bratislava'],
+    'shakhtar-donetsk':['ukraine','shakhtar-donetsk','assets/team-logos/shakhtar-donetsk.png'], 'slavia-praha':['czech-republic','slavia-praha','assets/team-logos/slavia-praha.png'], 'slovan-bratislava':['slovakia','slovan-bratislava','assets/team-logos/slovan-bratislava.svg'],
     'vfb-stuttgart':['germany','vfb-stuttgart','https://assets.football-logos.cc/logos/germany/1500x1500/vfb-stuttgart.f5cd8411.png'],
-    'aek-athens':['greece','aek-athens'], 'lask':['austria','lask'], 'como-1907':['italy','como-1907'],
+    'aek-athens':['greece','aek-athens','assets/team-logos/aek-athens.png'], 'lask':['austria','lask','assets/team-logos/lask.png'], 'como-1907':['italy','como-1907','assets/team-logos/como-1907.png'],
     'rc-lens':['france','rc-lens','https://assets.football-logos.cc/logos/france/1500x1500/rc-lens.05ddeba2.png'],
-    'viking-fk':['norway','viking-fk'], 'sabah':['azerbaijan','sabah']
+    'viking-fk':['norway','viking-fk','assets/team-logos/viking-fk.png'], 'sabah':['azerbaijan','sabah','assets/team-logos/sabah.png']
   };
   const COUNTRY_ALIASES={
     'turkiye':'turkey','turkey':'turkey','fransa':'france','france':'france','italya':'italy','italy':'italy','belcika':'belgium','belgium':'belgium',

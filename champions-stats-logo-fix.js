@@ -1,7 +1,7 @@
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;else{root.BizimSkorChampionsStatsLogoFix=api;api.mount();}})(typeof globalThis!=='undefined'?globalThis:this,function(root){
   const LOGOS={
-    'sabah':'https://raw.githubusercontent.com/JoseArroyave/football-logos/main/logos/azerbaijan/Sabah.svg',
-    'slavia prag':'https://raw.githubusercontent.com/JoseArroyave/football-logos/main/logos/czech-republic/SK_Slavia_Praha.svg'
+    'sabah':'assets/team-logos/sabah.png',
+    'slavia prag':'assets/team-logos/slavia-praha.png'
   };
   const key=v=>String(v||'').trim().toLocaleLowerCase('tr-TR');
   function fixtureIdFromRow(row){const input=row?.querySelector?.('input[id^="clh"],input[id^="cla"]');const m=String(input?.id||'').match(/cl[ha](\d+)/);return m?Number(m[1]):null}
