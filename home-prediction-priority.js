@@ -50,7 +50,7 @@
         finished=new Set((results.data||[]).filter(x=>x.home_score!=null&&x.away_score!=null).map(x=>Number(x.fixture_id)));
       }else console.warn('champions completion check',results.error);
     }
-    return details.filter(({rows})=>!resultsAvailable||!rows.length||!rows.every(x=>finished.has(Number(x.fixture_id))&&Date.parse(x.kickoff)<=Date.now())).map(({week,rows})=>{
+    return details.filter(({rows})=>!rows.length||!rows.every(x=>x.real_home!=null&&x.real_away!=null&&Date.parse(x.kickoff)<=Date.now())).map(({week,rows})=>{
       const saved=rows.filter(x=>x.predicted_home!=null&&x.predicted_away!=null).length;
       const deadline=rows.map(x=>x.kickoff).filter(Boolean).sort()[0]||null;
       return championsStatus(saved,rows.length,deadline,week);
