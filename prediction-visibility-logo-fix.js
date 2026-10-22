@@ -7,7 +7,7 @@
     'c rizespor':'https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Rizespor.png',
     'caykur rizespor':'https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Rizespor.png',
     'rizespor':'https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Rizespor.png',
-    'kocaelispor':'https://commons.wikimedia.org/wiki/Special:Redirect/file/Kocaelispor_AKBALIK.png'
+    'kocaelispor':'assets/team-logos/kocaelispor.png'
   };
   function ensureStyles(doc=document){
     if(doc.getElementById(STYLE_ID))return false;

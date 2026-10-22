@@ -8,6 +8,6 @@ test('hafta seçicinin çizdiği satırdan fikstür id okunur',()=>{
 });
 
 test('ekranda eksik görünen Şampiyonlar Ligi logolarının doğrulanmış adresleri vardır',()=>{
-  assert.match(fix.logoUrlForTeam('Sabah'),/raw\.githubusercontent\.com\/JoseArroyave\/football-logos\/main\/logos\/azerbaijan\/Sabah\.svg/);
-  assert.match(fix.logoUrlForTeam('Slavia Prag'),/raw\.githubusercontent\.com\/JoseArroyave\/football-logos\/main\/logos\/czech-republic\/SK_Slavia_Praha\.svg/);
+  assert.equal(fix.logoUrlForTeam('Sabah'),'assets/team-logos/sabah.png');
+  assert.equal(fix.logoUrlForTeam('Slavia Prag'),'assets/team-logos/slavia-praha.png');
 });

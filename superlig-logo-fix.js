@@ -13,7 +13,7 @@
     'rizespor':'rizespor'
   };
   const LOGOS={
-    kocaelispor:'https://kocaelispor.com.tr/images/upload/7cad04d86cb9f4219a0e635b47121d2f.png',
+    kocaelispor:'assets/team-logos/kocaelispor.png',
     erzurumspor:'https://erzurumsporfk.org/wp-content/uploads/2025/08/erzurumsporfklogo.png',
     rizespor:'https://assets.football-logos.cc/logos/turkey/1500x1500/rizespor.bb8c7526.png'
   };
