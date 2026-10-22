@@ -9,7 +9,28 @@
   function championsStatus(saved,total,deadline=null,week=2){const complete=total>0&&saved>=total;return{competition:'champions',week,complete,deadline,text:complete?`🟢 Şampiyonlar Ligi ${week}. Hafta tahminlerin tamamlandı ✓`:`🔴 Şampiyonlar Ligi ${week}. Hafta tahminini yapmadın →`}}
   function mergeStatuses(leagueStatuses,champions,nations=[]){return[...(leagueStatuses||[]),...(Array.isArray(champions)?champions:champions?[champions]:[]),...(nations||[])]}
   function statusTexts(rows){return (rows||[]).map(x=>x.text)}
-  async function getStatuses(){let weeks=[],fixtures=[];try{weeks=[...(visiblePredictionWeeks||[])];fixtures=[...(allFixtures||[])]}catch(_){return[]}const name=localStorage.getItem('bizimSkorName');if(!name||!weeks.length)return[];const q=await sb.from('predictions').select('week,fixture_id').eq('player_name',name).in('week',weeks);if(q.error)throw q.error;return weeks.map(week=>{const weekFixtures=fixtures.filter(f=>+f.week===+week),total=weekFixtures.length,saved=new Set((q.data||[]).filter(p=>+p.week===+week).map(p=>p.fixture_id)).size,deadline=weekFixtures.map(f=>f.kickoff).filter(Boolean).sort()[0]||null;return weekStatus(week,saved,total,deadline)})}
+  async function getStatuses(){
+    let weeks=[],fixtures=[];
+    try{weeks=[...(visiblePredictionWeeks||[])];fixtures=[...(allFixtures||[])]}catch(_){return[]}
+    const name=localStorage.getItem('bizimSkorName');if(!name||!weeks.length)return[];
+    const weekFixtures=fixtures.filter(f=>weeks.includes(Number(f.week)));
+    const ids=weekFixtures.map(f=>Number(f.id));
+    const [q,results]=await Promise.all([
+      sb.from('predictions').select('week,fixture_id').eq('player_name',name).in('week',weeks),
+      ids.length?sb.from('results').select('fixture_id,home_score,away_score').in('fixture_id',ids):Promise.resolve({data:[],error:null})
+    ]);
+    if(q.error)throw q.error;
+    // Do not hide any round if completion cannot be verified.
+    if(results.error)console.warn('super league completion check',results.error);
+    const finished=new Set((results.data||[]).filter(r=>r.home_score!=null&&r.away_score!=null).map(r=>Number(r.fixture_id)));
+    return weeks.map(week=>{
+      const rows=weekFixtures.filter(f=>Number(f.week)===Number(week));
+      if(!results.error&&rows.length&&rows.every(f=>finished.has(Number(f.id))&&(!f.kickoff||Date.parse(f.kickoff)<=Date.now())))return null;
+      const total=rows.length,saved=new Set((q.data||[]).filter(p=>Number(p.week)===Number(week)).map(p=>p.fixture_id)).size;
+      const deadline=rows.map(f=>f.kickoff).filter(Boolean).sort()[0]||null;
+      return weekStatus(week,saved,total,deadline);
+    }).filter(Boolean);
+  }
   async function getChampionsStatuses(){
     const token=localStorage.getItem('bizimSkorFriendToken');if(!token)return[];
     const q=await sb.rpc('get_champions_league_available_weeks',{p_token:token,p_season:'2026/27'});
