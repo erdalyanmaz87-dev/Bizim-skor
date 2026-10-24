@@ -1,4 +1,4 @@
-import {matchSoccersFixtures,normalizeSoccersFixture,soccersPollQuota,needsPreflight} from './soccersapi.mjs';
+import {matchSoccersFixtures,normalizeSoccersFixture,soccersPollQuota,needsPreflight,nextMatchdayEnd} from './soccersapi.mjs';
 import {resolvePollIntervalMinutes,shouldAdaptivePoll} from './core.mjs';
 
 const COMPETITIONS=[['super_lig','fixtures','results'],['champions_league','champions_league_fixtures','champions_league_results'],['nations_league','nations_league_fixtures','nations_league_results']];
@@ -10,7 +10,7 @@ export async function syncSoccersApi(sb:any,token:string,body:any,options:{autoF
  const active=Number(gate.active_fixture_count||0)>0;
  const liveDue=active&&shouldAdaptivePoll({...quota,active_fixture_count:gate.active_fixture_count,last_requested_at:gate.last_observation_at,scheduling_tolerance_ms:15000});
  if(!preview&&active&&!liveDue)return {provider:'soccersapi',polled:false,reason:interval==null?'daily_quota_guard':'throttled',poll_interval_minutes:interval};
- const start=new Date(now.getTime()-4*3600000).toISOString(),end=new Date(now.getTime()+24*3600000).toISOString();
+ const start=new Date(now.getTime()-4*3600000).toISOString(),end=nextMatchdayEnd(now).toISOString();
  const [linkQ,logQ]=await Promise.all([sb.from('live_fixture_links').select('competition,fixture_id,provider_fixture_id,provider,enabled'),sb.from('live_score_discovery_log').select('competition,fixture_id,attempted_at,status')]);
  if(linkQ.error||logQ.error)throw(linkQ.error||logQ.error);
  const key=(f:any)=>`${f.competition}:${f.id??f.fixture_id}`;

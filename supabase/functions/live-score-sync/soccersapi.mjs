@@ -1,7 +1,11 @@
 const LEAGUES={super_lig:3515,champions_league:539,nations_league:366};
+export function nextMatchdayEnd(now=new Date()){
+ const day=new Date(now).toLocaleDateString('en-CA',{timeZone:'Europe/Istanbul'});
+ return new Date(Date.parse(day+'T00:00:00+03:00')+48*3600000-1);
+}
 export function needsPreflight(fixture,log,link,now=new Date()){
  const at=new Date(now).getTime(),kickoff=Date.parse(fixture.kickoff),until=kickoff-at;
- if(!Number.isFinite(kickoff)||until<=0||until>24*3600000||link?.enabled===false||Number(link?.provider_fixture_id)>0)return false;
+ if(!Number.isFinite(kickoff)||until<=0||kickoff>nextMatchdayEnd(now).getTime()||link?.enabled===false||Number(link?.provider_fixture_id)>0)return false;
  const last=Date.parse(log?.attempted_at),age=at-last;
  if(!Number.isFinite(last))return true;
  if(until<=15*60000&&last<kickoff-15*60000)return true;

@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import * as api from '../supabase/functions/live-score-sync/soccersapi.mjs';
 const now=new Date('2026-10-24T12:00:00Z');
 const fixture={competition:'super_lig',id:122,kickoff:'2026-10-24T16:00:00Z'};
+test('covers all of tomorrow in Istanbul, including matches more than 24 hours away',()=>{
+ const early=new Date('2026-10-24T06:00:00Z');
+ assert.equal(api.needsPreflight({...fixture,kickoff:'2026-10-25T20:59:59Z'},null,null,early),true);
+ assert.equal(api.needsPreflight({...fixture,kickoff:'2026-10-25T21:00:00Z'},null,null,early),false);
+ assert.equal(api.nextMatchdayEnd(new Date('2026-10-24T21:05:00Z')).toISOString(),'2026-10-26T20:59:59.999Z');
+});
 test('matches the actual Amed provider name without accepting unrelated clubs or duplicate matches',()=>{
  const f={...fixture,home_team:'Samsunspor',away_team:'Amed SK'};
  const raw={id:2628178,league:{id:3515},time:{timestamp:1792868400,timezone:'UTC+3'},teams:{home:{name:'Samsunspor'},away:{name:'Amed Sportif Faaliyetler'}}};
