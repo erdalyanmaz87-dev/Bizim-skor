@@ -9,7 +9,7 @@ async function shareSelectedLeague(host=root,doc=typeof document!=='undefined'?d
   const inviter=host?.localStorage?.getItem?.('bizimSkorName')||'';
   const leagueId=doc?.getElementById?.('friendLeagueSelect')?.value||'';
   const joinCode=doc?.getElementById?.('friendLeagueInviteCode')?.textContent?.trim()||'';
-  const base=(host?.location?.origin||'')+(host?.location?.pathname||'/');
+  const base='https://bizimskor.com/';
   const url=buildLeagueInviteUrl(base,inviter,leagueId,joinCode);if(!url)return false;
   const data={title:'Bizim Skor',text:'Bizim Skor arkadaş ligime katıl 👥',url};
   if(host?.navigator?.share){try{await host.navigator.share(data);return true}catch(e){if(e?.name==='AbortError')return false}}

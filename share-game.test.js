@@ -48,3 +48,18 @@ test('recordShareClick requires a valid friend session token',()=>{
  assert.equal(share.recordShareClick({localStorage:{getItem:()=>''},sb:host.sb}),false);
  assert.equal(rpcCall,null);
 });
+
+
+test('old Vercel installs share the canonical domain with inviter intact',()=>{
+ const host={location:{origin:'https://bizim-skor-live.vercel.app',pathname:'/'},localStorage:{getItem:()=> 'Erdal'}};
+ assert.equal(share.personalInviteUrl(host),'https://bizimskor.com/?invite=Erdal');
+ assert.equal(share.currentGameUrl({}),'https://bizimskor.com/');
+});
+test('native sharing includes the invitation link only once',async()=>{
+ let payload;
+ const host={location:{origin:'https://bizim-skor-live.vercel.app'},localStorage:{getItem:key=>key==='bizimSkorName'?'Erdal':''},navigator:{share:async data=>{payload=data}}};
+ await share.shareGame(host);
+ assert.equal(payload.text.split('https://bizimskor.com/?invite=Erdal').length-1,1);
+ assert.equal(payload.url,undefined);
+ assert.ok(!JSON.stringify(payload).includes('vercel.app'));
+});
