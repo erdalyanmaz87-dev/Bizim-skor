@@ -22,3 +22,8 @@ test('native friend invites use public domain instead of local webview origin',a
  assert.doesNotMatch(html,/url=location\.origin\+location\.pathname\+'\?lig='/);
  assert.match(html,/url='https:\/\/bizimskor\.com\/\?lig='/);
 });
+test('email JWT storage is isolated from legacy anon plus game-token RPC client',async()=>{
+ const html=await readFile(new URL('index.html',root),'utf8');
+ assert.match(html,/const sb=supabase\.createClient\([^;]+persistSession:false,autoRefreshToken:false,detectSessionInUrl:false/);
+ assert.match(html,/client:supabase\.createClient\(sb\.supabaseUrl,sb\.supabaseKey,\{auth:\{storageKey:'bizimskor-mobile-auth'/);
+});
