@@ -1,0 +1,23 @@
+{
+  "name": "bizimskor-mobile-test",
+  "version": "0.1.0",
+  "description": "Isolated Android technical test; not a Play-ready release",
+  "scripts": {
+    "build:web": "node scripts/build-web.mjs",
+    "test": "npm run build:web && node --test test/*.test.mjs",
+    "sync:android": "npm run build:web && cap sync android",
+    "build:debug": "npm run sync:android && cd android && ./gradlew assembleDebug"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  },
+  "private": true
+}
