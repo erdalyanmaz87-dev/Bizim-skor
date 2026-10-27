@@ -16,5 +16,6 @@ html=html.replace('<title>Bizim Skor</title>','<title>BizimSkor Test</title>');
 html=html.replace('<body>','<body><!-- ANDROID_TECHNICAL_TEST --><div style="background:#fff3cd;color:#4d3800;padding:10px;text-align:center;font:14px Arial">Android teknik test • Mağaza sürümü değildir • Giriş ve tahminler mevcut canlı hesaba bağlıdır.</div>');
 html=html.replace(/<script src="push-notifications\.js" defer><\/script>/,'');
 html=html.replace("if('serviceWorker'in navigator){","if(!window.Capacitor && 'serviceWorker'in navigator){");
+html=html.replace("url=location.origin+location.pathname+'?lig='", "url='https://bizimskor.com/?lig='");
 await writeFile(path.join(output,'index.html'),html);
 console.log('Bundled technical-test web assets into mobile/www');

@@ -17,3 +17,8 @@ test('test and administrative source files stay outside app bundle',async()=>{
  assert.equal(files.includes('admin.html'),false);
  assert.equal(files.includes('sw.js'),false);
 });
+test('native friend invites use public domain instead of local webview origin',async()=>{
+ const html=await readFile(new URL('index.html',root),'utf8');
+ assert.doesNotMatch(html,/url=location\.origin\+location\.pathname\+'\?lig='/);
+ assert.match(html,/url='https:\/\/bizimskor\.com\/\?lig='/);
+});

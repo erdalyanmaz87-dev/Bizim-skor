@@ -1,6 +1,6 @@
 # BizimSkor Android technical test
 
-Status: source prepared; APK build blocked in the preparation environment while downloading Gradle (`Network is unreachable`). No APK or AAB has been produced or tested on a phone. Not ready for Google Play closed testing or production.
+Status: debug APK produced on 2026-10-27; APK signature verified and package metadata inspected. Three web packaging checks pass. No real-device or emulator run has been performed. Not ready for Google Play closed testing or production.
 
 ## Scope
 
@@ -8,7 +8,7 @@ Capacitor 8.5.3 with bundled copies of the current website, Android package `com
 
 ## Build
 
-Requires Node 22+, compatible Android/JDK environment (use Android Studio 2025.2.1+), Android SDK API 36, and access to Gradle/Google Maven repositories.
+Requires Node 22+, JDK 21 (verified with Temurin 21.0.13), Android SDK API 36, and access to Gradle/Google Maven repositories. The preparation environment required its configured HTTP proxy and system Java trust store; do not hard-code a proxy endpoint in the project.
 
 ```sh
 cd mobile
@@ -24,6 +24,7 @@ Expected APK: `android/app/build/outputs/apk/debug/app-debug.apk`. Debug package
 - Entry page and directly referenced local scripts are bundled.
 - Unit test files, administrative HTML and web service worker are excluded.
 - Web push loader and service worker registration are disabled in the bundled native entry only.
+- Friend league invite links in the bundled entry use https://bizimskor.com/, never the WebView origin.
 - Source website files remain untouched.
 
 ## Must test on real Android
