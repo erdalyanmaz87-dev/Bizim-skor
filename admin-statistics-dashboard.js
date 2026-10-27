@@ -66,6 +66,11 @@
     const scope=usage.week ? `${usage.competition_label||''} • ${Number(usage.week)}. Hafta` : 'Güncel tahmin haftası';
     return `<section class="bs-admin-stats-group"><h3>⚽ Gol Animasyonu Kullanımı</h3><p class="small">${esc(scope)}</p><p>Toplam oynatma: <b>${num(usage.total_plays)}</b> · Farklı oyuncu: <b>${num(usage.unique_players)}</b></p>${rows.length?rows.map(x=>`<div class="bs-admin-animation-row"><b>${esc(x.player_name)}</b><span>${Number(x.play_count||0)} oynatma</span></div>`).join(''):'<p>Henüz kayıtlı oynatma yok.</p>'}<p class="small">Yalnızca bu haftanın maçlarında oynatılan animasyonlar gösterilir. Hafta bilgisi bulunmayan eski kayıtlar dahil edilmez.</p></section>`;
   }
+  function renderDomainUsage(usage) {
+    if (!usage) return '<section class="bs-admin-stats-group"><h3>🌐 Yeni Adresimizden Giriş Yapanlar</h3><p>Alan adı istatistikleri şu anda alınamıyor.</p></section>';
+    const rows=usage.players||[];
+    return `<section class="bs-admin-stats-group"><h3>🌐 bizimskor.com Girişleri</h3><p>Bugün: <b>${num(usage.today_players)}</b> · Son 7 gün: <b>${num(usage.week_players)}</b> · Toplam farklı oyuncu: <b>${num(usage.total_players)}</b></p><p class="small">${esc(usage.historical_note||'')}</p></section>${list('Yeni Adresimizden Giriş Yapanlar',rows,x=>`${new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(x.last_launch))} · ${Number(x.launch_count||0)} giriş`)}`;
+  }
   function render(data) {
     latestData = data || {};
     const s = data?.summary || {},
@@ -86,7 +91,7 @@
         data?.reminder_later ||
         all.filter((x) => x.reminder_response === 'later');
     const competitionLabel = data?.competition_label || '';
-    return `<div class="bs-admin-stats"><p class="small">${esc(data?.season || '')} ${competitionLabel ? `• ${esc(competitionLabel)}` : ''} ${data?.week ? `• ${Number(data.week)}. Hafta` : ''}</p><div class="bs-admin-stats-grid"><b>Toplam Oyuncu <strong>${num(s.total_players ?? all.length)}</strong></b><b>Bugün Gelen <strong>${num(s.active_today)}</strong></b><b>Yeni Kayıt <strong>${num(s.new_today)}</strong></b><b>Tahmin Yapan <strong>${num(s.completed)}</strong></b><b>Tahmin Yapmayan <strong>${num(s.incomplete)}</strong></b><b>Katılım <strong>${pct(s.participation)}</strong></b><b>Bildirim Açık <strong>${num(s.notifications_enabled)}</strong></b><b>24s Evet <strong>${num(s.reminder_yes)}</strong></b><b>24s Daha Sonra <strong>${num(s.reminder_later)}</strong></b><b>Uyarı Sonrası Tamamlayan <strong>${num(s.reminder_converted)}</strong></b></div>${renderSkorbotUsage(data?.skorbot_animation_usage)}${list('Oyuna Girenler', today, (x) => `${trTime(x.today_first)}–${trTime(x.today_last)} · ${Number(x.today_launch_count || 0)} giriş`)}${list('Güncel Hafta Tahmin Yapanlar', completed, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç · Tamamladı`)}${list('Güncel Hafta Tahmin Yapmayanlar', incomplete, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç`)}${list('Bildirimleri Açanlar', notifications, (x) => 'Bildirim açık')}${list('24 Saat Uyarısı · Evet', reminderYes, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}${list('24 Saat Uyarısı · Daha Sonra', reminderLater, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}</div>`;
+    return `<div class="bs-admin-stats"><p class="small">${esc(data?.season || '')} ${competitionLabel ? `• ${esc(competitionLabel)}` : ''} ${data?.week ? `• ${Number(data.week)}. Hafta` : ''}</p><div class="bs-admin-stats-grid"><b>Toplam Oyuncu <strong>${num(s.total_players ?? all.length)}</strong></b><b>Bugün Gelen <strong>${num(s.active_today)}</strong></b><b>Yeni Kayıt <strong>${num(s.new_today)}</strong></b><b>Tahmin Yapan <strong>${num(s.completed)}</strong></b><b>Tahmin Yapmayan <strong>${num(s.incomplete)}</strong></b><b>Katılım <strong>${pct(s.participation)}</strong></b><b>Bildirim Açık <strong>${num(s.notifications_enabled)}</strong></b><b>24s Evet <strong>${num(s.reminder_yes)}</strong></b><b>24s Daha Sonra <strong>${num(s.reminder_later)}</strong></b><b>Uyarı Sonrası Tamamlayan <strong>${num(s.reminder_converted)}</strong></b></div>${renderSkorbotUsage(data?.skorbot_animation_usage)}${list('Oyuna Girenler', today, (x) => `${trTime(x.today_first)}–${trTime(x.today_last)} · ${Number(x.today_launch_count || 0)} giriş`)}${renderDomainUsage(data?.domain_launch_usage)}${list('Güncel Hafta Tahmin Yapanlar', completed, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç · Tamamladı`)}${list('Güncel Hafta Tahmin Yapmayanlar', incomplete, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç`)}${list('Bildirimleri Açanlar', notifications, (x) => 'Bildirim açık')}${list('24 Saat Uyarısı · Evet', reminderYes, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}${list('24 Saat Uyarısı · Daha Sonra', reminderLater, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}</div>`;
   }
   const rank = (v) => (Number(v) > 0 ? `${Number(v)}.` : 'Katılmadı');
   const points = (v) => {
@@ -278,6 +283,8 @@
     catch(e) { console.warn('admin statistics privileged fallback',e); stats=await fallback(); }
     try { stats.skorbot_animation_usage=await rpc('get_admin_skorbot_animation_stats',{p_token:token()}); }
     catch(e) { console.warn('SkorBot statistics not available',e); }
+    try { stats.domain_launch_usage=await rpc('get_admin_domain_launch_stats',{p_token:token()}); }
+    catch(e) { console.warn('Domain statistics not available',e); }
     return stats;
   }
   function nav() {
