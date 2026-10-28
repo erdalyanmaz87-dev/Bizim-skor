@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><meta name="robots" content="noindex"><title>BizimSkor cihaz doğrulama</title></head>
+<body>
+<script>
+(() => {
+  const allowedParents = new Set(['https://bizimskor.com', 'https://www.bizimskor.com']);
+  let parentOrigin = '';
+  try { parentOrigin = new URL(document.referrer).origin; } catch (_) { return; }
+  if (window.parent === window || !allowedParents.has(parentOrigin)) return;
+  const deviceId = String(localStorage.getItem('bizimSkorDeviceId') || '');
+  if (deviceId.length < 20 || deviceId.length > 200) return;
+  window.parent.postMessage({ type: 'bizimskor:legacy-device-id', deviceId }, parentOrigin);
+})();
+</script>
+</body>
+</html>

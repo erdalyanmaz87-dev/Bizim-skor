@@ -19,6 +19,19 @@ test('sıfırlama kayıtlı cihaz kimliğiyle güvenli RPC çağrısını yapar'
   assert.match(html, /BizimSkorPinReset\.resetResultMessage/);
 });
 
+test('alan adı değişiminde eski kayıtlı cihaz kimliğiyle sıfırlamayı yeniden dener', () => {
+  assert.match(html, /BizimSkorPinReset\.requestLegacyDeviceId\(window\)/);
+  assert.match(html, /localStorage\.setItem\('bizimSkorDeviceId',legacyDeviceId\)/);
+  assert.match(html, /p_device_id:legacyDeviceId/);
+});
+
+test('eski adres cihaz kimliğini yalnız bizimskor alan adına aktarır', () => {
+  const bridge = fs.readFileSync(path.join(__dirname, '..', 'device-bridge.html'), 'utf8');
+  assert.match(bridge, /https:\/\/bizimskor\.com/);
+  assert.match(bridge, /bizimskor:legacy-device-id/);
+  assert.match(bridge, /bizimSkorDeviceId/);
+});
+
 test('başarılı sıfırlama eski yerel oturumu temizler', () => {
   assert.match(html, /localStorage\.removeItem\('bizimSkorName'\)/);
   assert.match(html, /localStorage\.removeItem\('bizimSkorFriendToken'\)/);

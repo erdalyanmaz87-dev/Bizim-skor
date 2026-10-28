@@ -6,6 +6,8 @@
     api.mountUiIntegration(document);
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const LEGACY_ORIGIN = 'https://bizim-skor-live.vercel.app';
+
   function normalizeName(value) {
     return String(value || '').trim().replace(/\s+/g, ' ');
   }
@@ -22,7 +24,36 @@
   function resetResultMessage(success) {
     return success
       ? 'Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.'
-      : 'Bu tarayıcıda hesap sahipliği doğrulanamadı. PIN’inizi biliyorsanız Giriş Yap bölümünü kullanın; şifre sıfırlamak için yöneticiyle iletişime geçin.';
+      : 'Bu tarayıcıda hesap sahipliği doğrulanamadı. Daha önce oyuna girdiğiniz cihaz ve tarayıcıdan tekrar deneyin.';
+  }
+
+  function requestLegacyDeviceId(root, timeoutMs = 3000) {
+    if (!root?.document?.body || root.location?.origin === LEGACY_ORIGIN) return Promise.resolve(null);
+    return new Promise(resolve => {
+      const iframe = root.document.createElement('iframe');
+      iframe.src = LEGACY_ORIGIN + '/device-bridge.html';
+      iframe.title = 'Eski cihaz kaydı doğrulama';
+      iframe.setAttribute?.('aria-hidden', 'true');
+      iframe.style.display = 'none';
+      let settled = false;
+      const finish = value => {
+        if (settled) return;
+        settled = true;
+        root.clearTimeout?.(timer);
+        root.removeEventListener?.('message', onMessage);
+        iframe.remove?.();
+        resolve(value);
+      };
+      const onMessage = event => {
+        const deviceId = String(event?.data?.deviceId || '');
+        if (event?.origin !== LEGACY_ORIGIN || event?.source !== iframe.contentWindow) return;
+        if (event?.data?.type !== 'bizimskor:legacy-device-id' || deviceId.length < 20 || deviceId.length > 200) return;
+        finish(deviceId);
+      };
+      root.addEventListener('message', onMessage);
+      const timer = root.setTimeout(() => finish(null), timeoutMs);
+      root.document.body.appendChild(iframe);
+    });
   }
 
   function renderResetFormMarkup() {
@@ -51,5 +82,5 @@
     return true;
   }
 
-  return { normalizeName, validateResetInput, resetResultMessage, renderResetFormMarkup, mountUiIntegration };
+  return { normalizeName, validateResetInput, resetResultMessage, requestLegacyDeviceId, renderResetFormMarkup, mountUiIntegration };
 });
