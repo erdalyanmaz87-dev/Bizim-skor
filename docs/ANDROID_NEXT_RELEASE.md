@@ -7,3 +7,5 @@ Güncelleme: 29 Ekim 2026. Test oyuncularından gelen geri bildirimler burada bi
 - [ ] **“Kendimi Gör” kapsamını tamamla.** Haftalık sıralamalar dahil bütün genel sıralamalarda mevcut oyuncunun satırına götüren düğme bulunsun. Süper Lig, Şampiyonlar Ligi ve Uluslar Ligi sıralamalarını denetle. İlgili listede oyuncu yoksa uygun bilgi ver. **Arena ligleri kapsam dışıdır; Arena'ya Kendimi Gör eklenmeyecek.**
 
 Yeni test geri bildirimleri aynı listeye eklenecek. Uygulama paketlenirken bu maddeler tek tek kontrol edilecek.
+
+- [ ] **Giriş sonrası gizlilik ve hesap silme erişimi.** Test kullanıcısı doğruladı: Gizlilik / Kullanım koşulları / Hesap silme bağlantıları çıkış ekranında görünüyor, giriş yaptıktan sonra görünmüyor. Android'de oturum açıkken Hesap ayarları bölümünden bu bağlantılar ve hesap silme talebi kolayca erişilebilir olacak. Giriş öncesi ve sonrası görünürlük test edilecek. Yalnızca Android uygulaması değiştirilecek; site/iOS akışı korunacak.
