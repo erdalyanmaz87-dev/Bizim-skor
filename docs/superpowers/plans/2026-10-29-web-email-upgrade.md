@@ -42,3 +42,6 @@ Preserve stable player ids and gameplay; password 8–256 characters; never pers
 - Production database apply was rejected by automatic approval review. No production changes were made. Gateway existing-player metadata/origin changes also await the same release approval.
 - Browser test dependencies: Playwright 1.64.1, @sparticuz/chromium 153.0.0. SQL test dependency: @electric-sql/pglite 0.5.13. Use BIZIMSKOR_CHROMIUM_PACKAGE/BIZIMSKOR_CHROMIUM/BIZIMSKOR_PGLITE to point at environment-owned installations; no product runtime dependencies added.
 - Preview is a marked synthetic UI demonstration and does not send mail or change real accounts.
+
+## Authorized release
+User explicitly approved production on 2026-10-29. Status SQL and gateway v2 deployed. Live transaction found the legacy support_session_player_id helper absent; replaced that dependency with a scoped digest/session/active-player join. Isolated SQL tests and real transactional mobile_link_player/status/admin assertions passed; synthetic rows rolled back and no live player mutated. Website release follows these checks.
