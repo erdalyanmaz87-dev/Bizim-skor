@@ -3,15 +3,18 @@ const fs=require('node:fs');const assert=require('node:assert/strict');const pat
 (async()=>{
  const db=new PGlite();await db.exec(`
  create role anon; create role authenticated;
- create schema auth;create schema mobile_private;
+ create schema auth;create schema mobile_private;create schema extensions;
+ create function extensions.digest(text,text) returns bytea language sql immutable as $$select decode(md5($1),'hex')$$;
  create table public.players(id bigint primary key,name text,is_active boolean);
  create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,is_anonymous boolean,banned_until timestamptz);
  create table mobile_private.player_accounts(player_id bigint unique,auth_user_id uuid unique,created_at timestamptz default now());
+ create table public.friend_league_sessions(token_hash bytea,player_name text,expires_at timestamptz);
  create table mobile_private.test_sessions(token text,player_id bigint,expires_at timestamptz,admin boolean);
  create function public.support_session_player_id(p_token text) returns bigint language sql security definer set search_path='' as $$select s.player_id from mobile_private.test_sessions s join public.players p on p.id=s.player_id where s.token=p_token and s.expires_at>now() and p.is_active limit 1$$;
  create function public.is_support_admin(p_token text) returns boolean language sql security definer set search_path='' as $$select exists(select 1 from mobile_private.test_sessions where token=p_token and admin and expires_at>now())$$;
  insert into players values(1,'Erdal',true),(2,'Okan',true),(3,'Inactive',false),(4,'SkorBot',true);
  insert into mobile_private.test_sessions values('erdal',1,now()+interval '1 day',true),('okan',2,now()+interval '1 day',false),('expired',1,now()-interval '1 day',true);
+ insert into public.friend_league_sessions select extensions.digest(token,'sha256'),p.name,s.expires_at from mobile_private.test_sessions s join public.players p on p.id=s.player_id;
  insert into auth.users values('00000000-0000-0000-0000-000000000001','private@example.test',now(),false,null);
  insert into mobile_private.player_accounts(player_id,auth_user_id) values(1,'00000000-0000-0000-0000-000000000001');
  `);
