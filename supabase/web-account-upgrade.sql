@@ -4,7 +4,8 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare v_id bigint; v_name text; v_linked boolean;
 begin
  if p_token is null or length(p_token)>256 then raise exception 'Oturum geçersiz' using errcode='42501'; end if;
- v_id:=public.support_session_player_id(p_token);
+ select p.id into v_id from public.friend_league_sessions s join public.players p on p.name=s.player_name
+  where s.token_hash=extensions.digest(p_token,'sha256') and s.expires_at>now() and coalesce(p.is_active,true) limit 1;
  if v_id is null then raise exception 'Oturum geçersiz veya süresi dolmuş' using errcode='42501'; end if;
  select name into v_name from public.players where id=v_id;
  select exists(select 1 from mobile_private.player_accounts a join auth.users u on u.id=a.auth_user_id
