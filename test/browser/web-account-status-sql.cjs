@@ -1,0 +1,34 @@
+const {PGlite}=require(process.env.BIZIMSKOR_PGLITE||'@electric-sql/pglite');
+const fs=require('node:fs');const assert=require('node:assert/strict');const path=require('node:path');
+(async()=>{
+ const db=new PGlite();await db.exec(`
+ create role anon; create role authenticated;
+ create schema auth;create schema mobile_private;create schema extensions;
+ create function extensions.digest(text,text) returns bytea language sql immutable as $$select decode(md5($1),'hex')$$;
+ create table public.players(id bigint primary key,name text,is_active boolean);
+ create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,is_anonymous boolean,banned_until timestamptz);
+ create table mobile_private.player_accounts(player_id bigint unique,auth_user_id uuid unique,created_at timestamptz default now());
+ create table public.friend_league_sessions(token_hash bytea,player_name text,expires_at timestamptz);
+ create table mobile_private.test_sessions(token text,player_id bigint,expires_at timestamptz,admin boolean);
+ create function public.support_session_player_id(p_token text) returns bigint language sql security definer set search_path='' as $$select s.player_id from mobile_private.test_sessions s join public.players p on p.id=s.player_id where s.token=p_token and s.expires_at>now() and p.is_active limit 1$$;
+ create function public.is_support_admin(p_token text) returns boolean language sql security definer set search_path='' as $$select exists(select 1 from mobile_private.test_sessions where token=p_token and admin and expires_at>now())$$;
+ insert into players values(1,'Erdal',true),(2,'Okan',true),(3,'Inactive',false),(4,'SkorBot',true);
+ insert into mobile_private.test_sessions values('erdal',1,now()+interval '1 day',true),('okan',2,now()+interval '1 day',false),('expired',1,now()-interval '1 day',true);
+ insert into public.friend_league_sessions select extensions.digest(token,'sha256'),p.name,s.expires_at from mobile_private.test_sessions s join public.players p on p.id=s.player_id;
+ insert into auth.users values('00000000-0000-0000-0000-000000000001','private@example.test',now(),false,null);
+ insert into mobile_private.player_accounts(player_id,auth_user_id) values(1,'00000000-0000-0000-0000-000000000001');
+ `);
+ await db.exec(fs.readFileSync(path.resolve(__dirname,'../../supabase/web-account-upgrade.sql'),'utf8'));
+ const query=async sql=>(await db.query(sql)).rows[0]?.value;
+ assert.deepEqual(await query("select web_player_account_status('erdal') as value"),{player_name:'Erdal',linked:true});
+ assert.deepEqual(await query("select web_player_account_status('okan') as value"),{player_name:'Okan',linked:false});
+ for(const token of ['bad','expired'])await assert.rejects(query(`select web_player_account_status('${token}') as value`),/Oturum/);
+ await assert.rejects(query("select get_admin_email_upgrade_status('okan') as value"),/Yetkisiz/);
+ const admin=await query("select get_admin_email_upgrade_status('erdal') as value");assert.equal(admin.players.length,2);assert.equal(JSON.stringify(admin).includes('private@example'),false);
+ await db.exec("update auth.users set email_confirmed_at=null");assert.equal((await query("select web_player_account_status('erdal') as value")).linked,false);
+ await db.exec("update auth.users set email_confirmed_at=now(),banned_until=now()+interval '1 day'");assert.equal((await query("select web_player_account_status('erdal') as value")).linked,false);
+ await db.exec("set role anon");assert.equal((await query("select web_player_account_status('okan') as value")).player_name,'Okan');
+ await assert.rejects(query("select get_admin_email_upgrade_status('okan') as value"),/Yetkisiz/);
+ await assert.rejects(db.query('select * from mobile_private.player_accounts'),/permission denied/);
+ console.log('PASS SQL: linked/unlinked, token ownership, expired/invalid denied, admin-only tracking, no emails, confirmation revoked, banned user, anon RPC and private-table denial');await db.close();
+})().catch(e=>{console.error(e);process.exit(1)});

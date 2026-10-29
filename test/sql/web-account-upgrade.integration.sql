@@ -1,0 +1,25 @@
+begin; set local statement_timeout='20s'; set local lock_timeout='3s';
+do $$ declare v_id bigint := -1000000-floor(random()*1000000000)::bigint; v_uid uuid:=gen_random_uuid(); v_name text:='upgrade_test_'||substr(v_uid::text,1,8); v_token text:=encode(extensions.gen_random_bytes(32),'hex'); v_result jsonb; v_count bigint;
+begin
+select count(*) into v_count from public.players;
+insert into public.players(id,name,is_active,pin_hash) overriding system value values(v_id,v_name,true,extensions.crypt('9826',extensions.gen_salt('bf')));
+insert into public.friend_league_sessions(token_hash,player_name,expires_at) values(extensions.digest(v_token,'sha256'),v_name,now()+interval '1 day');
+v_result:=public.web_player_account_status(v_token);
+if v_result->>'player_name' is distinct from v_name or (v_result->>'linked')::boolean then raise exception 'Unlinked status mismatch'; end if;
+begin perform public.web_player_account_status('invalid-synthetic-token'); raise exception 'Invalid token accepted'; exception when insufficient_privilege then null; end;
+begin perform public.get_admin_email_upgrade_status(v_token); raise exception 'Nonadmin accepted'; exception when insufficient_privilege then null; end;
+insert into auth.users(id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at) values(v_uid,'authenticated','authenticated','test-'||v_uid::text||'@invalid.example','',now(),now(),now());
+perform set_config('request.jwt.claim.sub',v_uid::text,true);
+perform set_config('request.jwt.claims',jsonb_build_object('sub',v_uid,'role','authenticated')::text,true);
+v_result:=public.mobile_link_player(v_name,v_token,null,null);
+if v_result ? 'error' or v_result->>'player_name' is distinct from v_name then raise exception 'Link failed'; end if;
+if not (public.web_player_account_status(v_token)->>'linked')::boolean then raise exception 'Verified status not linked'; end if;
+if (select count(*) from public.players)<>v_count+1 then raise exception 'Link created duplicate player'; end if;
+insert into public.support_admins(player_id) values(v_id);
+v_result:=public.get_admin_email_upgrade_status(v_token);
+if not exists(select 1 from jsonb_array_elements(v_result->'players') x where x->>'player_name'=v_name and (x->>'linked')::boolean) then raise exception 'Admin status missing'; end if;
+if v_result::text like '%@invalid.example%' then raise exception 'Email leak'; end if;
+if not has_function_privilege('anon','public.web_player_account_status(text)','EXECUTE') or has_function_privilege('anon','public.mobile_link_player(text,text,text,text)','EXECUTE') then raise exception 'Grant boundary mismatch'; end if;
+end $$;
+select 'PASS: live transactional link/status, stable player count, invalid token and nonadmin denied, admin tracking and privacy; all synthetic data rolled back' as verification;
+rollback;

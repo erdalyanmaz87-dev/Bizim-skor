@@ -71,6 +71,11 @@
     const rows=usage.players||[];
     return `<section class="bs-admin-stats-group"><h3>🌐 bizimskor.com Girişleri</h3><p>Bugün: <b>${num(usage.today_players)}</b> · Son 7 gün: <b>${num(usage.week_players)}</b> · Toplam farklı oyuncu: <b>${num(usage.total_players)}</b></p><p class="small">${esc(usage.historical_note||'')}</p></section>${list('Yeni Adresimizden Giriş Yapanlar',rows,x=>`${new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(x.last_launch))} · ${Number(x.launch_count||0)} giriş`)}`;
   }
+  function renderEmailUpgrade(status) {
+    if(!status)return '';
+    const rows=status.players||[], done=rows.filter(x=>x.linked), pending=rows.filter(x=>!x.linked);
+    return `<section class="bs-admin-stats-group"><h3>📧 E-posta ve Şifre Hazırlığı</h3><p>Tamamlayan: <b>${done.length}</b> · Tamamlamayan: <b>${pending.length}</b></p></section>${list('E-posta Bağlamayan Oyuncular',pending,()=> 'E-posta ve yeni şifre bekleniyor')}${list('E-posta Bağlayan Oyuncular',done,()=> 'Android ve web girişi hazır ✓')}`;
+  }
   function render(data) {
     latestData = data || {};
     const s = data?.summary || {},
@@ -91,7 +96,7 @@
         data?.reminder_later ||
         all.filter((x) => x.reminder_response === 'later');
     const competitionLabel = data?.competition_label || '';
-    return `<div class="bs-admin-stats"><p class="small">${esc(data?.season || '')} ${competitionLabel ? `• ${esc(competitionLabel)}` : ''} ${data?.week ? `• ${Number(data.week)}. Hafta` : ''}</p><div class="bs-admin-stats-grid"><b>Toplam Oyuncu <strong>${num(s.total_players ?? all.length)}</strong></b><b>Bugün Gelen <strong>${num(s.active_today)}</strong></b><b>Yeni Kayıt <strong>${num(s.new_today)}</strong></b><b>Tahmin Yapan <strong>${num(s.completed)}</strong></b><b>Tahmin Yapmayan <strong>${num(s.incomplete)}</strong></b><b>Katılım <strong>${pct(s.participation)}</strong></b><b>Bildirim Açık <strong>${num(s.notifications_enabled)}</strong></b><b>24s Evet <strong>${num(s.reminder_yes)}</strong></b><b>24s Daha Sonra <strong>${num(s.reminder_later)}</strong></b><b>Uyarı Sonrası Tamamlayan <strong>${num(s.reminder_converted)}</strong></b></div>${renderSkorbotUsage(data?.skorbot_animation_usage)}${list('Oyuna Girenler', today, (x) => `${trTime(x.today_first)}–${trTime(x.today_last)} · ${Number(x.today_launch_count || 0)} giriş`)}${renderDomainUsage(data?.domain_launch_usage)}${list('Güncel Hafta Tahmin Yapanlar', completed, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç · Tamamladı`)}${list('Güncel Hafta Tahmin Yapmayanlar', incomplete, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç`)}${list('Bildirimleri Açanlar', notifications, (x) => 'Bildirim açık')}${list('24 Saat Uyarısı · Evet', reminderYes, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}${list('24 Saat Uyarısı · Daha Sonra', reminderLater, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}</div>`;
+    return `<div class="bs-admin-stats"><p class="small">${esc(data?.season || '')} ${competitionLabel ? `• ${esc(competitionLabel)}` : ''} ${data?.week ? `• ${Number(data.week)}. Hafta` : ''}</p><div class="bs-admin-stats-grid"><b>Toplam Oyuncu <strong>${num(s.total_players ?? all.length)}</strong></b><b>Bugün Gelen <strong>${num(s.active_today)}</strong></b><b>Yeni Kayıt <strong>${num(s.new_today)}</strong></b><b>Tahmin Yapan <strong>${num(s.completed)}</strong></b><b>Tahmin Yapmayan <strong>${num(s.incomplete)}</strong></b><b>Katılım <strong>${pct(s.participation)}</strong></b><b>Bildirim Açık <strong>${num(s.notifications_enabled)}</strong></b><b>24s Evet <strong>${num(s.reminder_yes)}</strong></b><b>24s Daha Sonra <strong>${num(s.reminder_later)}</strong></b><b>Uyarı Sonrası Tamamlayan <strong>${num(s.reminder_converted)}</strong></b></div>${renderEmailUpgrade(data?.email_upgrade)}${renderSkorbotUsage(data?.skorbot_animation_usage)}${list('Oyuna Girenler', today, (x) => `${trTime(x.today_first)}–${trTime(x.today_last)} · ${Number(x.today_launch_count || 0)} giriş`)}${renderDomainUsage(data?.domain_launch_usage)}${list('Güncel Hafta Tahmin Yapanlar', completed, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç · Tamamladı`)}${list('Güncel Hafta Tahmin Yapmayanlar', incomplete, (x) => `${Number(x.saved_count || 0)}/${Number(x.fixture_count || 0)} maç`)}${list('Bildirimleri Açanlar', notifications, (x) => 'Bildirim açık')}${list('24 Saat Uyarısı · Evet', reminderYes, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}${list('24 Saat Uyarısı · Daha Sonra', reminderLater, (x) => (x.reminder_completed ? 'Sonradan tamamladı ✓' : 'Henüz tamamlamadı'))}</div>`;
   }
   const rank = (v) => (Number(v) > 0 ? `${Number(v)}.` : 'Katılmadı');
   const points = (v) => {
@@ -285,6 +290,8 @@
     catch(e) { console.warn('SkorBot statistics not available',e); }
     try { stats.domain_launch_usage=await rpc('get_admin_domain_launch_stats',{p_token:token()}); }
     catch(e) { console.warn('Domain statistics not available',e); }
+    try { stats.email_upgrade=await rpc('get_admin_email_upgrade_status',{p_token:token()}); }
+    catch(e) { console.warn('Email account statistics not available'); }
     return stats;
   }
   function nav() {
