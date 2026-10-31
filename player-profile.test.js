@@ -23,9 +23,9 @@ test('robotla seçilen tahminin yanında robot işareti görünür',()=>{
   assert.match(profile.profileMarkup(model),/2-0 🤖/);
 });
 
-test('yalnız doğru sonuçta top işareti gösterilir',()=>{
+test('yalnız doğru sonuçta onay işareti gösterilir',()=>{
   const profile=require('./player-profile.js');
-  assert.equal(profile.matchSymbol({predicted_home:1,predicted_away:0,real_home:3,real_away:1}),'⚽');
+  assert.equal(profile.matchSymbol({predicted_home:1,predicted_away:0,real_home:3,real_away:1}),'✅');
   assert.equal(profile.matchSymbol({predicted_home:1,predicted_away:0,real_home:0,real_away:1}),'');
 });
 
@@ -95,4 +95,34 @@ test('arena kartı lig adı sıra ve puanı gösterir',()=>{
   assert.deepEqual(arena,{leagueCode:'gold',leagueLabel:'Arena Altın Ligi',rank:2,score:84.5});
   assert.match(profile.arenaMarkup(arena),/Arena Altın Ligi • 2\./);
   assert.match(profile.arenaMarkup(arena),/Puan: 84,50/);
+});
+
+
+test('profil puan türlerini ve iki kat fırsat puanlarını doğru sembolle gösterir',()=>{
+  const profile=require('./player-profile.js');
+  for(const kind of ['super','champions','nations']){
+    for(const multiplier of [1,2]){
+      const cases=[[2,1,10,'🎯'],[3,2,6,'🥅'],[3,0,4,'🔢'],[4,0,2,'✅'],[0,1,0,'']];
+      const rows=cases.map(([h,a,points],i)=>({player_name:'Test',week:10,week_correct:4,week_exact:1,special_kind:kind==='super'?'champions':kind+'_week',fixture_id:200+i,scoring_version:2,predicted_home:h,predicted_away:a,real_home:2,real_away:1,match_points:points*multiplier}));
+      const model=profile.buildModel(rows),html=profile.profileMarkup(model);
+      assert.deepEqual(model.matches.map(r=>r.symbol),cases.map(c=>c[3]));
+      for(const [, ,points,symbol] of cases.filter(c=>c[2]))assert.ok(html.includes(`${symbol} +${points*multiplier}`));
+      assert.ok(html.includes('1 🎯 • 1 🥅 • 1 🔢 • 1 ✅'));
+      assert.ok(!html.includes('⚽'));
+      assert.equal(model.weekCorrect,4);
+    }
+  }
+});
+
+test('profil gerçek ekran örneğini ve gizli skorları korur',()=>{
+ const profile=require('./player-profile.js');
+ const rows=[
+  {fixture_id:128,predicted_home:1,predicted_away:3,real_home:0,real_away:4,match_points:4},
+  {fixture_id:129,predicted_home:2,predicted_away:3,real_home:1,real_away:3,match_points:2},
+  {fixture_id:130,predicted_home:1,predicted_away:2,real_home:1,real_away:2,match_points:10},
+  {fixture_id:131,predicted_home:null,predicted_away:null,real_home:null,real_away:null,match_points:0}
+ ];
+ const model=profile.buildModel(rows);
+ assert.deepEqual(model.matches.map(r=>r.symbol),['🔢','✅','🎯','']);
+ assert.equal(model.matches[3].prediction,'*-*');
 });
