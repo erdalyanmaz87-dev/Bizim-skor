@@ -95,3 +95,16 @@ test('canlı skor yönetimi Günün Maçları bölümünün üstüne yerleşir',
   assert.equal(calls.length,1);
   assert.equal(calls[0].position,'beforebegin');
 });
+
+test('gece yarısından sonra devam eden ve yeni biten maçlar manuel listede kalır',()=>{
+  const now=new Date('2026-11-04T00:15:00+03:00');
+  const rows=[
+    {fixture_id:1,kickoff:'2026-11-03T23:00:00+03:00',status:'2H'},
+    {fixture_id:2,kickoff:'2026-11-03T22:00:00+03:00',status:'FT',fetched_at:'2026-11-04T00:05:00+03:00'},
+    {fixture_id:3,kickoff:'2026-11-04T23:00:00+03:00',status:null},
+    {fixture_id:4,kickoff:'2026-11-03T19:00:00+03:00',status:'2H'},
+    {fixture_id:5,kickoff:'2026-11-03T21:00:00+03:00',status:'FT',fetched_at:'2026-11-03T23:00:00+03:00'},
+    {fixture_id:6,kickoff:'2026-11-05T20:00:00+03:00',status:null}
+  ];
+  assert.deepEqual(Live.todayMatchRows(rows,now).map(r=>r.fixture_id),[1,2,3]);
+});

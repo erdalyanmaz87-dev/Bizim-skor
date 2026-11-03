@@ -131,8 +131,15 @@
     return true;
   }
   function todayMatchRows(rows,now=new Date()){
-    const today=turkeyDate(now);
-    return (rows||[]).filter(r=>turkeyDate(r.kickoff)===today);
+    const today=turkeyDate(now),current=new Date(now).getTime();
+    return (rows||[]).filter(r=>{
+      const day=turkeyDate(r.kickoff),kickoff=new Date(r.kickoff).getTime();
+      if(day===today)return true;
+      if(!day||day>=today||!Number.isFinite(kickoff)||current<kickoff)return false;
+      if(isLiveStatus(r.status))return current<kickoff+4*60*60*1000;
+      const fetched=new Date(r.fetched_at).getTime();
+      return isTerminalStatus(r.status)&&Number.isFinite(fetched)&&current>=fetched&&current<fetched+60*60*1000;
+    });
   }
   const todaySuperLigRows=todayMatchRows;
   async function refreshAfterAdminUpdate(finished){
