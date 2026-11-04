@@ -23,3 +23,5 @@ test('release source identity matches the existing production APK package',async
  const java=await readFile(new URL('android/app/src/main/java/com/bizimskor/app/MainActivity.java',root),'utf8');assert.match(java,/package com\.bizimskor\.app;/);
  const html=await readFile(new URL('www/index.html',root),'utf8');assert.doesNotMatch(html,/ANDROID_TECHNICAL_TEST|<title>BizimSkor Test<\/title>/);
 });
+
+test('native source keeps backup and cleartext traffic disabled',async()=>{const xml=await readFile(new URL('android/app/src/main/AndroidManifest.xml',root),'utf8');assert.match(xml,/android:allowBackup="false"/);assert.match(xml,/android:usesCleartextTraffic="false"/);});

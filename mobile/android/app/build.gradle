@@ -16,8 +16,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    def signingPath = System.getenv('BIZIMSKOR_KEYSTORE')
+    if (signingPath) {
+        signingConfigs {
+            release {
+                storeFile file(signingPath)
+                storePassword System.getenv('BIZIMSKOR_STORE_PASSWORD')
+                keyAlias System.getenv('BIZIMSKOR_KEY_ALIAS')
+                keyPassword System.getenv('BIZIMSKOR_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (signingPath) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

@@ -2,7 +2,7 @@
 // fail a build when an upstream edit makes one of the targeted rewrites stale.
 // The retired one-time unlock module is truncated in the website repository and
 // no longer loaded there; do not ship that dead, syntactically invalid source.
-const excluded = new Set(['web-account-core.js','web-account-ui.js','chat-unread-indicator.js', 'champions-prize-announcement.js', 'superlig-logo-fix.js', 'super-league-one-time-unlock.js']);
+const excluded = new Set(['country-flags-ui.js','national-team-flag-fix.js','web-account-core.js','web-account-ui.js','chat-unread-indicator.js', 'champions-prize-announcement.js', 'superlig-logo-fix.js', 'super-league-one-time-unlock.js']);
 const ownImages = new Set(['bizim-skor-icon-v1.png', 'bizim-skor-icon-v2.png', 'bizim-skor-logo-v1.png', 'bizim-skor-logo-v2.png']);
 export function shouldBundle(name) {
   if (excluded.has(name) || name.startsWith('assets/')) return false;
@@ -44,6 +44,7 @@ function cleanBrand(source) {
   source = replaceRequired(source, /const COMPETITIONS=\{[\s\S]*?\n  \};/, 'const COMPETITIONS={};', 'competition metadata');
   source = replaceLineFunction(source, 'teamLogoUrl', 'function teamLogoUrl(){return null}');
   source = replaceLineFunction(source, 'nationalTeamLogoUrl', 'function nationalTeamLogoUrl(){return null}');
+  source = replaceLineFunction(source, 'nationalTeamMarkup', 'function nationalTeamMarkup(name){return globalThis.BizimSkorAndroidUI?.nationalMarkup(name)||esc(name)}');
   source = replaceLineFunction(source, 'teamMarkup', 'function teamMarkup(name){return `<span class="bs-team-brand"><span class="bs-team-name">${esc(name)}</span></span>`}');
   source = replaceLineFunction(source, 'competitionLogoMarkup', 'function competitionLogoMarkup(kind,label=""){return `<span class="bs-competition-brand"><span>${esc(label)}</span></span>`}');
   return source;
@@ -68,6 +69,7 @@ export function transformWebSource(name, source) {
     source = replaceRequired(source, /rule\.innerHTML=[^\n]+;/, `rule.innerHTML=${JSON.stringify(rankingRules)};`, 'dynamic ranking rules');
   }
   if (name === 'ui-integration-loader.js') {
+    source=source.replace(/'(?:country-flags-ui|national-team-flag-fix)\.js',/g,'');
     source = source.replace(/'superlig-logo-fix\.js',/g, '').replace(/'chat-unread-indicator\.js',/g, '');
     source = source.replace(/'superlig-logo-fix\.js':'[^']*',/g, '');
   }
@@ -94,7 +96,9 @@ export function transformWebSource(name, source) {
   if (name === 'football-center-bootstrap.js') {
     source = source.replace("chat=document.getElementById('chat')", "anchor=document.getElementById('rules')").replace('!tabs||!chat', '!tabs||!anchor').replace('chat.insertAdjacentHTML', 'anchor.insertAdjacentHTML');
   }
+  if (name === 'header-ui.js') source=source.replace(/Bilgilerimi Güncelle/g,'Hesap Ayarları');
   if (name === 'simple-navigation.js') {
+    source=source.replace(/Bilgilerimi Güncelle/g,'Hesap Ayarları');
     source = replaceRequired(source, /,\n      \['chat','💬','Sohbet'\]/, '', 'drawer chat item');
     source = source.replace("${item.tab==='chat'?'<i class=\"bs-simple-unread\" aria-hidden=\"true\"></i>':''}", '');
     source = replaceLineFunction(source, 'syncUnread', 'function syncUnread(){return false}');

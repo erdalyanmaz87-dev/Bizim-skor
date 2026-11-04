@@ -1,12 +1,13 @@
 {
-  "name": "bizimskor-mobile-test",
-  "version": "0.1.0",
-  "description": "Isolated Android technical test; not a Play-ready release",
+  "name": "bizimskor-mobile",
+  "version": "1.0.1",
+  "description": "BizimSkor Android uygulaması",
   "scripts": {
     "build:web": "node scripts/build-web.mjs",
     "test": "npm run build:web && node --test test/*.test.mjs",
     "sync:android": "npm run build:web && cap sync android",
-    "build:debug": "npm run sync:android && cd android && ./gradlew assembleDebug"
+    "build:debug": "npm run sync:android && cd android && ./gradlew assembleDebug",
+    "build:release": "npm run sync:android && cd android && ./gradlew bundleRelease"
   },
   "keywords": [],
   "author": "",
@@ -14,10 +15,12 @@
   "type": "commonjs",
   "dependencies": {
     "@capacitor/android": "8.5.3",
-    "@capacitor/core": "8.5.3"
+    "@capacitor/core": "8.5.3",
+    "@capacitor/local-notifications": "8.3.1"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.3",
+    "flag-icons": "7.6.0",
     "linkedom": "0.18.14"
   },
   "private": true
