@@ -13,7 +13,7 @@ function mount(){
  window.BizimSkorMobileHooks={client,deviceId:()=> 'test-device',legacyRestore:async()=>{},installRestore:fn=>{restore=fn},legacyLogin:async()=>{},showPlayer:()=>{},clearPlayer:()=>{},refresh:()=>{}};
  const context=vm.createContext({window,document,localStorage:storage,Event:window.Event,FormData:class{},console});
  vm.runInContext(core,context);context.BizimSkorMobileAccount=window.BizimSkorMobileAccount;vm.runInContext(source,context);
- return {window,document,ui:window.BizimSkorMobileAccountUI,restore};
+ return {window,document,client,ui:window.BizimSkorMobileAccountUI,restore};
 }
 test('native account panel mounts with existing test login; root restore is wired',async()=>{const s=mount();assert.equal(s.ui.mode,'legacy');assert.equal(s.document.querySelector('#mobile-pin').getAttribute('maxlength'),'4');await s.restore();assert.equal(s.ui.mode,'legacy');});
 test('registration requires email, strong repeated password and explicit consent',()=>{const s=mount();s.ui.render('signup');assert.equal(s.document.querySelector('#mobile-email').type,'email');assert.equal(s.document.querySelector('#mobile-password').getAttribute('minlength'),'8');assert.equal(s.document.querySelector('#mobile-repeat').getAttribute('minlength'),'8');assert.equal(s.document.querySelector('#mobile-consent').hasAttribute('required'),true);assert.equal(s.document.querySelector('#mobile-pin'),null);assert.match(s.document.body.textContent,/kurulumu sürüyor/);});
@@ -22,3 +22,5 @@ test('deletion view explains manual processing and cancellation',()=>{const s=mo
 test('header legacy switcher closures are rebound to the current native panels',()=>{const s=mount();s.ui.render('recover');s.document.getElementById('showLogin').click();assert.equal(s.ui.mode,'login');s.document.getElementById('showRegister').click();assert.equal(s.ui.mode,'signup');});
 
 test('old PIN recovery asks for linked email instead of a device or a player name',()=>{const s=mount();s.ui.render('legacy-reset');assert.equal(s.document.querySelector('#mobile-email')?.type,'email');assert.equal(s.document.querySelector('#mobile-name'),null);assert.equal(s.document.querySelector('#mobile-pin'),null);assert.match(s.document.body.textContent,/yönetici/);});
+
+test('account logout signals native reminder cancellation immediately',async()=>{const s=mount();let events=0;s.window.addEventListener('bizimskor:logged-out',()=>events++);s.client.auth.signOut=async()=>({});s.document.getElementById('logoutPlayer').click();await new Promise(r=>setImmediate(r));assert.equal(events,1);});

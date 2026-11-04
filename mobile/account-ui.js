@@ -11,7 +11,7 @@
   const controller=BizimSkorMobileAccount.create({client,storage:localStorage,deviceId:hooks.deviceId,
     gateway:async body=>{const result=await client.functions.invoke('mobile-account-auth',{body});if(result.error){let code='auth_service_unavailable';try{code=(await result.error.context.json()).error||code}catch{}return {error:code}}return result.data||{error:'auth_service_unavailable'}},
     onPlayer:async data=>{hooks.showPlayer(data.player_name);window.dispatchEvent(new Event('bizimskor:session-ready'));hooks.refresh();localStorage.removeItem('mobilePendingName');render('account');},
-    onLogout:()=>{hooks.clearPlayer();render('legacy')}
+    onLogout:()=>{hooks.clearPlayer();window.dispatchEvent(new Event('bizimskor:logged-out'));render('legacy')}
   });
   function el(tag,text,attrs={}){const node=document.createElement(tag);if(text)node.textContent=text;for(const [key,value] of Object.entries(attrs))node.setAttribute(key,value);return node}
   function message(text){status.textContent=text}
