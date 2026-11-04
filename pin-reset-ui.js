@@ -24,7 +24,7 @@
   function resetResultMessage(success) {
     return success
       ? 'Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.'
-      : 'Bu tarayıcıda hesap sahipliği doğrulanamadı. Daha önce oyuna girdiğiniz cihaz ve tarayıcıdan tekrar deneyin.';
+      : 'Hesap sahipliği doğrulanamadı. Bağlı e-postanı doğrula; e-postan bağlı değilse yönetici desteği al. Cihaz bilgisi tek başına yeterli değildir.';
   }
 
   function requestLegacyDeviceId(root, timeoutMs = 3000) {

@@ -1,0 +1,11 @@
+{
+  "appId": "com.bizimskor.app",
+  "appName": "BizimSkor",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

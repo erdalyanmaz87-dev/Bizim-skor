@@ -29,7 +29,7 @@
  function password(form,label='Şifre (en az 8 karakter)',name='password'){return input(form,label,name,{type:'password',required:'',minlength:'8',maxlength:'256',autocomplete:'new-password'});}
  function address(form,value=''){return input(form,'E-posta adresin','email',{type:'email',required:'',maxlength:'254',autocomplete:'email',value});}
  function form(title,label,job){body.append(el('h2',title,{id:'emailUpgradeTitle'}));const f=el('form');body.append(f);f.addEventListener('submit',e=>{e.preventDefault();run(()=>job(new FormData(f)));});return {f,done:()=>f.append(el('button',label,{type:'submit',class:'full p'}))};}
- async function run(job){if(busy)return;busy=true;const key=activeIdentity;dialog.setAttribute('aria-busy','true');dialog.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='İşlem yapılıyor…';try{await job();}catch(e){if(key===currentKey())status.textContent=e.message||'İşlem tamamlanamadı. Tekrar dene.';}finally{busy=false;dialog.removeAttribute('aria-busy');dialog.querySelectorAll('button').forEach(b=>b.disabled=false);if(key!==currentKey()){dialog.close();body.replaceChildren();status.textContent='';}}}
+ async function run(job){if(busy)return;busy=true;const key=activeIdentity;dialog.setAttribute('aria-busy','true');dialog.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='İşlem yapılıyor…';try{await job();}catch(e){if(key===currentKey())status.textContent=e.message||'İşlem tamamlanamadı. Tekrar dene.';}finally{busy=false;dialog.removeAttribute('aria-busy');dialog.querySelectorAll('button').forEach(b=>b.disabled=false);if(key!==currentKey()&&activeIdentity!==currentKey()){dialog.close();body.replaceChildren();status.textContent='';}}}
  async function complete(job){await job();if(activeIdentity!==currentKey())return;card.hidden=true;render('done');}
  function render(mode){body.replaceChildren();status.textContent='';
   if(mode==='intro'){
@@ -49,7 +49,18 @@
   }else if(mode==='done'){
    body.append(el('h2','Hesabın hazır ✓',{id:'emailUpgradeTitle'}),el('p','E-postan bağlandı. Artık e-posta adresin veya oyuncu adın ve yeni şifrenle hem webden hem Android uygulamasından giriş yapabilirsin. Puanların ve tahminlerin korundu.'));button('Oyuna devam et',close,'full p');
   }else if(mode==='recover'){
-   const {f,done}=form('E-posta şifremi yenile','Kurtarma kodu gönder',async data=>{recoveryEmail=await controller.recover(data.get('email'));render('reset');status.textContent='Bu adres kayıtlıysa kurtarma kodu gönderilir. Gelen kutunu ve spam klasörünü kontrol et.';});address(f);done();button('Eski 4 haneli PIN’imi unuttum',()=>{close();document.getElementById('pinResetMount')?.classList.remove('hide');document.getElementById('resetName')?.focus();},'full');
+   const {f,done}=form('E-posta şifremi yenile','Kurtarma kodu gönder',async data=>{recoveryEmail=await controller.recover(data.get('email'));render('reset');status.textContent='Bu adres kayıtlıysa kurtarma kodu gönderilir. Gelen kutunu ve spam klasörünü kontrol et.';});address(f);done();button('Eski 4 haneli PIN’imi unuttum',()=>render('pin-recover'),'full');
+  }else if(mode==='pin-recover'){
+   const {f,done}=form('4 haneli PIN’imi yenile','Doğrulama kodu gönder',async data=>{recoveryEmail=await controller.recover(data.get('email'));render('pin-reset');status.textContent='Bu adres kayıtlıysa kurtarma kodu gönderilir. Gelen kutunu ve spam klasörünü kontrol et.';});address(f);done();
+   f.append(el('p','Hesabına bağlı, doğrulanmış e-postanı kullan. E-postan bağlı değilse hesap sahipliği kontrolü için yönetici desteği al. Cihaz bilgisi tek başına PIN değiştirmeye yetmez.',{class:'small'}));
+   button('E-posta şifremi unuttum',()=>render('recover'),'full');
+  }else if(mode==='pin-reset'){
+   const {f,done}=form('Yeni 4 haneli PIN','Doğrula ve PIN’imi yenile',async data=>{await controller.resetPin(recoveryEmail,data.get('code'),data.get('pin'),data.get('repeat'));render('pin-done');activeIdentity=currentKey();window.dispatchEvent(new Event('bizimskor:pin-reset'));});
+   input(f,'E-postadaki kurtarma kodu','code',{required:'',inputmode:'numeric',autocomplete:'one-time-code',maxlength:'12'});
+   input(f,'Yeni 4 haneli PIN','pin',{required:'',type:'password',inputmode:'numeric',pattern:'[0-9]{4}',maxlength:'4',autocomplete:'new-password'});
+   input(f,'Yeni PIN tekrar','repeat',{required:'',type:'password',inputmode:'numeric',pattern:'[0-9]{4}',maxlength:'4',autocomplete:'new-password'});done();
+  }else if(mode==='pin-done'){
+   body.append(el('h2','PIN’in yenilendi',{id:'emailUpgradeTitle'}),el('p','Eski oyun oturumları kapatıldı. Puanların ve tahminlerin korundu. Yeni PIN’inle giriş yapabilirsin.'));button('Girişe dön',()=>{close();window.location.reload();},'full p');
   }else if(mode==='reset'){
    const {f,done}=form('Yeni şifreni oluştur','Şifreyi yenile',async data=>{await controller.reset(recoveryEmail,data.get('code'),data.get('password'),data.get('repeat'));render('reset-done');});input(f,'E-postadaki kurtarma kodu','code',{required:'',inputmode:'numeric',autocomplete:'one-time-code',maxlength:'12'});password(f);password(f,'Yeni şifre tekrar','repeat');done();
   }else if(mode==='reset-done'){

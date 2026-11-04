@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BizimSkor</string>
+    <string name="title_activity_main">BizimSkor</string>
+    <string name="package_name">com.bizimskor.app</string>
+    <string name="custom_url_scheme">com.bizimskor.app</string>
+</resources>
