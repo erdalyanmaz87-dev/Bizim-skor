@@ -12,17 +12,11 @@ test('giriş ekranı şifre sıfırlama yardımcısını yükler ve doğru etike
   assert.doesNotMatch(html, />PIN.?imi Unuttum</i);
 });
 
-test('sıfırlama kayıtlı cihaz kimliğiyle güvenli RPC çağrısını yapar', () => {
-  assert.match(html, /reset_player_pin_from_registered_device/);
-  assert.match(html, /p_device_id:ensureDeviceId\(\)/);
-  assert.match(html, /BizimSkorPinReset\.validateResetInput/);
-  assert.match(html, /BizimSkorPinReset\.resetResultMessage/);
-});
-
-test('alan adı değişiminde eski kayıtlı cihaz kimliğiyle sıfırlamayı yeniden dener', () => {
-  assert.match(html, /BizimSkorPinReset\.requestLegacyDeviceId\(window\)/);
-  assert.match(html, /localStorage\.setItem\('bizimSkorDeviceId',legacyDeviceId\)/);
-  assert.match(html, /p_device_id:legacyDeviceId/);
+test('PIN sıfırlama cihaz kimliği yerine doğrulanmış e-postaya yönlendirir', () => {
+  assert.doesNotMatch(html, /rpc\('reset_player_pin_from_registered_device'/);
+  assert.doesNotMatch(html, /BizimSkorPinReset\.requestLegacyDeviceId\(window\)/);
+  assert.match(html, /open\('pin-recover'\)/);
+  assert.match(html, /hesap sahipliği kontrolü için yönetici desteği/);
 });
 
 test('eski adres cihaz kimliğini yalnız bizimskor alan adına aktarır', () => {

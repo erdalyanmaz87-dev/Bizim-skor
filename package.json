@@ -1,0 +1,10 @@
+{
+  "name": "bizimskor-web",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build-static.mjs",
+    "test": "node --test",
+    "test:security": "node --test test/security-report.test.mjs test/security-email-pin.test.js test/web-account-core.test.js test/pin-reset-integration.test.js test/pin-reset-ui.test.js player-session-consistency.test.js && node tools/security-report-db.mjs"
+  },
+  "devDependencies": { "@electric-sql/pglite": "0.3.14" }
+}

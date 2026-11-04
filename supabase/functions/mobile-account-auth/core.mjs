@@ -46,7 +46,7 @@ export async function handleAction(input, deps) {
       const result = await deps.signup(identifier, input.password, input.name.trim());
       if (result?.unavailable) return reply(503, { error: 'email_service_unavailable' });
       if (result?.configurationError) return reply(503, { error: 'email_confirmation_required' });
-      if (result?.error) return reply(400, { error: 'signup_failed' });
+      if (result?.error && !result?.alreadyExists) return reply(400, { error: 'signup_failed' });
       return reply(200, { needsConfirmation: true });
     }
     // Always run the same password endpoint, including unknown user names.

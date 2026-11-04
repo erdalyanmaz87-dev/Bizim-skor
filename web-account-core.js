@@ -31,6 +31,17 @@
    async attach(address,password){address=email(address);const proof=await proofForLink();await setLogin(address,password);unchanged(proof);return finish(proof);},
    async login(identifier,password){const before=identity();await setLogin(identifier,password);if(!same(before,identity()))throw new Error('Oyuncu oturumu değişti. Tekrar giriş yap.');const account=await rpc(authClient,'mobile_account_status',{});if(!account?.linked)throw new Error('Bu e-posta bir oyuncuya bağlanmamış. Önce eski PIN’inle giriş yapıp ana ekrandan hesabını bağla.');if(!same(before,identity()))throw new Error('Oyuncu oturumu değişti. Tekrar giriş yap.');const data=await rpc(authClient,'mobile_issue_player_session',{p_device_id:deviceId()});if(!same(before,identity()))throw new Error('Oyuncu oturumu değişti. Tekrar giriş yap.');if(!data?.player_name||!data?.token)throw new Error('Giriş tamamlanamadı.');storage.setItem('bizimSkorName',data.player_name);storage.setItem('bizimSkorFriendToken',data.token);await onLogin(data);return data;},
    async recover(address){address=email(address);await request({action:'recover',email:address});return address;},
+   async resetPin(address,code,pin,repeat){
+    if(!/^[0-9]{4}$/.test(String(pin||''))||pin!==repeat)throw new Error('Eşleşen 4 haneli PIN yaz.');
+    address=email(address);const before=identity();
+    const q=await authClient.auth.verifyOtp({email:address,token:String(code||'').trim(),type:'recovery'});
+    if(q.error||!q.data?.session?.user?.email_confirmed_at)throw new Error('Kod doğrulanamadı veya süresi doldu.');
+    if(!same(before,identity()))throw new Error('Oyuncu oturumu değişti. Tekrar dene.');
+    const result=await rpc(authClient,'reset_player_pin_with_email',{p_new_pin:pin});
+    if(result!==true)throw new Error('Bu e-postayla PIN yenileme tamamlanamadı. Hesap sahipliği kontrolü için yönetici desteği al.');
+    if(same(before,identity())){storage.removeItem('bizimSkorName');storage.removeItem('bizimSkorFriendToken');}
+    return true;
+   },
    async reset(address,code,password,repeat){validatePassword(password);if(password!==repeat)throw new Error('Şifreler aynı olmalıdır.');address=email(address);const q=await authClient.auth.verifyOtp({email:address,token:String(code||'').trim(),type:'recovery'});if(q.error||!q.data?.session)throw new Error('Kod doğrulanamadı veya süresi doldu.');const changed=await authClient.auth.updateUser({password});if(changed.error)throw new Error('Şifre güncellenemedi. Tekrar dene.');return true;}
   };
  }
