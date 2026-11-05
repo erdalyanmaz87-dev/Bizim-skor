@@ -41,8 +41,8 @@ html=html.replace('</body>',`<script>
 window.BizimSkorMobileHooks={client:supabase.createClient(sb.supabaseUrl,sb.supabaseKey,{auth:{storageKey:'bizimskor-mobile-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}),deviceId:ensureDeviceId,showPlayer:showName,clearPlayer:clearRememberedPlayer,refresh:refreshAfterAuthentication,
 legacyRestore:restoreRememberedPlayer,installRestore:fn=>{restoreRememberedPlayer=fn},
 legacyLogin:async(name,pin)=>{const previous=localStorage.getItem('bizimSkorFriendToken');document.getElementById('loginName').value=name;document.getElementById('loginPin').value=pin;try{await loginAction();if(!localStorage.getItem('bizimSkorFriendToken')||localStorage.getItem('bizimSkorFriendToken')===previous)throw new Error('Oyuncu adı veya PIN doğrulanamadı.')}finally{document.getElementById('loginPin').value='';}}};
-</script><script src="android-ui.js"></script><script src="account-core.js"></script><script src="account-ui.js"></script><script src="native-reminders.js"></script></body>`);
-for(const name of ['account-core.js','account-ui.js','android-ui.js','native-reminders.js'])await cp(path.join(repo,'mobile',name),path.join(output,name));
+</script><script src="android-ui.js"></script><script src="account-core.js"></script><script src="account-ui.js"></script><script src="native-reminders.js"></script><script src="native-push.js"></script></body>`);
+for(const name of ['account-core.js','account-ui.js','android-ui.js','native-reminders.js','native-push.js'])await cp(path.join(repo,'mobile',name),path.join(output,name));
 const flagCodes=Object.values((await import('../android-ui.js')).default.codes);
 await mkdir(path.join(output,'flags'),{recursive:true});
 for(const code of new Set(flagCodes))await cp(path.join(repo,'mobile/node_modules/flag-icons/flags/4x3',code+'.svg'),path.join(output,'flags',code+'.svg'));

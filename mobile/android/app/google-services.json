@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "745234102630",
+    "project_id": "bizimskor",
+    "storage_bucket": "bizimskor.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745234102630:android:96939c7b9399a1d52a30a7",
+        "android_client_info": {
+          "package_name": "com.bizimskor.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjzgjJ1fHAzfvHzK2K_kbg64wy6xiX-lE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

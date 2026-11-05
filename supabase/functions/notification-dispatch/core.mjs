@@ -36,3 +36,9 @@ export function exactScoreReached(prediction,liveScore){
 export function deliveryKey(eventKey,playerName,endpoint){
   return `${String(eventKey)}|${String(playerName).trim().toLocaleLowerCase('tr-TR')}|${String(endpoint)}`;
 }
+
+export function predictionBadgePayload(jobs,player,updatedAt=Date.now()){
+  const name=String(player||'').trim().toLocaleLowerCase('tr-TR'),weeks=new Map();
+  for(const job of jobs||[])if(String(job.player||'').trim().toLocaleLowerCase('tr-TR')===name)weeks.set(job.key,{key:job.key,deadline:job.deadline});
+  return{owner:name,updatedAt,weeks:[...weeks.values()]};
+}

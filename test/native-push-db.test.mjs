@@ -1,0 +1,21 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {PGlite} from '@electric-sql/pglite';import {readFile} from 'node:fs/promises';
+const schema=await readFile(new URL('../supabase/migrations/20261105210226_native_push_devices.sql',import.meta.url),'utf8');
+test('native device state rejects anonymous reads, wrong capability and stale post-logout writes',async()=>{
+ const db=new PGlite();await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema extensions;create schema mobile_private;create schema auth;
+ create function extensions.digest(text,text) returns bytea language sql immutable as $$select decode(md5($1),'hex')$$;
+ create table players(id bigint primary key,name text,is_active boolean);insert into players values(5,'Erdal',true),(6,'Other',true),(7,'Inactive',false);
+ create table friend_league_sessions(token_hash bytea,player_name text,expires_at timestamptz);insert into friend_league_sessions values(extensions.digest('valid','sha256'),'Erdal',now()+interval '1 day'),(extensions.digest('other','sha256'),'Other',now()+interval '1 day');
+ create function public.friend_session_player(text) returns text language sql set search_path=public,extensions as $$select player_name from friend_league_sessions where token_hash=extensions.digest($1,'sha256') and expires_at>now()$$;
+ create table mobile_private.player_accounts(player_id bigint,auth_user_id uuid);create table auth.users(id uuid,banned_until timestamptz);`);
+ await db.exec(schema);const id='11111111-1111-4111-8111-111111111111',hash='a'.repeat(64),token='x'.repeat(80);
+ const set=async(epoch,enabled,session='valid',secret=hash)=> (await db.query('select public.set_native_push_device($1::uuid,$2,$3::bigint,$4::boolean,$5,$6) as value',[id,secret,epoch,enabled,session,token])).rows[0].value;
+ assert.equal((await set(1,true)).applied,true);assert.equal((await db.query('select * from public.list_native_push_targets()')).rows.length,1);
+ await db.exec("update friend_league_sessions set expires_at=now()-interval '1 second' where player_name='Erdal'");
+ assert.equal((await set(2,false,'')).applied,true,'revocation must not depend on an expired game session');
+ assert.equal((await db.query('select * from public.list_native_push_targets()')).rows.length,0);
+ await db.exec("update friend_league_sessions set expires_at=now()+interval '1 day' where player_name='Erdal'");
+ assert.equal((await set(1,true)).applied,false,'late subscribe cannot resurrect disabled device');
+ await assert.rejects(set(3,true,'valid','b'.repeat(64)),/device_unauthorized/);
+ assert.equal((await set(3,true,'other')).applied,true);assert.equal((await db.query('select player_name from list_native_push_targets()')).rows[0].player_name,'Other');
+ await db.exec('set role anon');await assert.rejects(db.query('select * from native_push_devices'),/permission denied/);await assert.rejects(db.query('select * from list_native_push_targets()'),/permission denied/);await db.exec('reset role');await db.close();
+});

@@ -53,3 +53,9 @@ for(const action of ['disable','logout'])test(`${action} cancels existing alarms
  assert.ok(calls.includes('cancel'),'old alarms must cancel before network response');assert.equal(values.has('bizimSkorNativeReminderIds'),false);
  release(rows);await waiting;assert.ok(!calls.includes('schedule'));
 });
+test('server-managed native push cancels legacy alarms instead of scheduling duplicate reminders',async()=>{
+ const {readFileSync}=await import('node:fs');const vm=await import('node:vm');const calls=[];
+ const values=new Map([['bizimSkorFriendToken','token'],['bizimSkorNativeReminders','1'],['bizimSkorNativeReminderIds','[{"id":123}]']]);
+ const context={document:{getElementById:()=>null,addEventListener:()=>{},visibilityState:'visible'},Capacitor:{isNativePlatform:()=>true,Plugins:{LocalNotifications:{cancel:async()=>calls.push('cancel'),schedule:async()=>calls.push('schedule'),checkPermissions:async()=>({display:'granted'}),addListener:()=>{}}}},BizimSkorNativePush:{},localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},BizimSkorMobileHooks:{client:{rpc:async()=>({data:[{competition:'super',week:12,fixture_count:9,saved_count:0,deadline:new Date(Date.now()+7200000).toISOString()}]})}},addEventListener:()=>{},setTimeout:()=>{},setInterval:()=>{},console,Date};
+ vm.runInNewContext(readFileSync(new URL('../native-reminders.js',import.meta.url),'utf8'),context);await context.BizimSkorNativeReminders.refresh();assert.ok(calls.includes('cancel'));assert.ok(!calls.includes('schedule'));
+});
