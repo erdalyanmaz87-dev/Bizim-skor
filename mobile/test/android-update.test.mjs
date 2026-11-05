@@ -38,3 +38,18 @@ test('disabling while reminder RPC is pending never schedules a notification',as
  release({data:[{competition:'super',week:12,fixture_count:9,saved_count:0,deadline:new Date(Date.now()+7200000).toISOString()}]});await refreshing;
  assert.equal(values.has('bizimSkorNativeReminders'),false);assert.ok(!calls.includes('schedule'));
 });
+for(const action of ['disable','logout'])test(`${action} cancels existing alarms without waiting for a stalled status request`,async()=>{
+ const {readFileSync}=await import('node:fs');const vm=await import('node:vm');
+ const values=new Map([['bizimSkorFriendToken','token'],['bizimSkorNativeReminders','1']]);const events=new Map();
+ const calls=[];let release,count=0;const held=new Promise(r=>release=r);
+ const rows={data:[{competition:'super',week:12,fixture_count:9,saved_count:0,deadline:new Date(Date.now()+7200000).toISOString()}]};
+ const plugin={checkPermissions:async()=>({display:'granted'}),cancel:async()=>calls.push('cancel'),schedule:async()=>calls.push('schedule'),addListener:()=>{}};
+ const document={getElementById:()=>null,addEventListener:()=>{},visibilityState:'visible'};
+ const context={document,Capacitor:{isNativePlatform:()=>true,Plugins:{LocalNotifications:plugin}},localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},BizimSkorMobileHooks:{client:{rpc:async()=>++count===1?rows:held}},addEventListener:(n,f)=>events.set(n,f),setTimeout:()=>{},setInterval:()=>{},console,Date};
+ vm.runInNewContext(readFileSync(new URL('../native-reminders.js',import.meta.url),'utf8'),context);
+ const api=context.BizimSkorNativeReminders;await api.refresh();assert.ok(values.has('bizimSkorNativeReminderIds'));calls.length=0;
+ const waiting=api.refresh();await new Promise(r=>setImmediate(r));
+ if(action==='disable')await api.toggle();else{values.delete('bizimSkorFriendToken');await events.get('bizimskor:logged-out')()}
+ assert.ok(calls.includes('cancel'),'old alarms must cancel before network response');assert.equal(values.has('bizimSkorNativeReminderIds'),false);
+ release(rows);await waiting;assert.ok(!calls.includes('schedule'));
+});
