@@ -62,7 +62,9 @@
   }else if(mode==='pin-done'){
    body.append(el('h2','PIN’in yenilendi',{id:'emailUpgradeTitle'}),el('p','Eski oyun oturumları kapatıldı. Puanların ve tahminlerin korundu. Yeni PIN’inle giriş yapabilirsin.'));button('Girişe dön',()=>{close();window.location.reload();},'full p');
   }else if(mode==='reset'){
-   const {f,done}=form('Yeni şifreni oluştur','Şifreyi yenile',async data=>{await controller.reset(recoveryEmail,data.get('code'),data.get('password'),data.get('repeat'));render('reset-done');});input(f,'E-postadaki kurtarma kodu','code',{required:'',inputmode:'numeric',autocomplete:'one-time-code',maxlength:'12'});password(f);password(f,'Yeni şifre tekrar','repeat');done();
+   const {f,done}=form('Yeni şifreni oluştur','Şifreyi yenile',async data=>{const changed=await controller.reset(recoveryEmail,data.get('code'),data.get('password'),data.get('repeat'));render(changed===false?'reset-same':'reset-done');});input(f,'E-postadaki kurtarma kodu','code',{required:'',inputmode:'numeric',autocomplete:'one-time-code',maxlength:'12'});password(f);password(f,'Yeni şifre tekrar','repeat');done();
+  }else if(mode==='reset-same'){
+   body.append(el('h2','Şifren zaten bu',{id:'emailUpgradeTitle'}),el('p','E-postan doğrulandı. Yazdığın şifre mevcut şifrenle aynı; değiştirmeden bu şifreyle giriş yapabilirsin.'));button('Tamam',close,'full p');
   }else if(mode==='reset-done'){
    body.append(el('h2','Şifren yenilendi',{id:'emailUpgradeTitle'}),el('p','Yeni şifrenle giriş yapabilirsin. E-postanı henüz oyuncuna bağlamadıysan eski PIN’inle oyuna girip e-posta bağlama adımını tamamla.'));button('Tamam',close,'full p');
   }

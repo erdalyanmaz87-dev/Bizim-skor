@@ -42,7 +42,7 @@
     if(same(before,identity())){storage.removeItem('bizimSkorName');storage.removeItem('bizimSkorFriendToken');}
     return true;
    },
-   async reset(address,code,password,repeat){validatePassword(password);if(password!==repeat)throw new Error('Şifreler aynı olmalıdır.');address=email(address);const q=await authClient.auth.verifyOtp({email:address,token:String(code||'').trim(),type:'recovery'});if(q.error||!q.data?.session)throw new Error('Kod doğrulanamadı veya süresi doldu.');const changed=await authClient.auth.updateUser({password});if(changed.error)throw new Error('Şifre güncellenemedi. Tekrar dene.');return true;}
+   async reset(address,code,password,repeat){validatePassword(password);if(password!==repeat)throw new Error('Şifreler aynı olmalıdır.');address=email(address);const q=await authClient.auth.verifyOtp({email:address,token:String(code||'').trim(),type:'recovery'});if(q.error||!q.data?.session)throw new Error('Kod doğrulanamadı veya süresi doldu.');const changed=await authClient.auth.updateUser({password});if(changed.error?.code==='same_password')return false;if(changed.error)throw new Error('Şifre güncellenemedi. Tekrar dene.');return true;}
   };
  }
  return {create,validatePassword};

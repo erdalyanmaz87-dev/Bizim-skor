@@ -21,3 +21,16 @@ test('deletion requests only call queue; logout clears game credentials',async()
 test('legacy test player can request deletion without email migration',async()=>{const s=setup();await s.controller.legacyDeletion();assert.equal(s.calls[0].name,'create_support_request');assert.equal(s.calls[0].args.p_token,'old-token');assert.match(s.calls[0].args.p_message,/HESAP SİLME TALEBİ/);assert.equal(s.saved.get('bizimSkorName'),'Kahve');});
 test('legacy device-only PIN recovery is rejected without a request',async()=>{const s=setup();await assert.rejects(s.controller.legacyResetPin('Kahve','1234'),/e-posta/);assert.equal(s.calls.length,0);assert.equal(s.saved.get('bizimSkorFriendToken'),'old-token');});
 test('PIN renewal requires email recovery proof and preserves identity on server rejection',async()=>{const s=setup();await assert.rejects(s.controller.resetPin('1357'),/Önce/);await s.controller.verify('test@example.invalid','123456','recovery');s.client.rpc=async()=>({data:false});await assert.rejects(s.controller.resetPin('1357'),/tamamlanamadı/);assert.equal(s.saved.get('bizimSkorFriendToken'),'old-token');s.client.rpc=async(name,args)=>{s.calls.push({name,args});return {data:true}};await s.controller.resetPin('1357');assert.deepEqual(s.calls.at(-1),{name:'reset_player_pin_with_email',args:{p_new_pin:'1357'}});assert.equal(s.saved.has('bizimSkorFriendToken'),false);await assert.rejects(s.controller.resetPin('2468'),/Önce/);});
+
+test('same-password recovery consumes verified proof and restores the existing player',async()=>{
+ const s=setup();s.client.auth.updateUser=async()=>({error:{code:'same_password'}});
+ await assert.rejects(s.controller.resetPassword('secret123'),/Önce/);
+ await s.controller.verify('test@example.invalid','verified','recovery');
+ const state=await s.controller.resetPassword('secret123');assert.equal(state.passwordUnchanged,true);assert.equal(s.shown.player_id,543);
+ await assert.rejects(s.controller.resetPassword('secret123'),/Önce/);
+});
+test('other native password update errors fail closed',async()=>{
+ const s=setup();s.client.auth.updateUser=async()=>({error:{code:'weak_password'}});
+ await s.controller.verify('test@example.invalid','verified','recovery');
+ await assert.rejects(s.controller.resetPassword('secret123'),/ulaşılamıyor/);
+});

@@ -14,7 +14,7 @@ function fixture(){
  const gameClient={rpc:async(name,args)=>{calls.push([name,args]);return {data:{player_name:'Erdal',linked:!!mapped}}}};
  const gateway=async body=>{calls.push(['gateway',body]);return body.action==='login'?{session:{access_token:'access',refresh_token:'refresh',user}}:{needsConfirmation:true}};
  const controller=create({authClient,gameClient,gateway,storage,deviceId:()=> 'device',onLogin:()=>{}});
- return {controller,calls,values,recreate:()=>create({authClient,gameClient,gateway,storage,deviceId:()=> 'device'}),setMapped:v=>mapped=v,setOtpError:v=>otpError=v};
+ return {authClient,controller,calls,values,recreate:()=>create({authClient,gameClient,gateway,storage,deviceId:()=> 'device'}),setMapped:v=>mapped=v,setOtpError:v=>otpError=v};
 }
 test('password length is enforced without trimming and mismatch prevents signup',async()=>{
  assert.throws(()=>validatePassword('1234567'));assert.equal(validatePassword('12345678'),'12345678');
@@ -57,4 +57,14 @@ test('unlinked login never creates a duplicate player',async()=>{
 test('pending signup resumes after page reload without saving password',async()=>{
  const f=fixture();await f.controller.signup('a@b.com','secret123','secret123');assert.equal(f.controller.pending().email,'a@b.com');
  const restored=f.recreate();assert.equal(restored.pending().email,'a@b.com');await restored.verify('123456');assert.equal(restored.pending(),null);
+});
+
+test('same current password is accepted only after recovery verification',async()=>{
+ const f=fixture();f.authClient.auth.updateUser=async()=>({error:{code:'same_password'}});
+ f.setOtpError(true);await assert.rejects(f.controller.reset('a@b.com','wrong','secret123','secret123'),/Kod/);
+ f.setOtpError(false);assert.equal(await f.controller.reset('a@b.com','verified','secret123','secret123'),false);
+});
+test('other password update errors never become recovery success',async()=>{
+ const f=fixture();f.authClient.auth.updateUser=async()=>({error:{code:'weak_password'}});
+ await assert.rejects(f.controller.reset('a@b.com','verified','secret123','secret123'),/güncellenemedi/);
 });
