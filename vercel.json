@@ -1,6 +1,6 @@
 {
-  "buildCommand": "node tools/build-static.mjs",
-  "outputDirectory": "dist",
+  "buildCommand": "node tools/build-android-first-run-preview.mjs",
+  "outputDirectory": "mobile/www",
   "headers": [
     {
       "source": "/(.*)",
@@ -50,5 +50,6 @@
         }
       ]
     }
-  ]
+  ],
+  "installCommand": "npm ci --prefix mobile"
 }

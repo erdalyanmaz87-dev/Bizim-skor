@@ -31,6 +31,13 @@ html=html.replace('</head>',`<style>
 #mobileAccountPanel label{display:block;margin:12px 0 5px;font-size:14px}
 #mobileAccountPanel input[type=checkbox]{width:24px;height:24px}
 #mobileAccountPanel button{min-height:44px;cursor:pointer}
+#mobileAccountPanel form + button,#mobileAccountPanel button + button{margin-top:8px}
+#mobileAccountPanel h2{margin-top:0}
+#mobileFirstRunTour{box-sizing:border-box;position:fixed;z-index:11000;left:50%;top:max(12px,env(safe-area-inset-top));transform:translateX(-50%);width:min(440px,calc(100% - 24px));padding:16px;border-radius:16px;background:#10243d;color:#fff;border:1px solid #436186;box-shadow:0 10px 28px #0005}
+#mobileFirstRunTour h2{font-size:19px;margin:4px 0}
+#mobileFirstRunTour p{font-size:14px;margin:6px 0 12px}
+.mobile-tour-actions{display:flex;justify-content:space-between;gap:8px}
+.mobile-tour-actions button{min-height:44px}
 #mobileAccountPanel button:disabled{opacity:.55;cursor:wait}
 #mobileAccountPanel a{color:inherit;text-decoration:underline}
 #mobileAccountMessage{font-size:14px;line-height:1.5;min-height:20px}
@@ -41,8 +48,8 @@ html=html.replace('</body>',`<script>
 window.BizimSkorMobileHooks={client:supabase.createClient(sb.supabaseUrl,sb.supabaseKey,{auth:{storageKey:'bizimskor-mobile-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}),deviceId:ensureDeviceId,showPlayer:showName,clearPlayer:clearRememberedPlayer,refresh:refreshAfterAuthentication,
 legacyRestore:restoreRememberedPlayer,installRestore:fn=>{restoreRememberedPlayer=fn},
 legacyLogin:async(name,pin)=>{const previous=localStorage.getItem('bizimSkorFriendToken');document.getElementById('loginName').value=name;document.getElementById('loginPin').value=pin;try{await loginAction();if(!localStorage.getItem('bizimSkorFriendToken')||localStorage.getItem('bizimSkorFriendToken')===previous)throw new Error('Oyuncu adı veya PIN doğrulanamadı.')}finally{document.getElementById('loginPin').value='';}}};
-</script><script src="android-ui.js"></script><script src="account-core.js"></script><script src="account-ui.js"></script><script src="native-reminders.js"></script><script src="native-push.js"></script></body>`);
-for(const name of ['account-core.js','account-ui.js','android-ui.js','native-reminders.js','native-push.js'])await cp(path.join(repo,'mobile',name),path.join(output,name));
+</script><script src="android-ui.js"></script><script src="account-core.js"></script><script src="first-run-tour.js"></script><script src="account-ui.js"></script><script src="native-reminders.js"></script><script src="native-push.js"></script></body>`);
+for(const name of ['account-core.js','account-ui.js','first-run-tour.js','android-ui.js','native-reminders.js','native-push.js'])await cp(path.join(repo,'mobile',name),path.join(output,name));
 const flagCodes=Object.values((await import('../android-ui.js')).default.codes);
 await mkdir(path.join(output,'flags'),{recursive:true});
 for(const code of new Set(flagCodes))await cp(path.join(repo,'mobile/node_modules/flag-icons/flags/4x3',code+'.svg'),path.join(output,'flags',code+'.svg'));

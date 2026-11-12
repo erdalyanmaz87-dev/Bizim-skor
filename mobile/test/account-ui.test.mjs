@@ -15,7 +15,15 @@ function mount(){
  vm.runInContext(core,context);context.BizimSkorMobileAccount=window.BizimSkorMobileAccount;vm.runInContext(source,context);
  return {window,document,client,ui:window.BizimSkorMobileAccountUI,restore};
 }
-test('native account panel mounts with existing test login; root restore is wired',async()=>{const s=mount();assert.equal(s.ui.mode,'legacy');assert.equal(s.document.querySelector('#mobile-pin').getAttribute('maxlength'),'4');await s.restore();assert.equal(s.ui.mode,'legacy');});
+test('first launch shows registration first and keeps existing player login reachable',async()=>{
+ const s=mount();await s.restore();assert.equal(s.ui.mode,'welcome');
+ const buttons=s.document.querySelectorAll('#mobileAccountPanel button');
+ assert.equal(buttons[0].textContent,'Kayıt Ol');assert.equal(buttons[1].textContent,'Giriş Yap');
+ buttons[0].click();assert.equal(s.ui.mode,'signup');
+ await new Promise(resolve=>setImmediate(resolve));
+ s.ui.render('welcome');s.document.querySelectorAll('#mobileAccountPanel button')[1].click();
+ assert.equal(s.ui.mode,'login');
+});
 test('registration requires email, strong repeated password and explicit consent',()=>{const s=mount();s.ui.render('signup');assert.equal(s.document.querySelector('#mobile-email').type,'email');assert.equal(s.document.querySelector('#mobile-password').getAttribute('minlength'),'8');assert.equal(s.document.querySelector('#mobile-repeat').getAttribute('minlength'),'8');assert.equal(s.document.querySelector('#mobile-consent').hasAttribute('required'),true);assert.equal(s.document.querySelector('#mobile-pin'),null);assert.match(s.document.body.textContent,/kurulumu sürüyor/);});
 test('every account view renders and retains accessible privacy and deletion routes',()=>{const s=mount();for(const mode of ['legacy','legacy-reset','login','signup','verify','recover','reset','choose','create','account','legacy-account','change','delete','legacy-delete']){s.ui.render(mode);assert.equal(s.ui.mode,mode);assert.ok(s.document.querySelector('a[href="privacy.html"]'),mode);assert.ok(s.document.querySelector('a[href="account-delete.html"]'),mode);for(const input of s.document.querySelectorAll('input'))assert.ok(s.document.querySelector(`label[for="${input.id}"]`),mode);}});
 test('deletion view explains manual processing and cancellation',()=>{const s=mount();s.ui.render('delete');assert.match(s.document.body.textContent,/anında silme yapmaz/);assert.match(s.document.body.textContent,/Talebimi geri çek/);});

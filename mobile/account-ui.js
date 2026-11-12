@@ -6,12 +6,19 @@
   const panel=document.createElement('div');panel.id='mobileAccountPanel';
   const status=document.createElement('p');status.id='mobileAccountMessage';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   const formHost=document.createElement('div');panel.append(formHost,status);
-  document.getElementById('newPlayer').prepend(panel);
-  let mode='legacy',busy=false,verifyType='signup',recoveryTarget='password',pendingEmail='',pendingName=localStorage.getItem('mobilePendingName')||'',pendingLink=false;
+  const account = document.getElementById('newPlayer');
+  account.prepend(panel);
+  const home = document.getElementById('home');
+  const accountCard = account.closest('.c');
+  if (home && accountCard) {
+    accountCard.classList.add('mobile-first-run-account');
+    home.prepend(accountCard);
+  }
+  let mode='welcome',busy=false,verifyType='signup',recoveryTarget='password',pendingEmail='',pendingName=localStorage.getItem('mobilePendingName')||'',pendingLink=false;
   const controller=BizimSkorMobileAccount.create({client,storage:localStorage,deviceId:hooks.deviceId,
     gateway:async body=>{const result=await client.functions.invoke('mobile-account-auth',{body});if(result.error){let code='auth_service_unavailable';try{code=(await result.error.context.json()).error||code}catch{}return {error:code}}return result.data||{error:'auth_service_unavailable'}},
     onPlayer:async data=>{hooks.showPlayer(data.player_name);window.dispatchEvent(new Event('bizimskor:session-ready'));hooks.refresh();localStorage.removeItem('mobilePendingName');render('account');},
-    onLogout:()=>{hooks.clearPlayer();window.dispatchEvent(new Event('bizimskor:logged-out'));render('legacy')}
+    onLogout:()=>{hooks.clearPlayer();window.dispatchEvent(new Event('bizimskor:logged-out'));render('welcome')}
   });
   function el(tag,text,attrs={}){const node=document.createElement(tag);if(text)node.textContent=text;for(const [key,value] of Object.entries(attrs))node.setAttribute(key,value);return node}
   function message(text){status.textContent=text}
@@ -20,9 +27,13 @@
   async function run(action){if(busy)return;busy=true;panel.setAttribute('aria-busy','true');panel.querySelectorAll('button').forEach(b=>b.disabled=true);message('İşlem yapılıyor…');try{await action()}catch(e){message(e.message||'İşlem tamamlanamadı.')}finally{busy=false;panel.removeAttribute('aria-busy');panel.querySelectorAll('button').forEach(b=>b.disabled=false)}}
   function form(title,submit,action){formHost.replaceChildren(el('h3',title));const f=el('form');f.onsubmit=e=>{e.preventDefault();run(()=>action(new FormData(f)))};formHost.append(f);const done=()=>f.append(el('button',submit,{type:'submit',class:'full p'}));return {f,done}}
   function policy(parent){const p=el('p',null,{class:'small'});p.append(el('a','Gizlilik',{href:'privacy.html'}),document.createTextNode(' • '),el('a','Kullanım koşulları',{href:'terms.html'}),document.createTextNode(' • '),el('a','Hesap silme',{href:'account-delete.html'}));parent.append(p)}
-  function ready(state){if(state.signedIn&&state.linked){render('account');message('Hesabınıza giriş yapıldı.')}else if(state.signedIn){render('choose');message('E-posta doğrulandı. Mevcut oyuncunuzu bağlayın veya yeni oyuncu oluşturun.')}else render('login')}
+  function ready(state, newPlayer=false){if(state.signedIn&&state.linked){render('account');message('Hesabınıza giriş yapıldı.')}else if(state.signedIn){render(newPlayer?'create':'choose');message(newPlayer?'E-posta doğrulandı. Oyuna katılmak için oyuncu adını onayla.':'E-posta doğrulandı. Mevcut oyuncunuzu bağlayın veya yeni oyuncu oluşturun.')}else render('welcome')}
   function render(next){mode=next;message('');formHost.replaceChildren();
-    if(next==='legacy'){
+    if(next==='welcome'){
+      formHost.append(el('h2','BizimSkor’a hoş geldin'));
+      button(formHost,'Kayıt Ol',()=>render('signup'),'full p');
+      button(formHost,'Giriş Yap',()=>render('login'),'full');
+    }else if(next==='legacy'){
       const {f,done}=form('Mevcut test hesabıyla giriş','Giriş yap',async data=>{await hooks.legacyLogin(data.get('name'),data.get('pin'));message('Giriş yapıldı.');});
       field(f,'Oyuncu adı','name',{required:'',autocomplete:'username'});
       field(f,'Mevcut 4 haneli PIN','pin',{required:'',type:'password',inputmode:'numeric',pattern:'[0-9]{4}',maxlength:'4',autocomplete:'current-password'});done();
@@ -51,7 +62,7 @@
       const existing=field(f,'Mevcut oyuncu hesabımı bağlayacağım','existing',{type:'checkbox'});existing.checked=!!controller.legacy.name;
       field(f,'Kullanım koşullarını ve gizlilik metnini okudum','consent',{type:'checkbox',required:''});policy(f);done();button(formHost,'Giriş ekranı',()=>render('login'),'full');
     }else if(next==='verify'){
-      const {f,done}=form(verifyType==='signup'?'E-postanı doğrula':'Kurtarma kodunu doğrula','Kodu doğrula',async data=>{pendingEmail=String(data.get('email'));const state=await controller.verify(pendingEmail,data.get('code'),verifyType);if(state.recovery){render(recoveryTarget==='pin'?'pin-reset':'reset');message(recoveryTarget==='pin'?'Yeni 4 haneli PIN’inizi belirleyin.':'Yeni şifrenizi belirleyin.')}else ready(state)});
+      const {f,done}=form(verifyType==='signup'?'E-postanı doğrula':'Kurtarma kodunu doğrula','Kodu doğrula',async data=>{pendingEmail=String(data.get('email'));const state=await controller.verify(pendingEmail,data.get('code'),verifyType);if(state.recovery){render(recoveryTarget==='pin'?'pin-reset':'reset');message(recoveryTarget==='pin'?'Yeni 4 haneli PIN’inizi belirleyin.':'Yeni şifrenizi belirleyin.')}else ready(state,verifyType==='signup'&&!!pendingName&&!pendingLink)});
       field(f,'E-posta','email',{required:'',type:'email',value:pendingEmail,autocomplete:'email'});field(f,'E-postadaki kod','code',{required:'',inputmode:'numeric',autocomplete:'one-time-code'});done();formHost.append(el('p','E-posta şablonunda kod bulunmalıdır. Kod gelmiyorsa gönderim kurulumu tamamlanmamış olabilir. E-posta bağlantısıyla doğruladıysanız giriş ekranından devam edin.',{class:'small'}));button(formHost,'Giriş ekranı',()=>render('login'),'full');
     }else if(next==='recover'){
       const {f,done}=form('Şifreni yenile','Kurtarma kodu iste',async data=>{pendingEmail=String(data.get('email'));await controller.recover(pendingEmail);verifyType='recovery';recoveryTarget='password';render('verify');message('Bu adres kayıtlıysa kurtarma e-postası gönderilir. Gönderim hizmeti henüz doğrulanmadı.');});field(f,'E-posta','email',{required:'',type:'email',autocomplete:'email'});done();button(formHost,'Giriş ekranı',()=>render('login'),'full');
@@ -65,7 +76,7 @@
       field(f,'Mevcut oyuncu adı','name',{required:'',value:pendingName||controller.legacy.name||'',maxlength:'100'});field(f,'Eski PIN (bu cihazda açık oturum varsa boş bırakılabilir)','pin',{type:'password',inputmode:'numeric',maxlength:'4',autocomplete:'current-password'});done();
       button(formHost,'İlk kez oynuyorum: yeni oyuncu oluştur',()=>render('create'),'full');button(formHost,'Çıkış yap',()=>controller.logout(),'full');
     }else if(next==='create'){
-      const {f,done}=form('Yeni oyuncu oluştur','Oyuna katıl',async data=>{await controller.createPlayer(data.get('name'));message('Oyuncu hesabınız oluşturuldu.');});field(f,'Oyuncu adı','name',{required:'',value:pendingLink?'':pendingName,maxlength:'30'});done();button(formHost,'Mevcut oyuncumu bağlayacağım',()=>render('choose'),'full');
+      const {f,done}=form('Yeni oyuncu oluştur','Oyuna katıl',async data=>{await controller.createPlayer(data.get('name'));window.BizimSkorFirstRunTour?.start();});field(f,'Oyuncu adı','name',{required:'',value:pendingLink?'':pendingName,maxlength:'30'});done();button(formHost,'Mevcut oyuncumu bağlayacağım',()=>render('choose'),'full');
     }else if(next==='account'){
       formHost.append(el('h3','Hesap ayarları'));button(formHost,'Şifremi değiştir',()=>render('change'),'full');button(formHost,'Hesap silme talebi',()=>render('delete'),'full');button(formHost,'Çıkış yap',()=>controller.logout(),'full');
     }else if(next==='legacy-account'){
@@ -81,11 +92,11 @@
   }
   const profile=document.getElementById('updateProfile');profile.textContent='Hesap ayarları';profile.onclick=async()=>{document.getElementById('newPlayer').classList.remove('hide');const q=await client.auth.getSession();render(q.data?.session?'account':'legacy-account');panel.scrollIntoView({block:'center',behavior:'smooth'});};
   document.getElementById('logoutPlayer').onclick=()=>run(()=>controller.logout());
-  hooks.installRestore(async()=>{const state=await controller.restore();if(state.signedIn){ready(state);if(!state.linked)document.getElementById('newPlayer').classList.remove('hide');}else{await hooks.legacyRestore();render('legacy')}});
+  hooks.installRestore(async()=>{const state=await controller.restore();if(state.signedIn){ready(state);if(!state.linked)document.getElementById('newPlayer').classList.remove('hide');}else{await hooks.legacyRestore();if(mode==='welcome')render('welcome')}});
   window.addEventListener('bizimskor:mobile-account',()=>{document.getElementById('newPlayer').classList.remove('hide');render('login')});
   const showMode=next=>{document.getElementById('newPlayer').classList.remove('hide');render(next==='register'?'signup':'login')};
   if(window.BizimSkorAuthActions)window.BizimSkorAuthActions=Object.freeze({...window.BizimSkorAuthActions,showMode});
   for(const [id,next] of [['showLogin','login'],['showRegister','register']]){const button=document.getElementById(id);if(button)button.onclick=()=>showMode(next)}
-  render('legacy');
+  render('welcome');
   window.BizimSkorMobileAccountUI={controller,render,get mode(){return mode}};
 })();
