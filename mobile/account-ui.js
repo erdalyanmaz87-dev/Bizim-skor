@@ -39,7 +39,7 @@
       field(f,'Mevcut 4 haneli PIN','pin',{required:'',type:'password',inputmode:'numeric',pattern:'[0-9]{4}',maxlength:'4',autocomplete:'current-password'});done();
       button(formHost,'Eski test PIN’imi unuttum',()=>render('legacy-reset'),'full');
       button(formHost,'E-posta / kullanıcı adı ve şifreyle giriş',()=>render('login'),'full');
-      button(formHost,'Yeni hesap / mevcut hesabı e-postaya bağla',()=>render('signup'),'full');
+      button(formHost,'Giriş seçeneklerine dön',()=>render('welcome'),'full');
     }else if(next==='legacy-reset'){
       const {f,done}=form('4 haneli PIN’ini e-postayla yenile','Doğrulama kodu iste',async data=>{pendingEmail=String(data.get('email'));await controller.recover(pendingEmail);verifyType='recovery';recoveryTarget='pin';render('verify');message('Bu adres kayıtlıysa kurtarma kodu gönderilir.');});
       field(f,'Hesabına bağlı e-posta','email',{required:'',type:'email',autocomplete:'email'});done();
@@ -48,19 +48,20 @@
     }else if(next==='login'){
       const {f,done}=form('Hesabına giriş yap','Giriş yap',async data=>ready(await controller.login(data.get('identifier'),data.get('password'))));
       field(f,'E-posta veya oyuncu adı','identifier',{required:'',autocomplete:'username'});field(f,'Şifre','password',{required:'',type:'password',minlength:'8',maxlength:'256',autocomplete:'current-password'});done();
-      button(formHost,'Şifremi unuttum',()=>render('recover'));button(formHost,'Kayıt ol / eski hesabımı bağla',()=>render('signup'),'full');button(formHost,'Mevcut test hesabıyla devam et',()=>render('legacy'),'full');
-    }else if(next==='signup'){
+      button(formHost,'Şifremi unuttum',()=>render('recover'));button(formHost,'Kayıt Ol',()=>render('signup'),'full');button(formHost,'Mevcut test hesabıyla devam et',()=>render('legacy'),'full');
+    }else if(next==='signup'||next==='link-signup'){
+      const linking=next==='link-signup';
       formHost.append(el('p','E-posta hizmetinin kurulumu sürüyor. Kod gelmezse mevcut test hesabınızla devam edin; tekrar kayıt oluşturmayın.',{class:'small'}));
       const notice=formHost.firstChild;
-      const {f,done}=form('E-posta hesabı oluştur','Doğrulama e-postası iste',async data=>{
+      const {f,done}=form(linking?'Hesabını e-postaya bağla':'E-posta hesabı oluştur','Doğrulama e-postası iste',async data=>{
         if(data.get('password')!==data.get('repeat'))throw new Error('Şifreler aynı olmalıdır.');if(!data.get('consent'))throw new Error('Devam etmek için koşulları kabul edin.');
-        pendingLink=data.get('existing')==='on';pendingName=pendingLink?String(data.get('name')).trim():controller.normalizeName(data.get('name'));pendingEmail=String(data.get('email')).trim();
+        pendingLink=linking;pendingName=linking?controller.legacy.name||'':controller.normalizeName(data.get('name'));pendingEmail=String(data.get('email')).trim();
+        if(linking&&!pendingName)throw new Error('Önce mevcut test hesabına giriş yap.');
         await controller.signup(pendingEmail,data.get('password'),pendingName,pendingLink);localStorage.setItem('mobilePendingName',pendingName);verifyType='signup';render('verify');message('E-postadaki doğrulama kodunu girin. Gönderim hizmeti henüz doğrulanmadı.');
       });f.prepend(notice);
-      field(f,'Oyuncu adı (mevcutsa aynı adı yazın)','name',{required:'',maxlength:'100',value:controller.legacy.name||pendingName,autocomplete:'username'});
+      if(!linking)field(f,'Oyuncu adı','name',{required:'',maxlength:'30',value:pendingLink?'':pendingName,autocomplete:'username'});
       field(f,'E-posta','email',{required:'',type:'email',autocomplete:'email'});field(f,'Şifre (en az 8 karakter)','password',{required:'',type:'password',minlength:'8',maxlength:'256',autocomplete:'new-password'});field(f,'Şifre tekrar','repeat',{required:'',type:'password',minlength:'8',maxlength:'256',autocomplete:'new-password'});
-      const existing=field(f,'Mevcut oyuncu hesabımı bağlayacağım','existing',{type:'checkbox'});existing.checked=!!controller.legacy.name;
-      field(f,'Kullanım koşullarını ve gizlilik metnini okudum','consent',{type:'checkbox',required:''});policy(f);done();button(formHost,'Giriş ekranı',()=>render('login'),'full');
+      field(f,'Kullanım koşullarını ve gizlilik metnini okudum','consent',{type:'checkbox',required:''});policy(f);done();button(formHost,linking?'Hesap ayarlarına dön':'Giriş ekranı',()=>render(linking?'legacy-account':'login'),'full');
     }else if(next==='verify'){
       const {f,done}=form(verifyType==='signup'?'E-postanı doğrula':'Kurtarma kodunu doğrula','Kodu doğrula',async data=>{pendingEmail=String(data.get('email'));const state=await controller.verify(pendingEmail,data.get('code'),verifyType);if(state.recovery){render(recoveryTarget==='pin'?'pin-reset':'reset');message(recoveryTarget==='pin'?'Yeni 4 haneli PIN’inizi belirleyin.':'Yeni şifrenizi belirleyin.')}else ready(state,verifyType==='signup'&&!!pendingName&&!pendingLink)});
       field(f,'E-posta','email',{required:'',type:'email',value:pendingEmail,autocomplete:'email'});field(f,'E-postadaki kod','code',{required:'',inputmode:'numeric',autocomplete:'one-time-code'});done();formHost.append(el('p','E-posta şablonunda kod bulunmalıdır. Kod gelmiyorsa gönderim kurulumu tamamlanmamış olabilir. E-posta bağlantısıyla doğruladıysanız giriş ekranından devam edin.',{class:'small'}));button(formHost,'Giriş ekranı',()=>render('login'),'full');
@@ -76,11 +77,11 @@
       field(f,'Mevcut oyuncu adı','name',{required:'',value:pendingName||controller.legacy.name||'',maxlength:'100'});field(f,'Eski PIN (bu cihazda açık oturum varsa boş bırakılabilir)','pin',{type:'password',inputmode:'numeric',maxlength:'4',autocomplete:'current-password'});done();
       button(formHost,'İlk kez oynuyorum: yeni oyuncu oluştur',()=>render('create'),'full');button(formHost,'Çıkış yap',()=>controller.logout(),'full');
     }else if(next==='create'){
-      const {f,done}=form('Yeni oyuncu oluştur','Oyuna katıl',async data=>{await controller.createPlayer(data.get('name'));window.BizimSkorFirstRunTour?.start();});field(f,'Oyuncu adı','name',{required:'',value:pendingLink?'':pendingName,maxlength:'30'});done();button(formHost,'Mevcut oyuncumu bağlayacağım',()=>render('choose'),'full');
+      const {f,done}=form('Yeni oyuncu oluştur','Oyuna katıl',async data=>{await controller.createPlayer(data.get('name'));window.BizimSkorFirstRunTour?.start();});field(f,'Oyuncu adı','name',{required:'',value:pendingLink?'':pendingName,maxlength:'30'});done();
     }else if(next==='account'){
       formHost.append(el('h3','Hesap ayarları'));button(formHost,'Şifremi değiştir',()=>render('change'),'full');button(formHost,'Hesap silme talebi',()=>render('delete'),'full');button(formHost,'Çıkış yap',()=>controller.logout(),'full');
     }else if(next==='legacy-account'){
-      formHost.append(el('h3','Test hesabı ayarları'));button(formHost,'Mevcut hesabımı e-postaya bağla',()=>render('signup'),'full');button(formHost,'Hesap silme talebi',()=>render('legacy-delete'),'full');button(formHost,'Çıkış yap',()=>controller.logout(),'full');
+      formHost.append(el('h3','Test hesabı ayarları'));button(formHost,'Hesabımı e-postaya bağla',()=>render('link-signup'),'full');button(formHost,'Hesap silme talebi',()=>render('legacy-delete'),'full');button(formHost,'Çıkış yap',()=>controller.logout(),'full');
     }else if(next==='change'){
       const {f,done}=form('Şifre değiştir','Şifreyi değiştir',async data=>{if(data.get('password')!==data.get('repeat'))throw new Error('Şifreler aynı olmalıdır.');await controller.changePassword(data.get('current'),data.get('password'));render('account');message('Şifreniz değiştirildi.');});field(f,'Mevcut şifre','current',{required:'',type:'password',autocomplete:'current-password'});field(f,'Yeni şifre','password',{required:'',type:'password',minlength:'8',maxlength:'256',autocomplete:'new-password'});field(f,'Yeni şifre tekrar','repeat',{required:'',type:'password',minlength:'8',maxlength:'256',autocomplete:'new-password'});done();button(formHost,'Geri',()=>render('account'),'full');
     }else if(next==='delete'||next==='legacy-delete'){

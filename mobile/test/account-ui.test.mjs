@@ -32,3 +32,17 @@ test('header legacy switcher closures are rebound to the current native panels',
 test('old PIN recovery asks for linked email instead of a device or a player name',()=>{const s=mount();s.ui.render('legacy-reset');assert.equal(s.document.querySelector('#mobile-email')?.type,'email');assert.equal(s.document.querySelector('#mobile-name'),null);assert.equal(s.document.querySelector('#mobile-pin'),null);assert.match(s.document.body.textContent,/yönetici/);});
 
 test('account logout signals native reminder cancellation immediately',async()=>{const s=mount();let events=0;s.window.addEventListener('bizimskor:logged-out',()=>events++);s.client.auth.signOut=async()=>({});s.document.getElementById('logoutPlayer').click();await new Promise(r=>setImmediate(r));assert.equal(events,1);});
+
+test('new registration has no account-linking choice, while legacy settings offer a dedicated form', async()=>{
+ const s=mount();
+ s.ui.render('signup');
+ assert.equal(s.document.querySelector('#mobile-existing'),null);
+ assert.doesNotMatch(s.document.querySelector('#mobileAccountPanel').textContent,/hesabımı bağlayacağım/i);
+ s.ui.render('legacy-account');
+ const link=[...s.document.querySelectorAll('#mobileAccountPanel button')].find(button=>button.textContent==='Hesabımı e-postaya bağla');
+ assert.ok(link);
+ link.click();
+ assert.equal(s.ui.mode,'link-signup');
+ assert.equal(s.document.querySelector('#mobile-name'),null);
+ assert.equal(s.document.querySelector('#mobile-email').type,'email');
+});
