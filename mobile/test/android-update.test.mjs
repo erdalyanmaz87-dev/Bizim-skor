@@ -59,3 +59,10 @@ test('server-managed native push cancels legacy alarms instead of scheduling dup
  const context={document:{getElementById:()=>null,addEventListener:()=>{},visibilityState:'visible'},Capacitor:{isNativePlatform:()=>true,Plugins:{LocalNotifications:{cancel:async()=>calls.push('cancel'),schedule:async()=>calls.push('schedule'),checkPermissions:async()=>({display:'granted'}),addListener:()=>{}}}},BizimSkorNativePush:{},localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},BizimSkorMobileHooks:{client:{rpc:async()=>({data:[{competition:'super',week:12,fixture_count:9,saved_count:0,deadline:new Date(Date.now()+7200000).toISOString()}]})}},addEventListener:()=>{},setTimeout:()=>{},setInterval:()=>{},console,Date};
  vm.runInNewContext(readFileSync(new URL('../native-reminders.js',import.meta.url),'utf8'),context);await context.BizimSkorNativeReminders.refresh();assert.ok(calls.includes('cancel'));assert.ok(!calls.includes('schedule'));
 });
+
+test('Android status cards show distinct non-branded league symbols after rerendering',()=>{
+ const {document}=parseHTML('<body><button class="bs-week-card" data-competition="super_lig"><span class="bs-week-card-logo"></span></button><button class="bs-week-card" data-competition="champions_league"></button><button class="bs-week-card" data-competition="nations_league"></button></body>');
+ ui.decorate(document);
+ ui.decorate(document);
+ assert.deepEqual([...document.querySelectorAll('.bs-week-card-logo')].map(logo=>logo.textContent),['🇹🇷','⭐','🌍']);
+});

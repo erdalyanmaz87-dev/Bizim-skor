@@ -5,12 +5,60 @@ const key=v=>String(v||'').trim().toLocaleLowerCase('tr-TR').normalize('NFD').re
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function countryCode(name){return codes[key(name)]||null}
 function nationalMarkup(name){const code=countryCode(name);return `<span class="bs-team-brand"><span class="bs-team-name" data-country-flag-ignore>${code?`<img class="bs-android-flag" src="flags/${code}.svg" alt="" width="28" height="21" aria-hidden="true">`:''}${esc(name)}</span></span>`}
-function decorate(doc){doc.querySelectorAll('.bs-team-brand').forEach(brand=>{const label=brand.querySelector('.bs-team-name');if(!label)return;const code=countryCode(label.textContent);if(!code)return;const current=brand.querySelector('.bs-android-flag');if(current?.getAttribute('src')===`flags/${code}.svg`)return;brand.querySelectorAll('.bs-team-fallback,.bs-country-flag,.bs-team-logo').forEach(n=>n.remove());const img=doc.createElement('img');img.className='bs-android-flag';img.src=`flags/${code}.svg`;img.width=28;img.height=21;img.alt='';img.setAttribute('aria-hidden','true');brand.insertBefore(img,brand.firstChild);});}
+function decorateFlags(doc){doc.querySelectorAll('.bs-team-brand').forEach(brand=>{const label=brand.querySelector('.bs-team-name');if(!label)return;const code=countryCode(label.textContent);if(!code)return;const current=brand.querySelector('.bs-android-flag');if(current?.getAttribute('src')===`flags/${code}.svg`)return;brand.querySelectorAll('.bs-team-fallback,.bs-country-flag,.bs-team-logo').forEach(n=>n.remove());const img=doc.createElement('img');img.className='bs-android-flag';img.src=`flags/${code}.svg`;img.width=28;img.height=21;img.alt='';img.setAttribute('aria-hidden','true');brand.insertBefore(img,brand.firstChild);});}
+const leagueSymbols={super_lig:'🇹🇷',champions_league:'⭐',nations_league:'🌍'};
+const predictionRows='#pred .m,#championsPred .champions-match,#nationsPred .nations-match,#nationsPred .m';
+function decorate(doc){
+ decorateFlags(doc);
+ for(const card of doc.querySelectorAll('.bs-week-card[data-competition]')){
+  const symbol=leagueSymbols[card.dataset.competition];
+  if(!symbol)continue;
+  let icon=card.querySelector('.bs-week-card-logo');
+  if(!icon){
+   icon=doc.createElement('span');
+   icon.className='bs-week-card-logo';
+   icon.setAttribute('aria-hidden','true');
+   card.prepend(icon);
+  }
+  if(icon.textContent!==symbol)icon.textContent=symbol;
+ }
+ for(const row of doc.querySelectorAll(predictionRows)){
+  const teams=[...row.querySelectorAll(':scope > .t')];
+  if(teams.length!==2)continue;
+  const labels=teams.map(team=>team.querySelector('.bs-team-name'));
+  if(labels.some(label=>!label?.offsetWidth)||teams.some(team=>!team.clientWidth))continue;
+  const scale=Math.min(1,...labels.map((label,index)=>teams[index].clientWidth/label.offsetWidth));
+  row.style.setProperty('--android-team-scale',String(scale));
+ }
+}
 function closeRules(doc=root.document){let closed=false;doc?.querySelectorAll('.league-rules-host').forEach(h=>{if(!h.hidden){h.hidden=true;h.style.display='none';h.closest('.league-shell')?.querySelector('[data-league-rules]')?.setAttribute('aria-expanded','false');closed=true}});return closed}
-function mount(doc=root.document,{observe=true}={}){if(!doc||doc.getElementById('bsAndroidUpdateStyles'))return;const style=doc.createElement('style');style.id='bsAndroidUpdateStyles';style.textContent='.m,.champions-match,.nations-match{min-width:0}.t,.fixture-team,.bs-team-name{min-width:0!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;word-break:normal;line-height:1.3}.bs-team-brand{max-width:100%;white-space:normal!important;gap:6px}.bs-android-flag{display:inline-block!important;vertical-align:middle;width:28px!important;height:21px!important;min-width:28px!important;max-width:28px!important;object-fit:contain!important;border-radius:0!important;flex-shrink:0;margin-inline-end:5px}.league-rules-host[hidden]{display:none!important}.league-rules-host:not([hidden]){display:block!important;max-height:60vh;overflow:auto;padding:12px 0}.android-rules-close{display:block;margin:8px 0 0 auto}';doc.head.append(style);
+function mount(doc=root.document,{observe=true}={}){if(!doc||doc.getElementById('bsAndroidUpdateStyles'))return;const style=doc.createElement('style');style.id='bsAndroidUpdateStyles';style.textContent='.m,.champions-match,.nations-match{min-width:0}.t,.fixture-team,.bs-team-name{min-width:0!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;word-break:normal;line-height:1.3}.bs-team-brand{max-width:100%;white-space:normal!important;gap:6px}.bs-android-flag{display:inline-block!important;vertical-align:middle;width:28px!important;height:21px!important;min-width:28px!important;max-width:28px!important;object-fit:contain!important;border-radius:0!important;flex-shrink:0;margin-inline-end:5px}.league-rules-host[hidden]{display:none!important}.league-rules-host:not([hidden]){display:block!important;max-height:60vh;overflow:auto;padding:12px 0}.android-rules-close{display:block;margin:8px 0 0 auto}';style.textContent+=`
+.bs-week-card .bs-week-card-logo{font-size:23px;line-height:1}
+:is(#pred .m,#championsPred .champions-match,#nationsPred .nations-match,#nationsPred .m){
+ grid-template-columns:minmax(0,1fr) 38px 10px 38px minmax(0,1fr)!important;column-gap:4px!important
+}
+:is(#pred .m,#championsPred .champions-match,#nationsPred .nations-match,#nationsPred .m)>input{box-sizing:border-box;width:100%!important;min-width:0;padding-inline:2px}
+:is(#pred .m,#championsPred .champions-match,#nationsPred .nations-match,#nationsPred .m)>.t .bs-team-brand{
+ display:flex!important;flex-direction:column;align-items:flex-start;width:100%;gap:2px
+}
+:is(#pred .m,#championsPred .champions-match,#nationsPred .nations-match,#nationsPred .m)>.home .bs-team-brand{align-items:flex-end}
+:is(#pred .m,#championsPred .champions-match,#nationsPred .nations-match,#nationsPred .m)>.t .bs-team-name{
+ display:block!important;flex:none!important;max-width:none!important;width:max-content!important;
+ white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;
+ transform:scaleX(var(--android-team-scale,1));transform-origin:left center
+}
+:is(#pred .m,#championsPred .champions-match,#nationsPred .nations-match,#nationsPred .m)>.home .bs-team-name{transform-origin:right center}
+`;
+ doc.head.append(style);
  doc.addEventListener('click',event=>{const close=event.target.closest?.('[data-android-rules-close]');if(close){event.preventDefault();event.stopImmediatePropagation();closeRules(doc);return}const button=event.target.closest?.('[data-league-rules]');if(!button)return;const host=button.closest('.league-shell')?.querySelector('.league-rules-host');if(!host)return;event.preventDefault();event.stopImmediatePropagation();host.hidden=!host.hidden;host.style.display=host.hidden?'none':'block';button.setAttribute('aria-expanded',String(!host.hidden));if(!host.querySelector('[data-android-rules-close]')){const b=doc.createElement('button');b.type='button';b.className='android-rules-close';b.setAttribute('data-android-rules-close','');b.textContent='Kuralları Kapat';host.append(b)}},true);
  doc.addEventListener('keydown',event=>{if(event.key==='Escape')closeRules(doc)});decorate(doc);
- if(observe&&root.MutationObserver){let queued=false;new root.MutationObserver(()=>{if(queued)return;queued=true;(root.requestAnimationFrame||root.setTimeout)(()=>{queued=false;decorate(doc)},0)}).observe(doc.body,{childList:true,subtree:true})}
+ if(observe&&root.MutationObserver){
+  let queued=false;
+  const schedule=()=>{if(queued)return;queued=true;(root.requestAnimationFrame||root.setTimeout)(()=>{queued=false;decorate(doc)},0)};
+  new root.MutationObserver(schedule).observe(doc.body,{childList:true,subtree:true});
+  root.addEventListener?.('resize',schedule);
+  doc.fonts?.ready.then(schedule);
+ }
 }
 return {codes,countryCode,nationalMarkup,decorate,closeRules,mount};
 });

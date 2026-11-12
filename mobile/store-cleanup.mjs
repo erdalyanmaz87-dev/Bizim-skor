@@ -90,9 +90,9 @@ export function transformWebSource(name, source) {
     source = replaceLineFunction(source, 'replaceFallbackLogos', 'function replaceFallbackLogos(){return false}');
   }
   if (name === 'prediction-visibility-logo-fix.js') {
-    // Native team names must wrap; the web visibility repair has higher CSS
+    // The web visibility repair has higher CSS
     // specificity than android-ui.js and otherwise restores ellipsis.
-    source = replaceRequired(source, /white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important/, 'white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important', 'native prediction full team names');
+    source = replaceRequired(source, /white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important/, 'white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:normal!important', 'native prediction full team names');
     source = replaceRequired(source, /const CREST_OVERRIDES=\{[\s\S]*?\n  \};/, 'const CREST_OVERRIDES={};', 'prediction overrides');
     source = replaceRequired(source, /function applyCrestOverride\(node\)\{[\s\S]*?\n  \}/, 'function applyCrestOverride(){return false}', 'prediction crest injection');
   }
