@@ -1,6 +1,6 @@
 {
   "name": "bizimskor-mobile",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "BizimSkor Android uygulaması",
   "scripts": {
     "build:web": "node scripts/build-web.mjs",
