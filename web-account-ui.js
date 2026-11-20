@@ -6,7 +6,19 @@
  // must never swap the verified email while another tab is attaching a player.
  const authClient=supabase.createClient(sb.supabaseUrl,sb.supabaseKey,{auth:{persistSession:false,storageKey:'bizimSkorWebEmailAuth',detectSessionInUrl:false}});
  const controller=BizimSkorWebAccount.create({authClient,gameClient:sb,storage:localStorage,deviceId:ensureDeviceId,
-  gateway:async body=>{const q=await authClient.functions.invoke('mobile-account-auth',{body});if(q.error){let error='auth_service_unavailable';try{error=(await q.error.context.json()).error||error}catch{}return {error}}return q.data;},
+  gateway:async body=>{
+   try{
+    const response=await fetch('/functions/v1/mobile-account-auth',{
+     method:'POST',
+     credentials:'omit',
+     headers:{'Content-Type':'application/json'},
+     body:JSON.stringify(body),
+    });
+    const data=await response.json();
+    if(response.ok || typeof data?.error==='string')return data;
+   }catch{}
+   return {error:'auth_service_unavailable'};
+  },
   onLogin:data=>{showName(data.player_name);window.dispatchEvent(new Event('bizimskor:session-ready'));refreshAfterAuthentication();Promise.resolve(recordVerifiedLaunch(data.token)).catch(()=>{});}
  });
  const card=document.createElement('section');card.id='emailUpgradeCard';card.className='bs-email-card';card.hidden=true;

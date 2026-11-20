@@ -15,14 +15,22 @@ const loginAction=()=>testState.legacyLogins++;const registerAction=()=>{};
 window.BizimSkorAuthActions={bindActions:a=>window.testActions=a};
 const user={id:'u1',email:'person@example.com',email_confirmed_at:'2026-10-29'};
 const sb={supabaseUrl:'https://fixture.invalid',supabaseKey:'publishable',rpc:async(name,args)=>{testState.calls.push([name,args]);return {data:{player_name:'Erdal',linked:testState.linked}}}};
-const authClient={auth:{setSession:async()=>({}),getUser:async()=>({data:{user}}),verifyOtp:async()=>testState.otpError?{error:{}}:{data:{session:{user}}},updateUser:async()=>({data:{user}}),signOut:async()=>({})},rpc:async(name,args)=>{testState.calls.push([name,args]);if(name==='mobile_account_status')return {data:{linked:testState.linked,player_name:'Erdal'}};if(name==='mobile_link_player'){testState.linked=true;return {data:{player_name:'Erdal'}}}return {data:{player_name:'Erdal',token:'new-token'}}},functions:{invoke:async(name,{body})=>{testState.calls.push(['gateway',body]);return {data:body.action==='login'?{session:{access_token:'access',refresh_token:'refresh',user}}:{needsConfirmation:true}}}}};
+const authClient={auth:{setSession:async()=>({}),getUser:async()=>({data:{user}}),verifyOtp:async()=>testState.otpError?{error:{}}:{data:{session:{user}}},updateUser:async()=>({data:{user}}),signOut:async()=>({})},rpc:async(name,args)=>{testState.calls.push([name,args]);if(name==='mobile_account_status')return {data:{linked:testState.linked,player_name:'Erdal'}};if(name==='mobile_link_player'){testState.linked=true;return {data:{player_name:'Erdal'}}}return {data:{player_name:'Erdal',token:'new-token'}}}};
 const supabase={createClient:()=>authClient};
 </script><script src="/web-account-core.js"></script><script src="/web-account-ui.js"></script></html>`;
 (async()=>{
  const browsers=[['desktop', {width:1280,height:900}],['mobile', {width:390,height:844}]];
  for(const [name,viewport] of browsers){
   const browser=await chromium.launch({headless:true,args:packagedChromium.args,executablePath:process.env.BIZIMSKOR_CHROMIUM||await packagedChromium.executablePath()});const page=await browser.newPage({viewport});const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.route('http://account.test/**',route=>{const url=new URL(route.request().url());if(url.pathname==='/')return route.fulfill({contentType:'text/html',body:fixture});const file=path.join(root,url.pathname);return route.fulfill({contentType:file.endsWith('.css')?'text/css':'text/javascript',body:fs.readFileSync(file)});});
+  await page.route('http://account.test/**',route=>{const url=new URL(route.request().url());if(url.pathname==='/')return route.fulfill({contentType:'text/html',body:fixture});
+   if(url.pathname==='/functions/v1/mobile-account-auth'){
+    assert.equal(route.request().method(),'POST');
+    const body=route.request().postDataJSON();
+    return route.fulfill({json:body.action==='login'
+     ?{session:{access_token:'access',refresh_token:'refresh',user:{email_confirmed_at:'2026-10-29'}}}
+     :{needsConfirmation:true}});
+   }
+   const file=path.join(root,url.pathname);return route.fulfill({contentType:file.endsWith('.css')?'text/css':'text/javascript',body:fs.readFileSync(file)});});
   await page.goto('http://account.test/');await page.locator('#emailUpgradeDialog[open]').waitFor({timeout:5000}).catch(async e=>{console.log('PAGE ERRORS',errors);console.log(await page.locator('body').innerText());throw e;});
   assert.equal(await page.locator('#emailUpgradeCard').isVisible(),true);
   await page.screenshot({path:'/tmp/bizim-email-'+name+'.png'});await page.getByRole('button',{name:'Daha sonra, oyuna devam et'}).click();
@@ -37,7 +45,7 @@ const supabase={createClient:()=>authClient};
   assert.equal(await page.evaluate(()=>localStorage.getItem('bizimSkorName')),'Erdal');assert.equal(await page.evaluate(()=>localStorage.getItem('bizimSkorFriendToken')),'legacy-token');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.getByRole('button',{name:'Oyuna devam et',exact:true}).click();
-  for(const identifier of ['Erdal','person@example.com']){await page.locator('#loginName').fill(identifier);await page.locator('#loginPin').fill('secret123');await page.evaluate(()=>testActions.login());assert.equal(await page.evaluate(()=>testState.calls.filter(c=>c[0]==='gateway').at(-1)[1].identifier),identifier);}
+  for(const identifier of ['Erdal','person@example.com']){await page.locator('#loginName').fill(identifier);await page.locator('#loginPin').fill('secret123');const request=page.waitForRequest(req=>req.url().endsWith('/functions/v1/mobile-account-auth'));await page.evaluate(()=>testActions.login());assert.equal((await request).postDataJSON().identifier,identifier);}
   await page.locator('#loginName').fill('Erdal');await page.locator('#loginPin').fill('1234');await page.evaluate(()=>testActions.login());assert.equal(await page.evaluate(()=>testState.legacyLogins),1);
   await page.evaluate(()=>{testState.linked=false;localStorage.setItem('bizimSkorFriendToken','other-token');dispatchEvent(new Event('bizimskor:player-shown'));});await page.locator('#emailUpgradeDialog[open]').waitFor();
   await page.evaluate(()=>{localStorage.removeItem('bizimSkorName');localStorage.removeItem('bizimSkorFriendToken');dispatchEvent(new Event('bizimskor:logged-out'));});await page.locator('#emailUpgradeDialog').waitFor({state:'hidden'});assert.equal(await page.locator('#emailUpgradeCard').isVisible(),false);

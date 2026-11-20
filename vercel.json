@@ -1,6 +1,12 @@
 {
   "buildCommand": "node tools/build-static.mjs",
   "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/functions/v1/mobile-account-auth",
+      "destination": "https://paevhzaixlozrrggnzni.supabase.co/functions/v1/mobile-account-auth"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
