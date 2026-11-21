@@ -22,7 +22,7 @@
       row.classList.toggle('league-forced-relegation',forced);
       if(forced)row.classList.add('league-relegation-zone');
       const inPromotionZone=record.promotion_status==='promotion'&&Number(record.valid_round_count)>=2||provisional&&row.dataset.arenaZone==='promotion';
-      const provisionalRelegation=provisional&&row.dataset.arenaZone==='relegation';
+      const provisionalRelegation=row.dataset.arenaRelegationCutoff==='true'||provisional&&row.dataset.arenaZone==='relegation';
       const provisionalBoundary=provisional&&row.classList.contains('league-promotion-boundary');
       row.dataset.arenaZone=inPromotionZone?'promotion':forced||record.promotion_status==='relegation'||provisionalRelegation?'relegation':'none';
       row.classList.toggle('league-promotion-zone',inPromotionZone);

@@ -51,11 +51,16 @@
     if(targets.preview&&row.promotion_status==='none'){if(promotion>0&&rank>0&&rank<=promotion)return'promotion';if(relegation>0&&rank>size-relegation)return'relegation';return'none'}
     if(!row.arena_preview&&Object.hasOwn(row,'promotion_status')){
       if(row.promotion_status==='promotion'&&(!knownRounds||rounds>=2))return'promotion';
-      return ['relegation','forced_relegation'].includes(row.promotion_status)?'relegation':'none';
+      if(['relegation','forced_relegation'].includes(row.promotion_status)||inRelegationCutoff(row,size,targets))return'relegation';
+      return'none';
     }
     if(promotion>0&&rank>0&&rank<=promotion&&(!knownRounds||rounds>=2))return'promotion';
     if(relegation>0&&rank>size-relegation)return'relegation';
     return'none';
+  }
+  function inRelegationCutoff(row,size,targets){
+    const rank=Number(row.league_rank);
+    return targets.showRelegationCutoff&&rank>0&&rank>size-targets.relegation;
   }
   function rowClass(row,size,targets){
     const classes=['league-row'],zone=zoneFor(row,size,targets);
@@ -73,8 +78,10 @@
   function renderLeagueTable(rows=[],summary={}){
     const code=summary.league_code||rows[0]?.league_code||'bronze';
     if(!rows.length)return `<div class="league-empty">Bu ligde henüz sıralamaya giren oyuncu yok.</div>`;
-    const size=rows.length,targets={...(summary.movement_targets||{promotion:0,relegation:0}),preview:!summary.final_super_round_started&&!rows.some(row=>Number(row.valid_round_count)>=2)},info=movementText(targets);targets.promotionBoundary=Math.max(0,...rows.filter(row=>zoneFor(row,size,targets)==='promotion').map(row=>Number(row.league_rank)||0));
-    return `<div class="league-table-wrap">${info?`<div class="league-movement-info">${esc(info)}</div>`:''}<div class="league-table-head"><span>#</span><span>Oyuncu</span><span>Perf.</span><span>Tur</span></div>${rows.map(row=>`<div class="${rowClass(row,size,targets)}" data-arena-zone="${zoneFor(row,size,targets)}"><span class="league-rank">${esc(row.league_rank)}</span><span class="league-player" data-player-name="${esc(row.player_name)}">${row.is_me?'<b>Sen • </b>':''}${esc(row.player_name)}</span><span class="league-performance">${esc(row.performance_score??'—')}</span><span class="league-rounds">${esc(row.valid_round_count??0)}</span></div>`).join('')}<div class="league-table-foot">${ICONS[code]||'🥉'} ${esc(label(code))}</div></div>`;
+    const size=rows.length,targets={...(summary.movement_targets||{promotion:0,relegation:0}),preview:!summary.final_super_round_started&&!rows.some(row=>Number(row.valid_round_count)>=2)},info=movementText(targets);
+    targets.showRelegationCutoff=targets.relegation>0&&!rows.some(row=>row.promotion_status==='relegation');
+    targets.promotionBoundary=Math.max(0,...rows.filter(row=>zoneFor(row,size,targets)==='promotion').map(row=>Number(row.league_rank)||0));
+    return `<div class="league-table-wrap">${info?`<div class="league-movement-info">${esc(info)}</div>`:''}<div class="league-table-head"><span>#</span><span>Oyuncu</span><span>Perf.</span><span>Tur</span></div>${rows.map(row=>`<div class="${rowClass(row,size,targets)}" data-arena-zone="${zoneFor(row,size,targets)}"${inRelegationCutoff(row,size,targets)?' data-arena-relegation-cutoff="true"':''}><span class="league-rank">${esc(row.league_rank)}</span><span class="league-player" data-player-name="${esc(row.player_name)}">${row.is_me?'<b>Sen • </b>':''}${esc(row.player_name)}</span><span class="league-performance">${esc(row.performance_score??'—')}</span><span class="league-rounds">${esc(row.valid_round_count??0)}</span></div>`).join('')}<div class="league-table-foot">${ICONS[code]||'🥉'} ${esc(label(code))}</div></div>`;
   }
 
   function renderLeagueRules(){return `<div class="league-rules"><h3>ⓘ Lig Kuralları</h3><p>Bir Arena dönemi <b>4 Süper Lig haftası</b> sürer: 5, 6, 7 ve 8. hafta.</p><p>Bu tarihler arasında oynanan Uluslar Ligi ve Şampiyonlar Ligi puanları da ortalama Arena puanına eklenir; ancak tur sayısını artırmaz.</p><p>Yükselme veya ligde kalma hakkı için dönem içinde <b>en az 2 haftaya</b> eksiksiz Süper Lig tahminiyle katılmak gerekir.</p><p>2 hafta şartını tamamlamayan oyuncu dönem sonunda <b>bir alt lige düşer</b>. Bronz Lig oyuncusu Bronz Lig’de kalır.</p><p>Yeni oyuncular Bronz Lig’den başlar.</p><p>Yükselme ve düşme kontenjanları dönem başında belirlenir ve dönem boyunca değişmez.</p><p>Katılmadığın hafta ortalamaya 0 yazmaz; minimum 2 hafta şartı ayrıca uygulanır.</p></div>`}

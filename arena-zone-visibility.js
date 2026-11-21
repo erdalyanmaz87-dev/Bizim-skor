@@ -33,7 +33,7 @@
       row.classList.toggle('league-promotion-boundary',promotion&&rank===promotionBoundary);
       row.classList.toggle('league-relegation-boundary',relegation&&rank===size-targets.relegation+1);
       const player=row.querySelector('.league-player');if(!player)return;
-      let badge=player.querySelector('.league-zone-badge');const label=zoneLabel(zone);
+      let badge=player.querySelector('.league-zone-badge');const label=relegation&&row.dataset.arenaRelegationCutoff==='true'&&!row.classList.contains('league-forced-relegation')?'↓ Düşme hattı':zoneLabel(zone);
       if(!label){badge?.remove();return}
       if(!badge){badge=player.ownerDocument.createElement('small');badge.className='league-zone-badge';player.appendChild(badge)}
       badge.classList.toggle('promotion',promotion);badge.classList.toggle('relegation',relegation);if(badge.textContent!==label)badge.textContent=label;
